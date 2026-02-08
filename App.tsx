@@ -9,10 +9,11 @@ import AboutUs from './components/AboutUs.tsx';
 import Services from './components/Services.tsx';
 import ComingSoon from './components/ComingSoon.tsx';
 import AICustomizer from './AICustomizer.tsx';
+import CarSilhouettes from './components/CarSilhouettes.tsx';
 import { Product, CartItem } from './types.ts';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'home' | 'customize' | 'ai-studio'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'customize' | 'ai-studio' | 'car-silhouettes'>('home');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [deliveryType, setDeliveryType] = useState<'pickup' | 'standard' | 'express'>('standard');
@@ -22,7 +23,7 @@ function App() {
     if (typeof window.gtag !== 'undefined') {
       window.gtag('config', 'G-FCJ59GJJLB', {
         page_path: `/${activeTab}`,
-        page_title: activeTab === 'home' ? 'Home' : activeTab === 'customize' ? 'Shop' : 'AI Studio',
+        page_title: activeTab === 'home' ? 'Home' : activeTab === 'customize' ? 'Shop' : activeTab === 'ai-studio' ? 'AI Studio' : 'Car Silhouettes',
       });
     }
   }, [activeTab]);
@@ -97,7 +98,6 @@ function App() {
           <Hero onExplore={() => setActiveTab('customize')} />
           <AboutUs />
           <Services />
-          <ComingSoon />
           <ProductGallery onAddToCart={addToCart} />
         </main>
       )}
@@ -111,6 +111,12 @@ function App() {
       {activeTab === 'ai-studio' && (
         <main>
           <AICustomizer />
+        </main>
+      )}
+
+      {activeTab === 'car-silhouettes' && (
+        <main>
+          <CarSilhouettes />
         </main>
       )}
 

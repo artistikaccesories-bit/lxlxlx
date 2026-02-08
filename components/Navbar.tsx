@@ -3,7 +3,7 @@ import React from 'react';
 
 interface NavbarProps {
   activeTab: string;
-  setActiveTab: (tab: 'home' | 'customize' | 'ai-studio') => void;
+  setActiveTab: (tab: 'home' | 'customize' | 'ai-studio' | 'car-silhouettes') => void;
   cartCount: number;
   onOpenCart: () => void;
 }
@@ -32,6 +32,10 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, cartCount, onO
             <button onClick={() => setActiveTab('ai-studio')} className={`text-[9px] uppercase tracking-[0.3em] font-black transition-all flex items-center gap-2 ${activeTab === 'ai-studio' ? 'text-white' : 'text-zinc-600 hover:text-white'}`}>
               <svg className="w-3 h-3 animate-pulse" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" /></svg>
               AI Studio
+            </button>
+            <div className="h-4 w-px bg-zinc-800"></div>
+            <button onClick={() => setActiveTab('car-silhouettes')} className={`text-[9px] uppercase tracking-[0.3em] font-black transition-all ${activeTab === 'car-silhouettes' ? 'text-white' : 'text-zinc-600 hover:text-white'}`}>
+              Car Art
             </button>
 
           </div>
