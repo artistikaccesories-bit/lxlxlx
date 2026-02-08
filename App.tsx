@@ -10,6 +10,7 @@ import Services from './components/Services.tsx';
 import ComingSoon from './components/ComingSoon.tsx';
 import AICustomizer from './AICustomizer.tsx';
 import CarSilhouettes from './components/CarSilhouettes.tsx';
+import CarTeaser from './components/CarTeaser.tsx';
 import { Product, CartItem } from './types.ts';
 
 function App() {
@@ -98,6 +99,7 @@ function App() {
           <Hero onExplore={() => setActiveTab('customize')} />
           <AboutUs />
           <Services />
+          <CarTeaser onExplore={() => setActiveTab('car-silhouettes')} />
           <ProductGallery onAddToCart={addToCart} />
         </main>
       )}
