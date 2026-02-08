@@ -16,6 +16,16 @@ function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [deliveryType, setDeliveryType] = useState<'pickup' | 'standard' | 'express'>('standard');
 
+  // Google Analytics Tracking
+  React.useEffect(() => {
+    if (typeof window.gtag !== 'undefined') {
+      window.gtag('config', 'G-FCJ59GJJLB', {
+        page_path: `/${activeTab}`,
+        page_title: activeTab === 'home' ? 'Home' : 'Customize',
+      });
+    }
+  }, [activeTab]);
+
   const addToCart = (product: Product, engravingText: string, backText: string | undefined, isDoubleSided: boolean, isGiftBox: boolean) => {
     setCart(prev => {
       const existing = prev.find(item =>

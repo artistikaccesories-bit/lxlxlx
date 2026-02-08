@@ -64,6 +64,9 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
                     <img
                         src={product.image}
                         alt={product.name}
+                        loading="eager"
+                        // @ts-ignore
+                        fetchPriority="high"
                         className={`w-full h-full transition-all duration-500 ${objectFit === 'contain' ? 'object-contain p-4' : 'object-cover'}`}
                     />
 

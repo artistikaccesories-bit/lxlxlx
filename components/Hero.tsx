@@ -45,7 +45,7 @@ const Hero: React.FC<HeroProps> = ({ onExplore }) => {
               'https://images.unsplash.com/photo-1595152772835-219674b2a8a6?q=80&w=150&auto=format&fit=crop'  // Smiling man
             ].map((src, i) => (
               <div key={i} className="w-10 h-10 rounded-full border-2 border-black bg-zinc-800 overflow-hidden">
-                <img src={src} alt={`Customer ${i + 1}`} className="w-full h-full object-cover" />
+                <img src={src} alt={`Customer ${i + 1}`} loading="lazy" decoding="async" className="w-full h-full object-cover" />
               </div>
             ))}
           </div>

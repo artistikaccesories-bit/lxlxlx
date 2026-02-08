@@ -23,7 +23,7 @@ export const PRODUCTS: Product[] = [
     {
         id: '3',
         name: 'THE BOND | Couples Edition',
-        price: 12,
+        price: 10,
         category: 'keychain',
         description: 'A symbol of connection. Rectangle stainless steel keychain designed for meaningful quotes, dates, or matching couple designs. Carry your story with you.',
         image: '/images/product3.jpg',
@@ -32,7 +32,7 @@ export const PRODUCTS: Product[] = [
     {
         id: '4',
         name: 'THE GUARDIAN | Pet Tag',
-        price: 20,
+        price: 10,
         category: 'tag',
         description: 'Safety meets style. Durable custom dog tag engraved with your pet\'s name and your phone number. Built to last through every adventure.',
         image: '/images/p4.jpg',
@@ -41,7 +41,7 @@ export const PRODUCTS: Product[] = [
     {
         id: '5',
         name: 'THE ORBIT | Round Series',
-        price: 15,
+        price: 10,
         category: 'keychain',
         description: 'Minimalist perfection. A 4cm diameter round keychain awaiting your custom image, logo, or text. Perfectly balanced and precision engraved.',
         image: '/images/p5.jpg.jpg',
@@ -50,7 +50,7 @@ export const PRODUCTS: Product[] = [
     {
         id: '6',
         name: 'THE BREW | Opener',
-        price: 18,
+        price: 10,
         category: 'tool',
         description: 'Utility refined. A robust stainless steel bottle opener that doubles as a personal statement. Engrave any text or name for a gift that will actually be used.',
         image: '/images/p6.jpg.jpg',

@@ -41,6 +41,8 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ onAddToCart }) => {
               <img
                 src={product.image}
                 alt={product.name}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
               />
               <div className="absolute bottom-6 left-6 z-20">

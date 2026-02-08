@@ -19,6 +19,16 @@ export interface CartItem extends Product {
   isGiftBox?: boolean;
 }
 
+declare global {
+  interface Window {
+    gtag: (
+      command: 'config' | 'event' | 'js',
+      targetId: string,
+      config?: Record<string, any>
+    ) => void;
+  }
+}
+
 export interface DesignConcept {
   conceptName: string;
   description: string;

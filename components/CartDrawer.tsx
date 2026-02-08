@@ -62,7 +62,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
             cart.map(item => (
               <div key={item.internalId} className="flex gap-4">
                 <div className="w-20 h-20 bg-zinc-900 rounded-lg overflow-hidden flex-shrink-0 border border-white/5">
-                  <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                  <img src={item.image} alt={item.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                 </div>
                 <div className="flex-grow">
                   <div className="flex justify-between items-start mb-1">
