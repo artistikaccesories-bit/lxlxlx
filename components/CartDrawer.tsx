@@ -5,51 +5,107 @@ import { CartItem } from '../types.ts';
 interface CartDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  items: CartItem[];
+  cart: CartItem[];
   updateQuantity: (id: string, delta: number) => void;
-  deliveryType: 'none' | 'standard' | 'express';
-  setDeliveryType: (type: 'none' | 'standard' | 'express') => void;
+  removeFromCart: (id: string) => void;
   total: number;
+  subtotal: number;
+  deliveryType: 'pickup' | 'standard' | 'express';
+  setDeliveryType: (type: 'pickup' | 'standard' | 'express') => void;
   onCheckout: () => void;
 }
 
-const CartDrawer: React.FC<CartDrawerProps> = ({ 
-  isOpen, onClose, items, updateQuantity, deliveryType, setDeliveryType, total, onCheckout 
+const CartDrawer: React.FC<CartDrawerProps> = ({
+  isOpen,
+  onClose,
+  cart,
+  updateQuantity,
+  removeFromCart,
+  total,
+  subtotal,
+  deliveryType,
+  setDeliveryType,
+  onCheckout
 }) => {
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex justify-end">
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={onClose}></div>
-      <div className="relative w-full max-w-md bg-zinc-950 border-l border-white/5 h-full flex flex-col animate-in slide-in-from-right duration-500">
-        <div className="p-8 border-b border-white/5 flex justify-between items-center">
-          <h2 className="text-xl font-black font-heading tracking-[0.2em] uppercase silver-gradient">Your Order</h2>
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+        onClick={onClose}
+      ></div>
+
+      {/* Drawer */}
+      <div className="relative w-full max-w-md bg-zinc-950 border-l border-white/10 shadow-2xl flex flex-col h-full animate-in slide-in-from-right duration-300">
+
+        {/* Header */}
+        <div className="p-6 border-b border-white/10 flex items-center justify-between">
+          <h2 className="text-xl font-black font-heading silver-gradient">YOUR CART ({cart.reduce((a, b) => a + b.quantity, 0)})</h2>
           <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            <svg className="w-6 h-6 text-zinc-500 hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
 
-        <div className="flex-grow overflow-y-auto p-8 space-y-6">
-          {items.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center opacity-20 text-center">
-              <svg className="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-              <p className="font-black uppercase tracking-[0.3em] text-[10px]">Vault Empty</p>
+        {/* Cart Items */}
+        <div className="flex-grow overflow-y-auto p-6 space-y-6 custom-scrollbar">
+          {cart.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-50">
+              <svg className="w-16 h-16 text-zinc-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+              <p className="text-zinc-500 font-bold text-lg">YOUR VAULT IS EMPTY</p>
+              <button onClick={onClose} className="px-6 py-2 bg-white text-black text-xs font-bold uppercase tracking-[0.2em] rounded-full hover:bg-zinc-200 transition-colors">
+                Start Creating
+              </button>
             </div>
           ) : (
-            items.map(item => (
-              <div key={item.id} className="flex gap-6 glass p-5 rounded-3xl border-white/5">
-                <div className="w-24 h-24 rounded-2xl overflow-hidden bg-zinc-900 flex-shrink-0">
-                  <img src={item.image} className="w-full h-full object-cover" alt={item.name} />
+            cart.map(item => (
+              <div key={item.internalId} className="flex gap-4">
+                <div className="w-20 h-20 bg-zinc-900 rounded-lg overflow-hidden flex-shrink-0 border border-white/5">
+                  <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                 </div>
-                <div className="flex-grow flex flex-col justify-between">
-                  <div>
-                    <h4 className="font-black text-sm silver-gradient uppercase mb-1">{item.name}</h4>
-                    <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest">${item.price}</p>
+                <div className="flex-grow">
+                  <div className="flex justify-between items-start mb-1">
+                    <h3 className="font-bold text-sm text-white pr-2">{item.name}</h3>
+                    <p className="font-mono text-sm text-white">${(item.price + (item.isDoubleSided ? 5 : 0) + (item.isGiftBox ? 2 : 0)) * item.quantity}</p>
                   </div>
-                  <div className="flex items-center glass rounded-xl px-2 py-1.5 w-fit">
-                    <button onClick={() => updateQuantity(item.id, -1)} className="px-3 text-zinc-500 hover:text-white font-bold">-</button>
-                    <span className="px-3 text-xs font-black">{item.quantity}</span>
-                    <button onClick={() => updateQuantity(item.id, 1)} className="px-3 text-zinc-500 hover:text-white font-bold">+</button>
+
+                  {/* Customization Details */}
+                  <div className="space-y-1 mb-3">
+                    {item.isDoubleSided && (
+                      <p className="text-[10px] text-zinc-400 flex items-center gap-1">
+                        <span className="w-1 h-1 bg-white rounded-full"></span>
+                        Double Sided (+$5)
+                      </p>
+                    )}
+                    {item.isGiftBox && (
+                      <p className="text-[10px] text-zinc-400 flex items-center gap-1">
+                        <span className="w-1 h-1 bg-white rounded-full"></span>
+                        Gift Box (+$2)
+                      </p>
+                    )}
+                    {item.frontText && (
+                      <p className="text-[10px] text-zinc-500">
+                        Front: "<span className="text-zinc-300">{item.frontText}</span>"
+                      </p>
+                    )}
+                    {item.backText && (
+                      <p className="text-[10px] text-zinc-500">
+                        Back: "<span className="text-zinc-300">{item.backText}</span>"
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 bg-white/5 rounded-lg px-2 py-1 border border-white/5">
+                      <button onClick={() => updateQuantity(item.internalId, -1)} className="text-zinc-500 hover:text-white transition-colors">-</button>
+                      <span className="text-xs font-mono w-4 text-center">{item.quantity}</span>
+                      <button onClick={() => updateQuantity(item.internalId, 1)} className="text-zinc-500 hover:text-white transition-colors">+</button>
+                    </div>
+                    <button onClick={() => removeFromCart(item.internalId)} className="text-[10px] uppercase font-bold text-zinc-600 hover:text-red-500 transition-colors">Test</button>
+                    <button onClick={() => removeFromCart(item.internalId)} className="text-[10px] uppercase font-bold text-zinc-600 hover:text-red-500 transition-colors">
+                      Remove
+                    </button>
                   </div>
                 </div>
               </div>
@@ -57,41 +113,56 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
           )}
         </div>
 
-        {items.length > 0 && (
-          <div className="p-8 border-t border-white/5 bg-zinc-950/80 backdrop-blur-2xl shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
-            <div className="mb-8">
-              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-600 mb-4">Delivery Option (Lebanon)</p>
-              <div className="grid grid-cols-3 gap-2">
-                <button onClick={() => setDeliveryType('none')} className={`p-3 rounded-2xl border text-[9px] font-black uppercase tracking-widest transition-all ${deliveryType === 'none' ? 'border-white bg-white text-black' : 'border-white/5 text-zinc-500'}`}>Pickup</button>
-                <button onClick={() => setDeliveryType('standard')} className={`p-3 rounded-2xl border text-[9px] font-black uppercase tracking-widest transition-all ${deliveryType === 'standard' ? 'border-white bg-white text-black' : 'border-white/5 text-zinc-500'}`}>Std $4</button>
-                <button onClick={() => setDeliveryType('express')} className={`p-3 rounded-2xl border text-[9px] font-black uppercase tracking-widest transition-all ${deliveryType === 'express' ? 'border-white bg-white text-black' : 'border-white/5 text-zinc-500'}`}>48h $6</button>
-              </div>
+        {/* Footer */}
+        <div className="border-t border-white/10 p-6 bg-zinc-950">
+          <div className="space-y-3 mb-6">
+            <div className="flex justify-between text-xs text-zinc-500 uppercase font-bold tracking-wider">
+              <span>Subtotal</span>
+              <span>${subtotal}</span>
             </div>
-            
-            <div className="space-y-3 mb-10 text-[11px] font-bold uppercase tracking-widest">
-              <div className="flex justify-between text-zinc-600">
-                <span>Subtotal</span>
-                <span>${items.reduce((a, b) => a + (b.price * b.quantity), 0)}</span>
-              </div>
-              <div className="flex justify-between text-zinc-600">
-                <span>Delivery</span>
-                <span>${deliveryType === 'standard' ? 4 : deliveryType === 'express' ? 6 : 0}</span>
-              </div>
-              <div className="flex justify-between text-white font-black text-2xl pt-4 border-t border-white/10 silver-gradient">
-                <span>Total</span>
-                <span>${total}</span>
+
+            <div className="space-y-2">
+              <span className="text-xs text-zinc-500 uppercase font-bold tracking-wider block mb-2">Delivery Method</span>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  onClick={() => setDeliveryType('pickup')}
+                  className={`text-[10px] py-2 px-1 border rounded transition-all ${deliveryType === 'pickup' ? 'bg-white text-black border-white' : 'border-zinc-800 text-zinc-500 hover:border-zinc-600'}`}
+                >
+                  Pickup
+                  <span className="block opacity-60">Free</span>
+                </button>
+                <button
+                  onClick={() => setDeliveryType('standard')}
+                  className={`text-[10px] py-2 px-1 border rounded transition-all ${deliveryType === 'standard' ? 'bg-white text-black border-white' : 'border-zinc-800 text-zinc-500 hover:border-zinc-600'}`}
+                >
+                  Standard
+                  <span className="block opacity-60">$4</span>
+                </button>
+                <button
+                  onClick={() => setDeliveryType('express')}
+                  className={`text-[10px] py-2 px-1 border rounded transition-all ${deliveryType === 'express' ? 'bg-white text-black border-white' : 'border-zinc-800 text-zinc-500 hover:border-zinc-600'}`}
+                >
+                  Express
+                  <span className="block opacity-60">$6</span>
+                </button>
               </div>
             </div>
 
-            <button 
-              onClick={onCheckout}
-              className="w-full py-6 bg-white text-black font-black uppercase tracking-[0.3em] text-[10px] rounded-[2rem] hover:bg-zinc-200 transition-all flex items-center justify-center gap-3 silver-glow"
-            >
-              Order via WhatsApp
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>
-            </button>
+            <div className="flex justify-between text-lg font-black font-heading silver-gradient pt-4 border-t border-white/10">
+              <span>Total</span>
+              <span>${total}</span>
+            </div>
           </div>
-        )}
+
+          <button
+            onClick={onCheckout}
+            disabled={cart.length === 0}
+            className="w-full py-4 bg-white text-black font-black uppercase tracking-[0.2em] text-sm rounded-xl hover:bg-zinc-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed group/btn silver-glow flex items-center justify-center gap-2"
+          >
+            Checkout via WhatsApp
+            <svg className="w-4 h-4 transform group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+          </button>
+        </div>
       </div>
     </div>
   );

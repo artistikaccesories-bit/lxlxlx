@@ -1,0 +1,210 @@
+
+import React, { useState, useEffect } from 'react';
+import { Product } from '../types.ts';
+
+interface ProductModalProps {
+    product: Product;
+    isOpen: boolean;
+    onClose: () => void;
+    onAddToCart: (product: Product, frontText: string, backText: string | undefined, isDoubleSided: boolean, isGiftBox: boolean) => void;
+}
+
+const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, onAddToCart }) => {
+    const [frontText, setFrontText] = useState('');
+    const [backText, setBackText] = useState('');
+    const [isDoubleSided, setIsDoubleSided] = useState(false);
+    const [isGiftBox, setIsGiftBox] = useState(false);
+    const [objectFit, setObjectFit] = useState<'cover' | 'contain'>('cover');
+
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+            // Reset state on close
+            setTimeout(() => {
+                setFrontText('');
+                setBackText('');
+                setIsDoubleSided(false);
+                setIsGiftBox(false);
+                setObjectFit('cover');
+            }, 300);
+        }
+        return () => { document.body.style.overflow = 'unset'; };
+    }, [isOpen]);
+
+    if (!isOpen) return null;
+
+    const handleSubmit = () => {
+        onAddToCart(product, frontText, isDoubleSided ? backText : undefined, isDoubleSided, isGiftBox);
+        onClose();
+    };
+
+    const totalPrice = product.price + (isDoubleSided ? 5 : 0) + (isGiftBox ? 2 : 0);
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+            <div
+                className="absolute inset-0 bg-black/90 backdrop-blur-md transition-opacity"
+                onClick={onClose}
+            ></div>
+
+            <div className="relative w-full max-w-5xl bg-zinc-950 border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh] md:h-auto animate-in fade-in zoom-in-95 duration-300">
+
+                {/* Close Button Mobile */}
+                <button
+                    onClick={onClose}
+                    className="absolute top-4 right-4 z-20 p-2 bg-black/50 rounded-full text-white md:hidden"
+                >
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+
+                {/* Image Section */}
+                <div className="w-full md:w-1/2 aspect-square md:aspect-auto relative bg-zinc-900 flex items-center justify-center overflow-hidden group/image">
+                    <img
+                        src={product.image}
+                        alt={product.name}
+                        className={`w-full h-full transition-all duration-500 ${objectFit === 'contain' ? 'object-contain p-4' : 'object-cover'}`}
+                    />
+
+                    {/* Zoom Toggle Controls */}
+                    <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover/image:opacity-100 transition-opacity z-10">
+                        <button
+                            onClick={(e) => { e.stopPropagation(); setObjectFit('contain'); }}
+                            className={`p-2 rounded-full backdrop-blur-md border border-white/10 ${objectFit === 'contain' ? 'bg-white text-black' : 'bg-black/50 text-white'}`}
+                            title="Fit Image"
+                        >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>
+                        </button>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); setObjectFit('cover'); }}
+                            className={`p-2 rounded-full backdrop-blur-md border border-white/10 ${objectFit === 'cover' ? 'bg-white text-black' : 'bg-black/50 text-white'}`}
+                            title="Fill Area"
+                        >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        </button>
+                    </div>
+                </div>
+
+
+                {/* Content Section */}
+                <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col overflow-y-auto custom-scrollbar bg-zinc-950/50">
+                    <div className="flex justify-between items-start mb-8">
+                        <div>
+                            <h2 className="text-3xl lg:text-4xl font-black font-heading silver-gradient mb-2">{product.name}</h2>
+                            <div className="flex items-center gap-2 mb-1">
+                                <p className="text-zinc-500 text-xs font-bold uppercase tracking-[0.2em]">{product.category} Series</p>
+                                {product.originalPrice && (
+                                    <span className="text-xs text-red-500 font-bold uppercase tracking-wider bg-red-500/10 px-2 py-0.5 rounded">Sale</span>
+                                )}
+                            </div>
+                            {product.stock && (
+                                <div className="flex items-center gap-2 mt-2">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
+                                    <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest">Only {product.stock} left</span>
+                                </div>
+                            )}
+                        </div>
+                        <button onClick={onClose} className="hidden md:block p-2 hover:bg-white/10 rounded-full transition-colors">
+                            <svg className="w-6 h-6 text-zinc-500 hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    </div>
+
+                    <div className="space-y-8 flex-grow">
+                        <div>
+                            <h3 className="text-xs font-black uppercase tracking-widest text-zinc-400 mb-3">Description</h3>
+                            <p className="text-sm text-zinc-400 leading-relaxed font-medium">
+                                {product.description}
+                            </p>
+                        </div>
+
+                        <div className="space-y-6 bg-white/5 p-6 rounded-2xl border border-white/5">
+                            <h3 className="text-xs font-black uppercase tracking-widest text-white mb-2 flex items-center gap-2">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                Customization
+                            </h3>
+
+                            {/* Front Side */}
+                            <div>
+                                <label className="text-[10px] uppercase font-bold text-zinc-500 mb-2 block">Front Side Engraving</label>
+                                <input
+                                    type="text"
+                                    placeholder="Text, Name, Date..."
+                                    value={frontText}
+                                    onChange={(e) => setFrontText(e.target.value)}
+                                    className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-white/30 transition-colors"
+                                />
+                            </div>
+
+                            {/* Double Sided Toggle */}
+                            <div>
+                                <label className="flex items-center gap-3 cursor-pointer group/check select-none">
+                                    <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all duration-300 ${isDoubleSided ? 'bg-white border-white' : 'border-zinc-700 group-hover/check:border-zinc-500 bg-black'}`}>
+                                        {isDoubleSided && <svg className="w-3.5 h-3.5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>}
+                                    </div>
+                                    <input
+                                        type="checkbox"
+                                        className="hidden"
+                                        checked={isDoubleSided}
+                                        onChange={(e) => setIsDoubleSided(e.target.checked)}
+                                    />
+                                    <div>
+                                        <span className={`text-xs font-bold uppercase tracking-wide transition-colors ${isDoubleSided ? 'text-white' : 'text-zinc-500 group-hover/check:text-zinc-400'}`}>Double Sided Engraving</span>
+                                        {isDoubleSided && <span className="ml-2 text-[10px] font-black bg-white text-black px-1.5 py-0.5 rounded">+$5</span>}
+                                    </div>
+                                </label>
+                            </div>
+
+                            {/* Gift Box Toggle */}
+                            <div>
+                                <label className="flex items-center gap-3 cursor-pointer group/check select-none">
+                                    <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all duration-300 ${isGiftBox ? 'bg-white border-white' : 'border-zinc-700 group-hover/check:border-zinc-500 bg-black'}`}>
+                                        {isGiftBox && <svg className="w-3.5 h-3.5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>}
+                                    </div>
+                                    <input
+                                        type="checkbox"
+                                        className="hidden"
+                                        checked={isGiftBox}
+                                        onChange={(e) => setIsGiftBox(e.target.checked)}
+                                    />
+                                    <div>
+                                        <span className={`text-xs font-bold uppercase tracking-wide transition-colors ${isGiftBox ? 'text-white' : 'text-zinc-500 group-hover/check:text-zinc-400'}`}>Premium Gift Box</span>
+                                        {isGiftBox && <span className="ml-2 text-[10px] font-black bg-white text-black px-1.5 py-0.5 rounded">+$2</span>}
+                                    </div>
+                                </label>
+                            </div>
+
+                            {/* Back Side - Conditional */}
+                            <div className={`transition-all duration-500 ease-in-out overflow-hidden ${isDoubleSided ? 'max-h-32 opacity-100' : 'max-h-0 opacity-0'}`}>
+                                <label className="text-[10px] uppercase font-bold text-zinc-500 mb-2 block">Back Side Engraving</label>
+                                <input
+                                    type="text"
+                                    placeholder="Text for the back..."
+                                    value={backText}
+                                    onChange={(e) => setBackText(e.target.value)}
+                                    className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-white/30 transition-colors"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-8 pt-8 border-t border-white/10 flex items-center justify-between gap-6">
+                        <div className="flex flex-col">
+                            <span className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Total Price</span>
+                            <span className="text-3xl font-black text-white">${totalPrice}</span>
+                        </div>
+                        <button
+                            onClick={handleSubmit}
+                            className="flex-grow py-5 bg-white text-black font-black uppercase tracking-[0.2em] text-xs rounded-2xl hover:bg-zinc-200 transition-all flex items-center justify-center gap-3 group/btn silver-glow"
+                        >
+                            Add to Cart
+                            <svg className="w-5 h-5 transform group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default ProductModal;
