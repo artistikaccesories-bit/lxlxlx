@@ -15,7 +15,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, cartCount, onO
         <div className="flex justify-between items-center h-20">
           <div className="flex items-center cursor-pointer gap-3 group" onClick={() => setActiveTab('home')}>
             <div className="w-10 h-10 flex items-center justify-center transition-all duration-500 group-hover:scale-110">
-              <img src="/images/logo.webp" alt="LaserArtLB" className="w-full h-full object-contain filter drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]" />
+              <img src="/lxlxlx/images/logo.webp" alt="LaserArtLB" className="w-full h-full object-contain filter drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]" />
             </div>
             <div className="flex flex-col">
               <span className="text-lg font-black tracking-[0.2em] font-heading silver-gradient leading-none">
