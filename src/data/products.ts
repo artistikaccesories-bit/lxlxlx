@@ -7,7 +7,7 @@ export const PRODUCTS: Product[] = [
         price: 10,
         category: 'keychain',
         description: 'Stainless steel rectangle shape with laser engraved custom Lebanese car plate design. Essential, durable, and personalized.',
-        image: '/lxlxlx/images/product1.jpg',
+        image: '/images/product1.jpg',
         stock: 4
     },
     {
@@ -17,7 +17,7 @@ export const PRODUCTS: Product[] = [
         originalPrice: 18,
         category: 'keychain',
         description: 'Scan and play. A custom keychain with your favorite song\'s Spotify code and the album art laser engraved. A playable memory in steel.',
-        image: '/lxlxlx/images/product2.jpg',
+        image: '/images/product2.jpg',
         stock: 2
     },
     {
@@ -26,7 +26,7 @@ export const PRODUCTS: Product[] = [
         price: 12,
         category: 'keychain',
         description: 'A symbol of connection. Rectangle stainless steel keychain designed for meaningful quotes, dates, or matching couple designs. Carry your story with you.',
-        image: '/lxlxlx/images/product3.jpg',
+        image: '/images/product3.jpg',
         stock: 6
     },
     {
@@ -35,7 +35,7 @@ export const PRODUCTS: Product[] = [
         price: 20,
         category: 'tag',
         description: 'Safety meets style. Durable custom dog tag engraved with your pet\'s name and your phone number. Built to last through every adventure.',
-        image: '/lxlxlx/images/p4.jpg',
+        image: '/images/p4.jpg',
         stock: 3
     },
     {
@@ -44,7 +44,7 @@ export const PRODUCTS: Product[] = [
         price: 15,
         category: 'keychain',
         description: 'Minimalist perfection. A 4cm diameter round keychain awaiting your custom image, logo, or text. Perfectly balanced and precision engraved.',
-        image: '/lxlxlx/images/p5.jpg.jpg',
+        image: '/images/p5.jpg.jpg',
         stock: 5
     },
     {
@@ -53,7 +53,7 @@ export const PRODUCTS: Product[] = [
         price: 18,
         category: 'tool',
         description: 'Utility refined. A robust stainless steel bottle opener that doubles as a personal statement. Engrave any text or name for a gift that will actually be used.',
-        image: '/lxlxlx/images/p6.jpg.jpg',
+        image: '/images/p6.jpg.jpg',
         stock: 2
     },
     {
@@ -62,7 +62,7 @@ export const PRODUCTS: Product[] = [
         price: 10,
         category: 'tag',
         description: 'Stainless steel tag shape designed for couples. Deeply engraved with your custom text. A modern symbol of connection.',
-        image: '/lxlxlx/images/product7.jpeg',
+        image: '/images/product7.jpeg',
         stock: 4
     },
     {
@@ -71,7 +71,7 @@ export const PRODUCTS: Product[] = [
         price: 16,
         category: 'keychain',
         description: 'Two halves that complete each other. A puzzle-piece heart design for couples that fit perfectly together.',
-        image: '/lxlxlx/images/product8.jpeg',
+        image: '/images/product8.jpeg',
         stock: 3
     },
     {
@@ -80,7 +80,7 @@ export const PRODUCTS: Product[] = [
         price: 10,
         category: 'keychain',
         description: 'Round 4cm diameter circle with custom logo. Simple, elegant, and perfect for branding or personal designs.',
-        image: '/lxlxlx/images/product9.jpeg',
+        image: '/images/product9.jpeg',
         stock: 5
     }
 ];
