@@ -58,6 +58,9 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ onAddToCart }) => {
                 <h3 className="text-xl font-black font-heading silver-gradient mb-2">{product.name}</h3>
                 <div className="flex items-center gap-2">
                   <p className="text-xs text-zinc-500 font-bold uppercase tracking-[0.2em]">{product.category}</p>
+                  {product.isBestSeller && (
+                    <span className="text-[10px] text-yellow-400 font-bold uppercase tracking-wider bg-yellow-400/10 px-1.5 py-0.5 rounded border border-yellow-400/20 shadow-[0_0_10px_rgba(250,204,21,0.2)]">Best Seller</span>
+                  )}
                   {product.originalPrice && (
                     <span className="text-[10px] text-red-500 font-bold uppercase tracking-wider bg-red-500/10 px-1.5 py-0.5 rounded">Sale</span>
                   )}

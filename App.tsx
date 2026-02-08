@@ -8,10 +8,11 @@ import CartDrawer from './components/CartDrawer.tsx';
 import AboutUs from './components/AboutUs.tsx';
 import Services from './components/Services.tsx';
 import ComingSoon from './components/ComingSoon.tsx';
+import AICustomizer from './AICustomizer.tsx';
 import { Product, CartItem } from './types.ts';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'home' | 'customize'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'customize' | 'ai-studio'>('home');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [deliveryType, setDeliveryType] = useState<'pickup' | 'standard' | 'express'>('standard');
@@ -21,7 +22,7 @@ function App() {
     if (typeof window.gtag !== 'undefined') {
       window.gtag('config', 'G-FCJ59GJJLB', {
         page_path: `/${activeTab}`,
-        page_title: activeTab === 'home' ? 'Home' : 'Customize',
+        page_title: activeTab === 'home' ? 'Home' : activeTab === 'customize' ? 'Shop' : 'AI Studio',
       });
     }
   }, [activeTab]);
@@ -104,6 +105,12 @@ function App() {
       {activeTab === 'customize' && (
         <main>
           <ProductGallery onAddToCart={addToCart} />
+        </main>
+      )}
+
+      {activeTab === 'ai-studio' && (
+        <main>
+          <AICustomizer />
         </main>
       )}
 

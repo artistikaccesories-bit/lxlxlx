@@ -18,7 +18,8 @@ export const PRODUCTS: Product[] = [
         category: 'keychain',
         description: 'Scan and play. A custom keychain with your favorite song\'s Spotify code and the album art laser engraved. A playable memory in steel.',
         image: '/images/product2.jpg',
-        stock: 2
+        stock: 2,
+        isBestSeller: true
     },
     {
         id: '3',
