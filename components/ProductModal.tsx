@@ -60,7 +60,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
                 </button>
 
                 {/* Image Section */}
-                <div className="w-full md:w-1/2 h-[35vh] md:h-auto md:aspect-auto relative bg-zinc-900 flex items-center justify-center overflow-hidden group/image flex-shrink-0">
+                <div className="w-full md:w-1/2 h-48 md:h-auto md:aspect-auto relative bg-zinc-900 flex items-center justify-center overflow-hidden group/image flex-shrink-0">
                     <img
                         src={product.image}
                         alt={product.name}
@@ -88,7 +88,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
 
 
                 {/* Content Section */}
-                <div className="w-full md:w-1/2 flex-1 p-6 md:p-12 flex flex-col overflow-y-auto custom-scrollbar bg-zinc-950/50 min-h-0">
+                <div className="w-full md:w-1/2 flex-1 p-6 md:p-12 flex flex-col overflow-y-auto custom-scrollbar bg-zinc-950/50 min-h-0 relative z-10">
                     <div className="flex justify-between items-start mb-8">
                         <div>
                             <h2 className="text-3xl lg:text-4xl font-black font-heading silver-gradient mb-2">{product.name}</h2>
