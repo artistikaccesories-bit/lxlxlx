@@ -15,6 +15,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
     const [isDoubleSided, setIsDoubleSided] = useState(false);
     const [isGiftBox, setIsGiftBox] = useState(false);
     const [objectFit, setObjectFit] = useState<'cover' | 'contain'>('cover');
+    const [randomStock, setRandomStock] = useState(0);
 
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -22,6 +23,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
 
     useEffect(() => {
         if (isOpen) {
+            setRandomStock(Math.floor(Math.random() * 8) + 2); // Random between 2 and 9
             document.body.style.overflow = 'hidden';
             setCurrentImageIndex(0);
         } else {
@@ -180,12 +182,10 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
                                     <span className="text-xs text-red-500 font-bold uppercase tracking-wider bg-red-500/10 px-2 py-0.5 rounded">Sale</span>
                                 )}
                             </div>
-                            {product.stock && (
-                                <div className="flex items-center gap-2 mt-2">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
-                                    <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest">Only {product.stock} left</span>
-                                </div>
-                            )}
+                            <div className="flex items-center gap-2 mt-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
+                                <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest">Only {randomStock} left</span>
+                            </div>
                         </div>
                         <button onClick={onClose} className="hidden md:block p-2 hover:bg-white/10 rounded-full transition-colors">
                             <svg className="w-6 h-6 text-zinc-500 hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>

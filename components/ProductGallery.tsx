@@ -8,20 +8,10 @@ interface ProductGalleryProps {
   products: Product[];
   onAddToCart: (p: Product, frontText: string, backText: string | undefined, isDoubleSided: boolean, isGiftBox: boolean) => void;
   onBack?: () => void;
-  initialSelectedProductId?: string;
 }
 
-const ProductGallery: React.FC<ProductGalleryProps> = ({ products, onAddToCart, onBack, initialSelectedProductId }) => {
+const ProductGallery: React.FC<ProductGalleryProps> = ({ products, onAddToCart, onBack }) => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-
-  React.useEffect(() => {
-    if (initialSelectedProductId) {
-      const product = products.find(p => p.id === initialSelectedProductId);
-      if (product) {
-        setSelectedProduct(product);
-      }
-    }
-  }, [initialSelectedProductId, products]);
 
   return (
     <div id="product-gallery" className="py-24 px-4 max-w-7xl mx-auto relative">

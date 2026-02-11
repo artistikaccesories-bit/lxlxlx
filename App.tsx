@@ -142,7 +142,7 @@ function App() {
 
       {activeTab === 'keychains' && (
         <main>
-          <ProductGallery products={products} onAddToCart={addToCart} onBack={() => handleTabChange('home')} initialSelectedProductId="2" />
+          <ProductGallery products={products} onAddToCart={addToCart} onBack={() => handleTabChange('home')} />
         </main>
       )}
 

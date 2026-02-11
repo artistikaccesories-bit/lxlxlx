@@ -11,7 +11,7 @@ const GallerySelector: React.FC<GallerySelectorProps> = ({ onSelectCategory }) =
             id: 'keychains',
             title: 'Custom Keychains',
             description: 'Precision laser-engraved stainless steel accessories.',
-            image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=600', // Abstract/Metal placeholder
+            image: '/images/product2.jpg', // Spotify Keychain
             action: 'View Collection',
             available: true
         },
@@ -50,13 +50,13 @@ const GallerySelector: React.FC<GallerySelectorProps> = ({ onSelectCategory }) =
                         <div
                             key={cat.id}
                             onClick={() => cat.available && onSelectCategory(cat.id as any)}
-                            className={`group relative aspect-[4/5] overflow-hidden rounded-[2rem] border border-white/10 transition-all duration-500 ${cat.available ? 'cursor-pointer hover:border-white/30 hover:scale-[1.02]' : 'opacity-60 cursor-not-allowed grayscale'}`}
+                            className={`group relative aspect-[4/5] overflow-hidden rounded-[2rem] border border-white/10 transition-all duration-500 ${cat.available ? 'cursor-pointer hover:border-white/30 hover:scale-[1.02]' : 'opacity-60 cursor-not-allowed'}`}
                         >
                             <div className="absolute inset-0 bg-zinc-900">
                                 <img
                                     src={cat.image}
                                     alt={cat.title}
-                                    className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-700"
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-deep-black via-deep-black/20 to-transparent"></div>
                             </div>
