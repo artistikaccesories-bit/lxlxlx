@@ -28,8 +28,8 @@ const GallerySelector: React.FC<GallerySelectorProps> = ({ onSelectCategory }) =
             title: 'Portrait Silhouettes',
             description: 'Your favorite memories, immortalized in metal.',
             image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=600', // Portrait placeholder
-            action: 'Coming Soon',
-            available: false
+            action: 'View Collection',
+            available: true
         }
     ];
 

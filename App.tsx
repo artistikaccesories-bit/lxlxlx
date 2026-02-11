@@ -11,12 +11,12 @@ import Services from './components/Services.tsx';
 
 import GallerySelector from './components/GallerySelector.tsx';
 import CarSilhouettes from './components/CarSilhouettes.tsx';
-import CarTeaser from './components/CarTeaser.tsx';
+import PortraitSilhouettes from './components/PortraitSilhouettes.tsx';
 import { Product, CartItem } from './types.ts';
 import { PRODUCTS as STATIC_PRODUCTS } from './src/data/products.ts';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'home' | 'customize' | 'car-silhouettes'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'keychains' | 'car-silhouettes' | 'portraits' | 'customize'>('home');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [deliveryType, setDeliveryType] = useState<'pickup' | 'standard' | 'express'>('standard');
@@ -48,25 +48,18 @@ function App() {
   }, []);
 
   // Update URL function
-  const handleTabChange = (tab: 'home' | 'customize' | 'car-silhouettes') => {
+  const handleTabChange = (tab: 'home' | 'keychains' | 'car-silhouettes' | 'portraits' | 'customize') => {
     setActiveTab(tab);
     window.history.pushState({ tab }, '', tab === 'home' ? '/' : `/${tab}`);
   };
 
   const handleGallerySelection = (category: 'keychains' | 'cars' | 'portraits') => {
     if (category === 'keychains') {
-      const element = document.getElementById('product-gallery');
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      } else {
-        handleTabChange('home');
-        setTimeout(() => {
-          const el = document.getElementById('product-gallery');
-          if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }, 100);
-      }
+      handleTabChange('keychains');
     } else if (category === 'cars') {
       handleTabChange('car-silhouettes');
+    } else if (category === 'portraits') {
+      handleTabChange('portraits');
     }
   };
 
@@ -144,8 +137,18 @@ function App() {
           <GallerySelector onSelectCategory={handleGallerySelection} />
           <AboutUs />
           <Services />
-          <CarTeaser onExplore={() => handleTabChange('car-silhouettes')} />
-          <ProductGallery products={products} onAddToCart={addToCart} />
+        </main>
+      )}
+
+      {activeTab === 'keychains' && (
+        <main>
+          <ProductGallery products={products} onAddToCart={addToCart} onBack={() => handleTabChange('home')} />
+        </main>
+      )}
+
+      {activeTab === 'portraits' && (
+        <main>
+          <PortraitSilhouettes onBack={() => handleTabChange('home')} />
         </main>
       )}
 
