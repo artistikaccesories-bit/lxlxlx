@@ -29,16 +29,20 @@ const Hero: React.FC<HeroProps> = ({ onExplore }) => {
   }, []);
 
   return (
-    <div className="relative min-h-[85vh] flex items-center overflow-hidden bg-black">
+    <div className="relative min-h-[90vh] flex items-center overflow-hidden bg-deep-black">
+      {/* Dynamic Background */}
       <div className="absolute inset-0 z-0">
         <ParticlesBackground />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-zinc-900/40 via-black to-black"></div>
-        <div className="absolute top-1/4 -right-20 w-[600px] h-[600px] bg-white/5 rounded-full blur-[150px]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#050505_80%)]"></div>
+
+        {/* Animated Glow Orbs - Monochrome */}
+        <div className="absolute top-1/4 -right-20 w-[500px] h-[500px] bg-white/5 rounded-full blur-[120px] animate-float opacity-30"></div>
+        <div className="absolute -bottom-20 -left-20 w-[600px] h-[600px] bg-white/5 rounded-full blur-[150px] animate-float opacity-30" style={{ animationDelay: '2s' }}></div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center animate-up">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         {/* Animated Customer Counter */}
-        <div className="flex items-center gap-4 mb-8 bg-white/5 p-2 pr-6 rounded-full w-fit mx-auto border border-white/10 backdrop-blur-md">
+        <div className="flex items-center gap-4 mb-10 bg-glass-black border border-white/5 p-2 pr-6 rounded-full w-fit mx-auto backdrop-blur-md animate-slide-up" style={{ animationDelay: '0.1s' }}>
           <div className="flex -space-x-4">
             {[
               'https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?q=80&w=150&auto=format&fit=crop', // Man with glasses
@@ -46,39 +50,44 @@ const Hero: React.FC<HeroProps> = ({ onExplore }) => {
               'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=150&auto=format&fit=crop', // Man portrait
               'https://images.unsplash.com/photo-1595152772835-219674b2a8a6?q=80&w=150&auto=format&fit=crop'  // Smiling man
             ].map((src, i) => (
-              <div key={i} className="w-10 h-10 rounded-full border-2 border-black bg-zinc-800 overflow-hidden">
+              <div key={i} className="w-10 h-10 rounded-full border-2 border-deep-black bg-zinc-800 overflow-hidden ring-2 ring-laser-purple/20">
                 <img src={src} alt={`Customer ${i + 1}`} loading="lazy" decoding="async" className="w-full h-full object-cover" />
               </div>
             ))}
           </div>
-          <div className="text-left">
-            <span className="block text-white text-sm"><span className="silver-gradient font-semibold">{count}+</span> Happy</span>
-            <span className="block text-zinc-400 text-xs">Customers</span>
+          <div className="text-left pl-2">
+            <span className="block text-white text-sm font-bold"><span className="text-transparent bg-clip-text bg-gradient-to-r from-laser-blue to-laser-purple">{count}+</span> Happy</span>
+            <span className="block text-zinc-500 text-[10px] tracking-wider uppercase">Customers</span>
           </div>
         </div>
 
-        <h1 className="text-6xl md:text-[9rem] font-black mb-8 tracking-tighter leading-[0.85] font-heading silver-gradient">
+        <h1 className="text-6xl md:text-[9rem] font-black mb-8 tracking-tighter leading-[0.85] font-heading text-transparent bg-clip-text bg-gradient-to-b from-white via-zinc-200 to-zinc-600 animate-slide-up" style={{ animationDelay: '0.2s' }}>
           CRAFT YOUR <br />
-          LEGACY.
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-laser-blue via-white to-laser-purple drop-shadow-[0_0_30px_rgba(0,243,255,0.3)]">LEGACY.</span>
         </h1>
 
-        <p className="text-zinc-400 text-lg md:text-xl max-w-2xl mx-auto mb-14 leading-relaxed tracking-tight font-medium">
+        <p className="text-zinc-400 text-lg md:text-xl max-w-2xl mx-auto mb-14 leading-relaxed tracking-tight font-medium animate-slide-up" style={{ animationDelay: '0.3s' }}>
           Premium stainless steel engraving for those who value permanence. <br />
           <span className="text-white font-bold">Keychains • Accessories • Gifts</span>
         </p>
 
-        <div className="flex justify-center">
+        <div className="flex justify-center gap-6 animate-slide-up" style={{ animationDelay: '0.4s' }}>
           <button
             onClick={onExplore}
-            className="px-20 py-6 bg-white text-black font-black uppercase tracking-[0.4em] text-[10px] rounded-full hover:bg-zinc-200 transition-all transform hover:-translate-y-1 active:scale-95 silver-glow"
+            className="group relative px-12 py-5 overflow-hidden rounded-full bg-white text-black font-black uppercase tracking-[0.2em] text-sm hover:scale-105 transition-transform duration-300"
           >
-            Start Creating
+            <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-laser-blue to-laser-purple opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <span className="relative z-10 group-hover:text-white transition-colors duration-300">Start Creating</span>
+          </button>
+
+          <button className="px-12 py-5 rounded-full border border-zinc-800 text-zinc-400 font-bold uppercase tracking-[0.2em] text-sm hover:border-laser-blue hover:text-white hover:bg-laser-blue/5 transition-all duration-300">
+            View Gallery
           </button>
         </div>
       </div>
 
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-20">
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-30 text-laser-blue">
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
       </div>
     </div>
   );

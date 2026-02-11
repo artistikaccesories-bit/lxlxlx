@@ -10,35 +10,43 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, cartCount, onOpenCart }) => {
   return (
-    <nav className="sticky top-0 z-50 glass">
+    <nav className="sticky top-0 z-50 glass-nav transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           <div className="flex items-center cursor-pointer gap-3 group" onClick={() => setActiveTab('home')}>
-            <div className="w-10 h-10 flex items-center justify-center transition-all duration-500 group-hover:scale-110">
-              <img src="/images/logo.webp" alt="LaserArtLB" className="w-full h-full object-contain filter drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]" />
+            <div className="w-10 h-10 flex items-center justify-center relative">
+              <div className="absolute inset-0 bg-white/5 rounded-full blur-md group-hover:bg-white/10 transition-all duration-500"></div>
+              <img src="/images/logo.webp" alt="LaserArtLB" className="w-full h-full object-contain relative z-10 filter brightness-200 grayscale" />
             </div>
             <div className="flex flex-col">
-              <span className="text-lg font-black tracking-[0.2em] font-heading silver-gradient leading-none">
-                LASERARTLB
+              <span className="text-xl font-black tracking-[0.15em] font-heading text-white leading-none relative">
+                <span className="absolute -inset-1 blur-sm bg-white/10 opacity-0 group-hover:opacity-50 transition-opacity duration-300"></span>
+                <span className="relative z-10">LASERARTLB</span>
               </span>
-              <span className="text-[7px] font-bold text-zinc-600 tracking-[0.4em] uppercase">Beirut • Lebanon</span>
+              <span className="text-[9px] font-bold text-zinc-600 tracking-[0.4em] uppercase opacity-80 decoration-zinc-600 underline decoration-1 underline-offset-2 group-hover:text-zinc-400 transition-colors">Studio</span>
             </div>
           </div>
 
-          <div className="flex items-center space-x-4 md:space-x-8">
-            <button onClick={() => setActiveTab('home')} className={`text-[9px] uppercase tracking-[0.3em] font-black transition-all ${activeTab === 'home' ? 'text-white' : 'text-zinc-600 hover:text-white'}`}>Home</button>
-            <button onClick={() => setActiveTab('customize')} className={`text-[9px] uppercase tracking-[0.3em] font-black transition-all ${activeTab === 'customize' ? 'text-white' : 'text-zinc-600 hover:text-white'}`}>Shop</button>
-            <div className="h-4 w-px bg-zinc-800"></div>
-            <button onClick={() => setActiveTab('car-silhouettes')} className={`text-[9px] uppercase tracking-[0.3em] font-black transition-all ${activeTab === 'car-silhouettes' ? 'text-white' : 'text-zinc-600 hover:text-white'}`}>
-              Car Art
-            </button>
+          <div className="flex items-center space-x-6 md:space-x-10">
+            {['home', 'customize', 'car-silhouettes'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab as any)}
+                className={`relative py-2 text-[10px] uppercase tracking-[0.25em] font-bold transition-all duration-300 group ${activeTab === tab ? 'text-white' : 'text-zinc-600 hover:text-white'
+                  }`}
+              >
+                {tab === 'customize' ? 'Shop' : tab === 'car-silhouettes' ? 'Car Art' : 'Home'}
+                <span className={`absolute bottom-0 left-0 w-full h-[1px] bg-white transform origin-left transition-transform duration-300 ${activeTab === tab ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
+              </button>
+            ))}
           </div>
 
           <div className="flex items-center gap-6">
-            <button onClick={onOpenCart} className="relative p-2 text-zinc-500 hover:text-white transition-colors">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+            <button onClick={onOpenCart} className="relative p-2 text-zinc-400 hover:text-white transition-colors group">
+              <div className="absolute inset-0 bg-white/5 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300"></div>
+              <svg className="w-6 h-6 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
               {cartCount > 0 && (
-                <span className="absolute top-0 right-0 w-4 h-4 bg-white text-black text-[9px] font-black rounded-full flex items-center justify-center animate-pulse">
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-white text-black text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse-slow">
                   {cartCount}
                 </span>
               )}

@@ -68,11 +68,15 @@ const CarSilhouettes: React.FC<CarSilhouettesProps> = ({ onBack }) => {
     };
 
     return (
-        <div className="min-h-screen pt-24 pb-12 px-4 bg-zinc-950 text-white font-sans relative">
+        <div className="min-h-screen pt-24 pb-12 px-4 bg-deep-black text-white font-sans relative overflow-hidden">
+            {/* Background Effects */}
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/5 rounded-full blur-[150px] pointer-events-none opacity-20"></div>
+            <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-white/5 rounded-full blur-[150px] pointer-events-none opacity-20"></div>
+
             {/* Mobile Back Button */}
             <button
                 onClick={onBack}
-                className="md:hidden fixed top-28 left-4 z-50 flex items-center gap-2 text-zinc-400 hover:text-white transition-colors bg-black/50 backdrop-blur-md px-3 py-2 rounded-full border border-white/10"
+                className="md:hidden fixed top-28 left-4 z-50 flex items-center gap-2 text-zinc-400 hover:text-white transition-colors bg-black/60 backdrop-blur-md px-3 py-2 rounded-full border border-white/10"
                 aria-label="Back to home"
             >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -81,15 +85,15 @@ const CarSilhouettes: React.FC<CarSilhouettesProps> = ({ onBack }) => {
                 <span className="text-xs font-bold uppercase tracking-widest">Back</span>
             </button>
 
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-7xl mx-auto relative z-10">
                 <div className="text-center mb-16">
 
-                    <h2 className="text-4xl md:text-7xl font-black font-heading text-white mb-6 tracking-tighter">
-                        THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-zinc-200 to-zinc-600">SILHOUETTE</span>
+                    <h2 className="text-4xl md:text-7xl font-black font-heading text-white mb-6 tracking-tighter leading-none">
+                        THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 to-zinc-500">SILHOUETTE</span>
                         <br />
-                        <span className="text-zinc-800">PROJECT</span>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-zinc-500 to-white">PROJECT</span>
                     </h2>
-                    <p className="text-zinc-400 text-lg leading-relaxed max-w-xl mx-auto">
+                    <p className="text-zinc-400 text-lg leading-relaxed max-w-xl mx-auto font-light">
                         Transform your passion into a masterpiece. Laser-cut steel profiles of your favorite machine, available in three perfect sizes.
                     </p>
                 </div>
@@ -97,25 +101,30 @@ const CarSilhouettes: React.FC<CarSilhouettesProps> = ({ onBack }) => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     {/* Visual Preview */}
                     <div className="relative group">
-                        <div className="absolute inset-0 bg-white/5 blur-3xl rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-1000 animate-pulse"></div>
-                        <div className="aspect-video bg-zinc-900 rounded-[2rem] flex items-center justify-center relative overflow-hidden ring-1 ring-white/5 group-hover:ring-white/10 transition-all">
-                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-zinc-800/10 via-zinc-950/50 to-zinc-950"></div>
+                        <div className="absolute inset-0 bg-white/10 blur-3xl rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-1000 animate-pulse"></div>
+                        <div className="aspect-video bg-zinc-900/50 backdrop-blur-sm rounded-[2rem] flex items-center justify-center relative overflow-hidden ring-1 ring-white/10 group-hover:ring-white/20 transition-all shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                            {/* Grid overlay */}
+                            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#050505_100%)]"></div>
 
-                            <div className="w-full h-full flex items-center justify-center">
+                            <div className="w-full h-full flex items-center justify-center relative z-10">
                                 {matchedDesign ? (
-                                    <div className="w-full h-full bg-contain bg-no-repeat bg-center transition-all duration-700"
+                                    <div className="w-full h-full bg-contain bg-no-repeat bg-center transition-all duration-700 filter drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] grayscale"
                                         style={{ backgroundImage: `url('${matchedDesign.image}')` }}>
                                     </div>
                                 ) : (
-                                    <div className="absolute inset-0 bg-[url('/images/car.jpeg')] bg-cover bg-center transition-all duration-700" loading="lazy"></div>
+                                    <div className="absolute inset-0 bg-[url('/images/car.jpeg')] bg-cover bg-center transition-all duration-700 opacity-50 grayscale group-hover:grayscale-0 group-hover:opacity-80" loading="lazy"></div>
                                 )}
                             </div>
                         </div>
                     </div>
 
                     {/* Configuration Panel */}
-                    <div className="bg-white/5 backdrop-blur-sm rounded-[2rem] p-6 md:p-12">
-                        <h3 className="text-xl md:text-2xl font-black font-heading mb-6 md:mb-8">Configure Your Art</h3>
+                    <div className="bg-glass-black backdrop-blur-xl rounded-[2rem] p-6 md:p-12 border border-white/5 shadow-2xl">
+                        <h3 className="text-xl md:text-2xl font-black font-heading mb-6 md:mb-8 flex items-center gap-3">
+                            <span className="w-2 h-8 bg-white rounded-full"></span>
+                            Configure Your Art
+                        </h3>
 
                         {/* Size Selection */}
                         <div className="mb-6 md:mb-10">
@@ -126,13 +135,14 @@ const CarSilhouettes: React.FC<CarSilhouettesProps> = ({ onBack }) => {
                                         key={size}
                                         onClick={() => setSelectedSize(size)}
                                         className={`p-2 md:p-4 rounded-lg md:rounded-xl border transition-all duration-300 relative overflow-hidden group ${selectedSize === size
-                                            ? 'bg-white border-white text-black'
-                                            : 'bg-black/50 border-white/10 text-zinc-400 hover:border-white/30'
+                                            ? 'bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.2)]'
+                                            : 'bg-black/40 border-white/10 text-zinc-500 hover:border-white/30 hover:text-zinc-300'
                                             }`}
                                     >
-                                        <span className="block text-[10px] md:text-sm font-black uppercase mb-0.5 md:mb-1">{pricing[size].size.split(' ')[0]}</span>
-                                        <span className="block text-[8px] md:text-xs opacity-70 mb-1 md:mb-2">{pricing[size].size.match(/\((.*?)\)/)?.[1]}</span>
-                                        <span className={`block text-sm md:text-lg font-mono font-bold ${selectedSize === size ? 'text-black' : 'text-white'}`}>
+                                        <div className={`absolute inset-0 bg-white/10 opacity-0 transition-opacity ${selectedSize === size ? 'opacity-100' : ''}`}></div>
+                                        <span className="relative z-10 block text-[10px] md:text-sm font-black uppercase mb-0.5 md:mb-1">{pricing[size].size.split(' ')[0]}</span>
+                                        <span className="relative z-10 block text-[8px] md:text-xs opacity-70 mb-1 md:mb-2">{pricing[size].size.match(/\((.*?)\)/)?.[1]}</span>
+                                        <span className={`relative z-10 block text-sm md:text-lg font-mono font-bold ${selectedSize === size ? 'text-black' : 'text-zinc-400'}`}>
                                             ${pricing[size].price}
                                         </span>
                                     </button>
@@ -143,16 +153,17 @@ const CarSilhouettes: React.FC<CarSilhouettesProps> = ({ onBack }) => {
                         {/* Car Model Input */}
                         <div className="mb-8 md:mb-10">
                             <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-4 block">Car Model</label>
-                            <div className="relative">
+                            <div className="relative group/input">
+                                <div className="absolute -inset-0.5 bg-white rounded-xl opacity-0 group-focus-within/input:opacity-50 transition-opacity duration-300 blur-sm"></div>
                                 <input
                                     type="text"
                                     value={carModel}
                                     onChange={(e) => setCarModel(e.target.value)}
                                     placeholder="e.g. Porsche 911 GT3 RS..."
-                                    className="w-full bg-black/50 border border-white/10 rounded-xl px-5 py-3 md:px-6 md:py-4 text-white placeholder:text-zinc-700 focus:outline-none focus:border-white/50 transition-all text-base md:text-lg"
+                                    className="relative w-full bg-black/80 border border-white/10 rounded-xl px-5 py-3 md:px-6 md:py-4 text-white placeholder:text-zinc-700 focus:outline-none focus:border-white transition-all text-base md:text-lg"
                                 />
                                 {matchedDesign && (
-                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-green-500">
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-white animate-pulse">
                                         <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
                                     </div>
                                 )}
@@ -173,18 +184,18 @@ const CarSilhouettes: React.FC<CarSilhouettesProps> = ({ onBack }) => {
                                     placeholder="PROMO CODE"
                                     value={promoCode}
                                     onChange={(e) => setPromoCode(e.target.value)}
-                                    className="bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white flex-grow focus:outline-none focus:border-white/30 uppercase"
+                                    className="bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white flex-grow focus:outline-none focus:border-white/30 uppercase focus:bg-white/5 transition-colors"
                                 />
                                 <button
                                     onClick={handleApplyPromo}
                                     disabled={!promoCode || discountApplied}
-                                    className="px-4 py-2 bg-white/10 text-white text-xs font-bold rounded-lg hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="px-4 py-2 bg-white/10 text-white text-xs font-bold rounded-lg hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                 >
                                     {discountApplied ? 'APPLIED' : 'APPLY'}
                                 </button>
                             </div>
                             {promoError && <p className="text-red-500 text-xs mt-2">{promoError}</p>}
-                            {discountApplied && <p className="text-green-500 text-xs mt-2">Discount Applied: 20% OFF</p>}
+                            {discountApplied && <p className="text-white text-xs mt-2">Discount Applied: 20% OFF</p>}
                         </div>
 
 
@@ -197,7 +208,7 @@ const CarSilhouettes: React.FC<CarSilhouettesProps> = ({ onBack }) => {
                                         {discountApplied && (
                                             <span className="block text-xl md:text-2xl font-bold text-zinc-500 line-through decoration-red-500 decoration-2">${pricing[selectedSize].price}</span>
                                         )}
-                                        <span className={`block text-3xl md:text-4xl font-black font-heading silver-gradient ${discountApplied ? 'text-green-500' : ''}`}>
+                                        <span className={`block text-3xl md:text-4xl font-black font-heading text-white`}>
                                             ${getCurrentPrice()}
                                         </span>
                                     </div>
@@ -205,9 +216,10 @@ const CarSilhouettes: React.FC<CarSilhouettesProps> = ({ onBack }) => {
                                 <button
                                     onClick={handleRequest}
                                     disabled={!carModel}
-                                    className="w-full md:w-auto px-10 py-4 md:px-12 md:py-5 bg-white text-black font-black uppercase tracking-[0.2em] text-[10px] md:text-xs rounded-xl hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]"
+                                    className="group relative w-full md:w-auto px-10 py-4 md:px-12 md:py-5 bg-white text-black font-black uppercase tracking-[0.2em] text-[10px] md:text-xs rounded-xl overflow-hidden hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all duration-300"
                                 >
-                                    {matchedDesign ? 'Order Design' : 'Request Design'}
+                                    <div className="absolute inset-0 bg-zinc-200 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                    <span className="relative z-10 group-hover:text-black transition-colors duration-300">{matchedDesign ? 'Order Design' : 'Request Design'}</span>
                                 </button>
                             </div>
                         </div>
