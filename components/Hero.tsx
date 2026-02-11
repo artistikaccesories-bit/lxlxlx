@@ -61,20 +61,20 @@ const Hero: React.FC<HeroProps> = ({ onExplore }) => {
           </div>
         </div>
 
-        <h1 className="text-6xl md:text-[9rem] font-black mb-8 tracking-tighter leading-[0.85] font-heading text-transparent bg-clip-text bg-gradient-to-b from-white via-zinc-200 to-zinc-600 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+        <h1 className="text-4xl md:text-[9rem] font-black mb-6 md:mb-8 tracking-tighter leading-[0.9] font-heading text-transparent bg-clip-text bg-gradient-to-b from-white via-zinc-200 to-zinc-600 animate-slide-up" style={{ animationDelay: '0.2s' }}>
           CRAFT YOUR <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-laser-blue via-white to-laser-purple drop-shadow-[0_0_30px_rgba(0,243,255,0.3)]">LEGACY.</span>
         </h1>
 
-        <p className="text-zinc-400 text-lg md:text-xl max-w-2xl mx-auto mb-14 leading-relaxed tracking-tight font-medium animate-slide-up" style={{ animationDelay: '0.3s' }}>
+        <p className="text-zinc-400 text-base md:text-xl max-w-2xl mx-auto mb-8 md:mb-14 leading-relaxed tracking-tight font-medium animate-slide-up" style={{ animationDelay: '0.3s' }}>
           Premium stainless steel engraving for those who value permanence. <br />
           <span className="text-white font-bold">Keychains • Accessories • Gifts</span>
         </p>
 
-        <div className="flex justify-center gap-6 animate-slide-up" style={{ animationDelay: '0.4s' }}>
+        <div className="flex flex-col sm:flex-row justify-center gap-4 md:gap-6 animate-slide-up" style={{ animationDelay: '0.4s' }}>
           <button
             onClick={onExplore}
-            className="group relative px-12 py-5 overflow-hidden rounded-full bg-white text-black font-black uppercase tracking-[0.2em] text-sm hover:scale-105 transition-transform duration-300"
+            className="group relative px-8 py-4 md:px-12 md:py-5 overflow-hidden rounded-full bg-white text-black font-black uppercase tracking-[0.2em] text-xs md:text-sm hover:scale-105 transition-transform duration-300"
           >
             <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-laser-blue to-laser-purple opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <span className="relative z-10 group-hover:text-white transition-colors duration-300">Start Creating</span>
@@ -85,7 +85,7 @@ const Hero: React.FC<HeroProps> = ({ onExplore }) => {
               const element = document.getElementById('gallery-selector');
               if (element) element.scrollIntoView({ behavior: 'smooth' });
             }}
-            className="px-12 py-5 rounded-full border border-zinc-800 text-zinc-400 font-bold uppercase tracking-[0.2em] text-sm hover:border-laser-blue hover:text-white hover:bg-laser-blue/5 transition-all duration-300"
+            className="px-8 py-4 md:px-12 md:py-5 rounded-full border border-zinc-800 text-zinc-400 font-bold uppercase tracking-[0.2em] text-xs md:text-sm hover:border-laser-blue hover:text-white hover:bg-laser-blue/5 transition-all duration-300"
           >
             View Gallery
           </button>
