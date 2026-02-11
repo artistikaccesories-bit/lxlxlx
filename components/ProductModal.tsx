@@ -15,7 +15,8 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
     const [isDoubleSided, setIsDoubleSided] = useState(false);
     const [isGiftBox, setIsGiftBox] = useState(false);
     const [objectFit, setObjectFit] = useState<'cover' | 'contain'>('cover');
-    const [randomStock, setRandomStock] = useState(0);
+    const [stock, setStock] = useState(0);
+    const [isAnimatingStock, setIsAnimatingStock] = useState(false);
 
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -23,9 +24,36 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
 
     useEffect(() => {
         if (isOpen) {
-            setRandomStock(Math.floor(Math.random() * 8) + 2); // Random between 2 and 9
             document.body.style.overflow = 'hidden';
             setCurrentImageIndex(0);
+
+            // Stock Logic
+            const storageKey = `stock_${product.id}`;
+            const storedStock = localStorage.getItem(storageKey);
+            let currentStock = storedStock ? parseInt(storedStock, 10) : 9;
+
+            // Chance to decrement
+            const shouldDecrement = Math.random() > 0.6; // 40% chance to decrement
+            if (shouldDecrement && currentStock > 2) {
+                const newStock = currentStock - 1;
+                // Delay setting the new stock slightly to allow the modal to open first, preserving the "old" number briefly for effect
+                // But since we want to show the transition, we set initial state to old, then update.
+                setStock(currentStock);
+
+                setTimeout(() => {
+                    setIsAnimatingStock(true);
+                    setStock(newStock);
+                    localStorage.setItem(storageKey, newStock.toString());
+                    setTimeout(() => setIsAnimatingStock(false), 500); // Reset animation state
+                }, 500); // Wait 500ms after open to drop the number
+            } else {
+                setStock(currentStock);
+                // If it was undefined (first visit), save the default 9
+                if (!storedStock) {
+                    localStorage.setItem(storageKey, '9');
+                }
+            }
+
         } else {
             document.body.style.overflow = 'unset';
             // Reset state on close
@@ -36,6 +64,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
                 setIsGiftBox(false);
                 setObjectFit('cover');
                 setCurrentImageIndex(0);
+                setIsAnimatingStock(false);
             }, 300);
         }
         return () => { document.body.style.overflow = 'unset'; };
@@ -184,7 +213,9 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
                             </div>
                             <div className="flex items-center gap-2 mt-2">
                                 <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
-                                <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest">Only {randomStock} left</span>
+                                <span className={`text-[10px] font-bold text-red-500 uppercase tracking-widest transition-all duration-500 ${isAnimatingStock ? 'scale-150 text-red-400' : 'scale-100'}`}>
+                                    Only {stock} left
+                                </span>
                             </div>
                         </div>
                         <button onClick={onClose} className="hidden md:block p-2 hover:bg-white/10 rounded-full transition-colors">
