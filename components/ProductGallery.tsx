@@ -29,7 +29,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ products, onAddToCart, 
 
       <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8 relative z-10">
         <div>
-          <h2 className="text-5xl md:text-7xl font-black font-heading tracking-tighter text-white mb-6 leading-none">
+          <h2 className="text-4xl md:text-7xl font-black font-heading tracking-tighter text-white mb-6 leading-none">
             THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 to-zinc-500">COLLECTION</span>
           </h2>
           <p className="text-zinc-400 max-w-xl text-lg leading-relaxed font-light">
@@ -76,7 +76,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ products, onAddToCart, 
 
             <div className="flex justify-between items-start px-2">
               <div>
-                <h3 className="text-2xl font-black font-heading text-white mb-2 group-hover:text-zinc-300 transition-all duration-300">{product.name}</h3>
+                <h3 className="text-lg md:text-2xl font-black font-heading text-white mb-2 group-hover:text-zinc-300 transition-all duration-300">{product.name}</h3>
                 <div className="flex items-center gap-2">
                   {product.isBestSeller && (
                     <span className="text-[9px] text-black font-bold uppercase tracking-wider bg-white px-2 py-1 rounded-sm">Best Seller</span>
