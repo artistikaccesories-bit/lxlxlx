@@ -14,24 +14,28 @@ const AboutUs: React.FC = () => {
 
                         <div className="space-y-6 text-zinc-400 text-sm md:text-base leading-relaxed font-medium">
                             <p>
-                                At <span className="text-white font-bold">LASERARTLB</span>, we don't just make keychains; we forge permanent statements.
-                                We specialize in <span className="text-white">high-quality laser cutting and engraving</span>, transforming raw surgical-grade steel into personalized masterpieces that last a lifetime.
+                                At <span className="text-white font-bold">LASERARTLB</span>, we specialize in high-precision <span className="text-white">laser engraving services in Lebanon</span>.
+                                We transform premium stainless steel into personalized masterpieces, offering a wide range of custom gifts and accessories.
                             </p>
                             <p>
-                                Our journey started with perfecting the humble keychain—taking a daily essential and elevating it into a luxury item.
-                                But we are just getting started.
+                                From <span className="text-white">custom car silhouettes</span> of your favorite McLaren or Porsche to <span className="text-white">personalized keychains</span> and pet tags, precise craftsmanship is at our core.
+                                Founded in Beirut, we are dedicated to creating durable, elegant, and unique metal art that tells your story.
                             </p>
 
                             <div className="p-6 bg-white/5 border border-white/10 rounded-2xl mt-8">
-                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white mb-4">Coming Soon to the Studio</h3>
+                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white mb-4">Our Expertise</h3>
                                 <ul className="space-y-3">
                                     <li className="flex items-center gap-3">
                                         <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
-                                        <span><span className="text-white font-bold">Picture Silhouettes</span> — Your favorite photos turned into metal art.</span>
+                                        <span><span className="text-white font-bold">Custom Laser Engraving</span> — Precision marking on metal.</span>
                                     </li>
                                     <li className="flex items-center gap-3">
                                         <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
-                                        <span><span className="text-white font-bold">Car Silhouettes</span> — Indestructible replicas of your dream rides.</span>
+                                        <span><span className="text-white font-bold">Car Wall Art</span> — Detailed metal silhouettes of iconic cars.</span>
+                                    </li>
+                                    <li className="flex items-center gap-3">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
+                                        <span><span className="text-white font-bold">Personalized Gifts</span> — Unique keychains, tags, and accessories in Lebanon.</span>
                                     </li>
                                 </ul>
                             </div>
@@ -40,23 +44,15 @@ const AboutUs: React.FC = () => {
 
                     <div className="relative">
                         <div className="aspect-square rounded-[3rem] overflow-hidden glass border-white/10 relative">
-                            {/* Abstract representation of laser process since we might not have a photo yet */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-black flex items-center justify-center">
-                                <div className="relative w-full h-full">
-                                    <div className="absolute top-1/2 left-0 w-full h-0.5 bg-white/20"></div>
-                                    <div className="absolute top-0 left-1/2 w-0.5 h-full bg-white/20"></div>
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <div className="w-32 h-32 border-2 border-white/50 rounded-full animate-pulse"></div>
-                                    </div>
-                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[10px] font-black uppercase tracking-[0.5em] text-white/50">
-                                        Precision in Progress
-                                    </div>
-                                </div>
-                            </div>
+                            <img
+                                src="/images/logo.webp"
+                                alt="LaserArtLB - Custom Laser Engraving Lebanon"
+                                className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity duration-700"
+                            />
                         </div>
                         {/* Floating badge */}
                         <div className="absolute -bottom-6 -left-6 glass px-8 py-4 rounded-full border border-white/10">
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Est. 2024 • Lebanon</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Est. 2024 • Beirut, Lebanon</p>
                         </div>
                     </div>
                 </div>

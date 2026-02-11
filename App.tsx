@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { initGA, logPageView } from './src/utils/analytics';
 import Navbar from './components/Navbar.tsx';
 import Hero from './components/Hero.tsx';
 import ProductGallery from './components/ProductGallery.tsx';
@@ -7,27 +8,49 @@ import Footer from './components/Footer.tsx';
 import CartDrawer from './components/CartDrawer.tsx';
 import AboutUs from './components/AboutUs.tsx';
 import Services from './components/Services.tsx';
-import ComingSoon from './components/ComingSoon.tsx';
-import AICustomizer from './AICustomizer.tsx';
+
 import CarSilhouettes from './components/CarSilhouettes.tsx';
 import CarTeaser from './components/CarTeaser.tsx';
 import { Product, CartItem } from './types.ts';
+import { PRODUCTS as STATIC_PRODUCTS } from './src/data/products.ts';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'home' | 'customize' | 'ai-studio' | 'car-silhouettes'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'customize' | 'car-silhouettes'>('home');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [deliveryType, setDeliveryType] = useState<'pickup' | 'standard' | 'express'>('standard');
+  const [products, setProducts] = useState<Product[]>(STATIC_PRODUCTS);
 
-  // Google Analytics Tracking
+  // Initialize GA
   React.useEffect(() => {
-    if (typeof window.gtag !== 'undefined') {
-      window.gtag('config', 'G-FCJ59GJJLB', {
-        page_path: `/${activeTab}`,
-        page_title: activeTab === 'home' ? 'Home' : activeTab === 'customize' ? 'Shop' : activeTab === 'ai-studio' ? 'AI Studio' : 'Car Silhouettes',
-      });
-    }
+    initGA();
+  }, []);
+
+  // Track page views
+  React.useEffect(() => {
+    logPageView();
+    window.scrollTo(0, 0);
   }, [activeTab]);
+
+  // Handle browser back/forward buttons
+  React.useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state && event.state.tab) {
+        setActiveTab(event.state.tab);
+      } else {
+        setActiveTab('home');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Update URL function
+  const handleTabChange = (tab: 'home' | 'customize' | 'car-silhouettes') => {
+    setActiveTab(tab);
+    window.history.pushState({ tab }, '', tab === 'home' ? '/' : `/${tab}`);
+  };
 
   const addToCart = (product: Product, engravingText: string, backText: string | undefined, isDoubleSided: boolean, isGiftBox: boolean) => {
     setCart(prev => {
@@ -92,33 +115,27 @@ function App() {
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
-      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} cartCount={cart.reduce((a, b) => a + b.quantity, 0)} onCartClick={() => setIsCartOpen(true)} />
+      <Navbar activeTab={activeTab} setActiveTab={handleTabChange} cartCount={cart.reduce((a, b) => a + b.quantity, 0)} onCartClick={() => setIsCartOpen(true)} />
 
       {activeTab === 'home' && (
         <main>
-          <Hero onExplore={() => setActiveTab('customize')} />
+          <Hero onExplore={() => handleTabChange('customize')} />
+          <CarTeaser onExplore={() => handleTabChange('car-silhouettes')} />
           <AboutUs />
           <Services />
-          <CarTeaser onExplore={() => setActiveTab('car-silhouettes')} />
-          <ProductGallery onAddToCart={addToCart} />
+          <ProductGallery products={products} onAddToCart={addToCart} />
         </main>
       )}
 
       {activeTab === 'customize' && (
         <main>
-          <ProductGallery onAddToCart={addToCart} />
-        </main>
-      )}
-
-      {activeTab === 'ai-studio' && (
-        <main>
-          <AICustomizer />
+          <ProductGallery products={products} onAddToCart={addToCart} onBack={() => handleTabChange('home')} />
         </main>
       )}
 
       {activeTab === 'car-silhouettes' && (
         <main>
-          <CarSilhouettes />
+          <CarSilhouettes onBack={() => handleTabChange('home')} />
         </main>
       )}
 

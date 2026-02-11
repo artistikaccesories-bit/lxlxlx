@@ -16,7 +16,7 @@ const CarTeaser: React.FC<CarTeaserProps> = ({ onExplore }) => {
             <div className="max-w-7xl mx-auto px-4 relative z-10">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-12">
                     <div className="w-full md:w-1/2 text-left">
-                        <span className="text-red-500 font-bold tracking-[0.3em] text-xs uppercase mb-4 block animate-pulse">New Collection</span>
+                        <span className="text-red-500 font-bold tracking-[0.3em] text-xs uppercase mb-4 block">Signature Series</span>
                         <h2 className="text-5xl md:text-7xl font-black font-heading text-white mb-6 tracking-tighter">
                             THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-zinc-200 to-zinc-600">SILHOUETTE</span>
                             <br />

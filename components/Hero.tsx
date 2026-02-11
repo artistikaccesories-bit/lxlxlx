@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import ParticlesBackground from './ParticlesBackground';
 
 interface HeroProps {
   onExplore: () => void;
@@ -30,6 +31,7 @@ const Hero: React.FC<HeroProps> = ({ onExplore }) => {
   return (
     <div className="relative min-h-[85vh] flex items-center overflow-hidden bg-black">
       <div className="absolute inset-0 z-0">
+        <ParticlesBackground />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-zinc-900/40 via-black to-black"></div>
         <div className="absolute top-1/4 -right-20 w-[600px] h-[600px] bg-white/5 rounded-full blur-[150px]"></div>
       </div>

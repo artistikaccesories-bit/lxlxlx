@@ -39,6 +39,22 @@ export default defineConfig(({ mode }) => {
       alias: {
         '@': path.resolve(__dirname, '.'),
       }
-    }
+    },
+    build: {
+      outDir: 'dist',
+      assetsDir: 'assets',
+      rollupOptions: {
+        output: {
+          entryFileNames: 'assets/react-app.js',
+          assetFileNames: (assetInfo) => {
+            if (assetInfo.name && assetInfo.name.endsWith('.css')) {
+              return 'assets/react-app.css';
+            }
+            return 'assets/[name]-[hash][extname]';
+          },
+          chunkFileNames: 'assets/[name]-[hash].js',
+        },
+      },
+    },
   };
 });

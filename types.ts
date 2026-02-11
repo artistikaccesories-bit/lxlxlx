@@ -9,6 +9,9 @@ export interface Product {
   category: string;
   stock?: number;
   isBestSeller?: boolean;
+  variants?: any[]; // Shopify variants
+  handle?: string;
+  images?: string[];
 }
 
 export interface CartItem extends Product {
@@ -22,11 +25,8 @@ export interface CartItem extends Product {
 
 declare global {
   interface Window {
-    gtag: (
-      command: 'config' | 'event' | 'js',
-      targetId: string,
-      config?: Record<string, any>
-    ) => void;
+    gtag: (...args: any[]) => void;
+    GA_INITIALIZED?: boolean;
   }
 }
 

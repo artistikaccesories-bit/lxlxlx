@@ -2,17 +2,31 @@
 import React, { useState } from 'react';
 import { Product } from '../types.ts';
 import ProductModal from './ProductModal.tsx';
-import { PRODUCTS } from '../src/data/products.ts';
+// import { PRODUCTS } from '../src/data/products.ts'; // dynamic now
 
 interface ProductGalleryProps {
+  products: Product[];
   onAddToCart: (p: Product, frontText: string, backText: string | undefined, isDoubleSided: boolean, isGiftBox: boolean) => void;
+  onBack?: () => void;
 }
 
-const ProductGallery: React.FC<ProductGalleryProps> = ({ onAddToCart }) => {
+const ProductGallery: React.FC<ProductGalleryProps> = ({ products, onAddToCart, onBack }) => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   return (
-    <div className="py-24 px-4 max-w-7xl mx-auto">
+    <div className="py-24 px-4 max-w-7xl mx-auto relative">
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="md:hidden fixed top-28 left-4 z-50 flex items-center gap-2 text-zinc-400 hover:text-white transition-colors bg-black/50 backdrop-blur-md px-3 py-2 rounded-full border border-white/10"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          <span className="text-xs font-bold uppercase tracking-widest">Back</span>
+        </button>
+      )}
+
       <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
         <div>
           <h2 className="text-5xl md:text-7xl font-black font-heading tracking-tighter text-white mb-6">
@@ -23,14 +37,14 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ onAddToCart }) => {
           </p>
         </div>
         <div className="flex items-center gap-4 text-sm font-bold uppercase tracking-widest text-zinc-500">
-          <span>{PRODUCTS.length} Variants</span>
+          <span>{products.length} Variants</span>
           <div className="h-px w-12 bg-zinc-800"></div>
           <span>2024 Series</span>
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
-        {PRODUCTS.map(product => (
+        {products.map(product => (
           <div
             key={product.id}
             onClick={() => setSelectedProduct(product)}
@@ -43,8 +57,11 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ onAddToCart }) => {
                 alt={product.name}
                 loading="lazy"
                 decoding="async"
-                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
+                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out group-hover:duration-500"
               />
+              {/* Holographic Reflection Effect */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none mix-blend-overlay"></div>
+
               <div className="absolute bottom-6 left-6 z-20">
                 <div className="bg-black/80 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 flex items-center gap-3">
                   <span className="text-xs font-bold text-white uppercase tracking-widest">Configure</span>

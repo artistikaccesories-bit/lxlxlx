@@ -27,6 +27,51 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
   setDeliveryType,
   onCheckout
 }) => {
+  const [promoCode, setPromoCode] = React.useState('');
+  const [discountApplied, setDiscountApplied] = React.useState(false);
+  const [promoError, setPromoError] = React.useState('');
+
+  const handleApplyPromo = () => {
+    if (promoCode.trim().toUpperCase() === 'LASER20') {
+      setDiscountApplied(true);
+      setPromoError('');
+    } else {
+      setPromoError('Invalid code');
+      setDiscountApplied(false);
+    }
+  };
+
+  const discountAmount = discountApplied ? subtotal * 0.20 : 0;
+  const deliveryCost = deliveryType === 'express' ? 6 : deliveryType === 'standard' ? 4 : 0;
+  const finalTotal = subtotal - discountAmount + deliveryCost;
+
+  const handleCheckoutWithPromo = () => {
+    // Re-construct the checkout message to include discount
+    const itemsList = cart.map(item => {
+      const extras = [];
+      if (item.isDoubleSided) extras.push('Double Sided (+$5)');
+      if (item.isGiftBox) extras.push('Gift Box (+$2)');
+      if (item.frontText) extras.push(`Front: "${item.frontText}"`);
+      if (item.backText) extras.push(`Back: "${item.backText}"`);
+
+      const extraStr = extras.length > 0 ? ` [${extras.join(', ')}]` : '';
+      const unitPrice = item.price + (item.isDoubleSided ? 5 : 0) + (item.isGiftBox ? 2 : 0);
+      return `• ${item.quantity}x ${item.name}${extraStr} - $${unitPrice * item.quantity}`;
+    }).join('\n');
+
+    const deliveryInfo = deliveryType === 'express' ? '🚀 Express (48h) - $6' : deliveryType === 'standard' ? '🚚 Standard - $4' : '🏠 Pickup - $0';
+
+    let message = `*LASERARTLB - NEW ORDER*\n\n*Items:*\n${itemsList}\n\n*Delivery:* ${deliveryInfo}`;
+
+    if (discountApplied) {
+      message += `\n*Subtotal:* $${subtotal}\n*Discount (LASER20):* -$${discountAmount.toFixed(2)}`;
+    }
+
+    message += `\n*Total:* $${finalTotal.toFixed(2)}\n\n*Customer Request:* I've confirmed my order via the website.`;
+
+    window.open(`https://wa.me/96181388115?text=${encodeURIComponent(message)}`, '_blank');
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -102,7 +147,6 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
                       <span className="text-xs font-mono w-4 text-center">{item.quantity}</span>
                       <button onClick={() => updateQuantity(item.internalId, 1)} className="text-zinc-500 hover:text-white transition-colors">+</button>
                     </div>
-                    <button onClick={() => removeFromCart(item.internalId)} className="text-[10px] uppercase font-bold text-zinc-600 hover:text-red-500 transition-colors">Test</button>
                     <button onClick={() => removeFromCart(item.internalId)} className="text-[10px] uppercase font-bold text-zinc-600 hover:text-red-500 transition-colors">
                       Remove
                     </button>
@@ -116,10 +160,39 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
         {/* Footer */}
         <div className="border-t border-white/10 p-6 bg-zinc-950">
           <div className="space-y-3 mb-6">
+
+            {/* Promo Code Input */}
+            <div className="flex gap-2 mb-4">
+              <input
+                type="text"
+                placeholder="Enter Promo Code"
+                value={promoCode}
+                onChange={(e) => setPromoCode(e.target.value)}
+                className="bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white flex-grow focus:outline-none focus:border-white/30 uppercase"
+              />
+              <button
+                onClick={handleApplyPromo}
+                disabled={!promoCode || discountApplied}
+                className="px-4 py-2 bg-white/10 text-white text-xs font-bold rounded-lg hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {discountApplied ? 'APPLIED' : 'APPLY'}
+              </button>
+            </div>
+            {promoError && <p className="text-red-500 text-xs mb-2">{promoError}</p>}
+            {discountApplied && <p className="text-green-500 text-xs mb-2">Discount Applied: 20% OFF</p>}
+
+
             <div className="flex justify-between text-xs text-zinc-500 uppercase font-bold tracking-wider">
               <span>Subtotal</span>
-              <span>${subtotal}</span>
+              <span>${subtotal.toFixed(2)}</span>
             </div>
+
+            {discountApplied && (
+              <div className="flex justify-between text-xs text-green-500 uppercase font-bold tracking-wider">
+                <span>Discount</span>
+                <span>-${discountAmount.toFixed(2)}</span>
+              </div>
+            )}
 
             <div className="space-y-2">
               <span className="text-xs text-zinc-500 uppercase font-bold tracking-wider block mb-2">Delivery Method</span>
@@ -150,16 +223,16 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
 
             <div className="flex justify-between text-lg font-black font-heading silver-gradient pt-4 border-t border-white/10">
               <span>Total</span>
-              <span>${total}</span>
+              <span>${finalTotal.toFixed(2)}</span>
             </div>
           </div>
 
           <button
-            onClick={onCheckout}
+            onClick={handleCheckoutWithPromo}
             disabled={cart.length === 0}
             className="w-full py-4 bg-white text-black font-black uppercase tracking-[0.2em] text-sm rounded-xl hover:bg-zinc-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed group/btn silver-glow flex items-center justify-center gap-2"
           >
-            Checkout via WhatsApp
+            Secure Checkout
             <svg className="w-4 h-4 transform group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
           </button>
         </div>
@@ -167,5 +240,6 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
     </div>
   );
 };
+
 
 export default CartDrawer;

@@ -16,9 +16,14 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
     const [isGiftBox, setIsGiftBox] = useState(false);
     const [objectFit, setObjectFit] = useState<'cover' | 'contain'>('cover');
 
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+    const displayImages = product.images && product.images.length > 0 ? product.images : [product.image];
+
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
+            setCurrentImageIndex(0);
         } else {
             document.body.style.overflow = 'unset';
             // Reset state on close
@@ -28,10 +33,51 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
                 setIsDoubleSided(false);
                 setIsGiftBox(false);
                 setObjectFit('cover');
+                setCurrentImageIndex(0);
             }, 300);
         }
         return () => { document.body.style.overflow = 'unset'; };
-    }, [isOpen]);
+    }, [isOpen, product]);
+
+    const nextImage = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setCurrentImageIndex((prev) => (prev + 1) % displayImages.length);
+    };
+
+    const prevImage = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setCurrentImageIndex((prev) => (prev - 1 + displayImages.length) % displayImages.length);
+    };
+
+    const [touchStart, setTouchStart] = useState<number | null>(null);
+    const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+    // Min swipe distance required (in px)
+    const minSwipeDistance = 50;
+
+    const onTouchStart = (e: React.TouchEvent) => {
+        setTouchEnd(null);
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const onTouchMove = (e: React.TouchEvent) => {
+        setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const onTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+
+        if (isLeftSwipe) {
+            setCurrentImageIndex((prev) => (prev + 1) % displayImages.length);
+        }
+        if (isRightSwipe) {
+            setCurrentImageIndex((prev) => (prev - 1 + displayImages.length) % displayImages.length);
+        }
+    };
 
     if (!isOpen) return null;
 
@@ -60,15 +106,48 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
                 </button>
 
                 {/* Image Section */}
-                <div className="w-full md:w-1/2 h-48 md:h-auto md:aspect-auto relative bg-zinc-900 flex items-center justify-center overflow-hidden group/image flex-shrink-0">
+                <div
+                    className="w-full md:w-1/2 h-64 md:h-auto md:aspect-auto relative bg-zinc-900 flex items-center justify-center overflow-hidden group/image flex-shrink-0 touch-pan-y"
+                    onTouchStart={onTouchStart}
+                    onTouchMove={onTouchMove}
+                    onTouchEnd={onTouchEnd}
+                >
                     <img
-                        src={product.image}
+                        src={displayImages[currentImageIndex]}
                         alt={product.name}
                         loading="eager"
                         // @ts-ignore
                         fetchPriority="high"
                         className={`w-full h-full transition-all duration-500 ${objectFit === 'contain' ? 'object-contain p-4' : 'object-cover'}`}
                     />
+
+                    {/* Navigation Arrows */}
+                    {displayImages.length > 1 && (
+                        <>
+                            <button
+                                onClick={prevImage}
+                                className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-white hover:text-black transition-colors z-20 opacity-0 group-hover/image:opacity-100"
+                            >
+                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+                            </button>
+                            <button
+                                onClick={nextImage}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-white hover:text-black transition-colors z-20 opacity-0 group-hover/image:opacity-100"
+                            >
+                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+                            </button>
+
+                            {/* Dots Indicator */}
+                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+                                {displayImages.map((_, idx) => (
+                                    <div
+                                        key={idx}
+                                        className={`w-1.5 h-1.5 rounded-full transition-colors ${idx === currentImageIndex ? 'bg-white' : 'bg-white/30'}`}
+                                    />
+                                ))}
+                            </div>
+                        </>
+                    )}
 
                     {/* Zoom Toggle Controls */}
                     <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover/image:opacity-100 transition-opacity z-10">
