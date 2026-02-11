@@ -56,7 +56,7 @@ const Hero: React.FC<HeroProps> = ({ onExplore }) => {
             ))}
           </div>
           <div className="text-left pl-2">
-            <span className="block text-white text-sm font-bold"><span className="text-transparent bg-clip-text bg-gradient-to-r from-laser-blue to-laser-purple">{count}+</span> Happy</span>
+            <span className="block text-white text-sm font-bold"><span className="text-white">{count}+</span> Happy</span>
             <span className="block text-zinc-500 text-[10px] tracking-wider uppercase">Customers</span>
           </div>
         </div>
@@ -80,7 +80,10 @@ const Hero: React.FC<HeroProps> = ({ onExplore }) => {
             <span className="relative z-10 group-hover:text-white transition-colors duration-300">Start Creating</span>
           </button>
 
-          <button className="px-12 py-5 rounded-full border border-zinc-800 text-zinc-400 font-bold uppercase tracking-[0.2em] text-sm hover:border-laser-blue hover:text-white hover:bg-laser-blue/5 transition-all duration-300">
+          <button
+            onClick={onExplore}
+            className="px-12 py-5 rounded-full border border-zinc-800 text-zinc-400 font-bold uppercase tracking-[0.2em] text-sm hover:border-laser-blue hover:text-white hover:bg-laser-blue/5 transition-all duration-300"
+          >
             View Gallery
           </button>
         </div>

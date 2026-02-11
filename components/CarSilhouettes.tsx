@@ -109,11 +109,11 @@ const CarSilhouettes: React.FC<CarSilhouettesProps> = ({ onBack }) => {
 
                             <div className="w-full h-full flex items-center justify-center relative z-10">
                                 {matchedDesign ? (
-                                    <div className="w-full h-full bg-contain bg-no-repeat bg-center transition-all duration-700 filter drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] grayscale"
+                                    <div className="w-full h-full bg-contain bg-no-repeat bg-center transition-all duration-700 filter drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]"
                                         style={{ backgroundImage: `url('${matchedDesign.image}')` }}>
                                     </div>
                                 ) : (
-                                    <div className="absolute inset-0 bg-[url('/images/car.jpeg')] bg-cover bg-center transition-all duration-700 opacity-50 grayscale group-hover:grayscale-0 group-hover:opacity-80" loading="lazy"></div>
+                                    <div className="absolute inset-0 bg-[url('/images/car.jpeg')] bg-cover bg-center transition-all duration-700 opacity-50 group-hover:opacity-80" loading="lazy"></div>
                                 )}
                             </div>
                         </div>

@@ -16,14 +16,13 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, cartCount, onO
           <div className="flex items-center cursor-pointer gap-3 group" onClick={() => setActiveTab('home')}>
             <div className="w-10 h-10 flex items-center justify-center relative">
               <div className="absolute inset-0 bg-white/5 rounded-full blur-md group-hover:bg-white/10 transition-all duration-500"></div>
-              <img src="/images/logo.webp" alt="LaserArtLB" className="w-full h-full object-contain relative z-10 filter brightness-200 grayscale" />
+              <img src="/images/logo.webp" alt="LaserArtLB" className="w-full h-full object-contain relative z-10 filter brightness-200" />
             </div>
             <div className="flex flex-col">
               <span className="text-xl font-black tracking-[0.15em] font-heading text-white leading-none relative">
                 <span className="absolute -inset-1 blur-sm bg-white/10 opacity-0 group-hover:opacity-50 transition-opacity duration-300"></span>
                 <span className="relative z-10">LASERARTLB</span>
               </span>
-              <span className="text-[9px] font-bold text-zinc-600 tracking-[0.4em] uppercase opacity-80 decoration-zinc-600 underline decoration-1 underline-offset-2 group-hover:text-zinc-400 transition-colors">Studio</span>
             </div>
           </div>
 

@@ -55,7 +55,7 @@ const CarTeaser: React.FC<CarTeaserProps> = ({ onExplore }) => {
                             <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
                             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
 
-                            <div className="absolute inset-0 bg-[url('/images/car.jpeg')] bg-cover bg-center opacity-40 grayscale group-hover:grayscale-0 transition-all duration-700"></div>
+                            <div className="absolute inset-0 bg-[url('/images/car.jpeg')] bg-cover bg-center opacity-40 transition-all duration-700"></div>
                             <div className="absolute inset-0 bg-gradient-to-t from-deep-black via-deep-black/50 to-transparent"></div>
 
                             <div className="relative z-10 text-center transform group-hover:scale-105 transition-transform duration-500">
