@@ -9,6 +9,7 @@ import CartDrawer from './components/CartDrawer.tsx';
 import AboutUs from './components/AboutUs.tsx';
 import Services from './components/Services.tsx';
 
+import GallerySelector from './components/GallerySelector.tsx';
 import CarSilhouettes from './components/CarSilhouettes.tsx';
 import CarTeaser from './components/CarTeaser.tsx';
 import { Product, CartItem } from './types.ts';
@@ -50,6 +51,23 @@ function App() {
   const handleTabChange = (tab: 'home' | 'customize' | 'car-silhouettes') => {
     setActiveTab(tab);
     window.history.pushState({ tab }, '', tab === 'home' ? '/' : `/${tab}`);
+  };
+
+  const handleGallerySelection = (category: 'keychains' | 'cars' | 'portraits') => {
+    if (category === 'keychains') {
+      const element = document.getElementById('product-gallery');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        handleTabChange('home');
+        setTimeout(() => {
+          const el = document.getElementById('product-gallery');
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    } else if (category === 'cars') {
+      handleTabChange('car-silhouettes');
+    }
   };
 
   const addToCart = (product: Product, engravingText: string, backText: string | undefined, isDoubleSided: boolean, isGiftBox: boolean) => {
@@ -119,10 +137,14 @@ function App() {
 
       {activeTab === 'home' && (
         <main>
-          <Hero onExplore={() => handleTabChange('customize')} />
-          <CarTeaser onExplore={() => handleTabChange('car-silhouettes')} />
+          <Hero onExplore={() => {
+            const element = document.getElementById('gallery-selector');
+            if (element) element.scrollIntoView({ behavior: 'smooth' });
+          }} />
+          <GallerySelector onSelectCategory={handleGallerySelection} />
           <AboutUs />
           <Services />
+          <CarTeaser onExplore={() => handleTabChange('car-silhouettes')} />
           <ProductGallery products={products} onAddToCart={addToCart} />
         </main>
       )}

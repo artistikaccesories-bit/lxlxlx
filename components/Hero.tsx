@@ -81,7 +81,10 @@ const Hero: React.FC<HeroProps> = ({ onExplore }) => {
           </button>
 
           <button
-            onClick={onExplore}
+            onClick={() => {
+              const element = document.getElementById('gallery-selector');
+              if (element) element.scrollIntoView({ behavior: 'smooth' });
+            }}
             className="px-12 py-5 rounded-full border border-zinc-800 text-zinc-400 font-bold uppercase tracking-[0.2em] text-sm hover:border-laser-blue hover:text-white hover:bg-laser-blue/5 transition-all duration-300"
           >
             View Gallery

@@ -14,7 +14,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ products, onAddToCart, 
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   return (
-    <div className="py-24 px-4 max-w-7xl mx-auto relative">
+    <div id="product-gallery" className="py-24 px-4 max-w-7xl mx-auto relative">
       {onBack && (
         <button
           onClick={onBack}
