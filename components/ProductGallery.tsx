@@ -8,10 +8,22 @@ interface ProductGalleryProps {
   products: Product[];
   onAddToCart: (p: Product, frontText: string, backText: string | undefined, isDoubleSided: boolean, isGiftBox: boolean) => void;
   onBack?: () => void;
+  selectedProduct?: Product | null;
+  onSelectProduct?: (product: Product | null) => void;
 }
 
-const ProductGallery: React.FC<ProductGalleryProps> = ({ products, onAddToCart, onBack }) => {
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+const ProductGallery: React.FC<ProductGalleryProps> = ({ products, onAddToCart, onBack, selectedProduct: propSelectedProduct, onSelectProduct }) => {
+  const [localSelectedProduct, setLocalSelectedProduct] = useState<Product | null>(null);
+
+  // Use prop if provided, otherwise fallback to local state (backward compatibility)
+  const selectedProduct = propSelectedProduct !== undefined ? propSelectedProduct : localSelectedProduct;
+  const handleProductSelect = (product: Product | null) => {
+    if (onSelectProduct) {
+      onSelectProduct(product);
+    } else {
+      setLocalSelectedProduct(product);
+    }
+  };
 
   return (
     <div id="product-gallery" className="py-24 px-4 max-w-7xl mx-auto relative">
@@ -47,7 +59,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ products, onAddToCart, 
         {products.map(product => (
           <div
             key={product.id}
-            onClick={() => setSelectedProduct(product)}
+            onClick={() => handleProductSelect(product)}
             className="group cursor-pointer relative"
           >
             <div className="absolute -inset-0.5 bg-white rounded-[2rem] opacity-0 group-hover:opacity-10 blur transition duration-500"></div>
@@ -101,7 +113,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ products, onAddToCart, 
         <ProductModal
           product={selectedProduct}
           isOpen={!!selectedProduct}
-          onClose={() => setSelectedProduct(null)}
+          onClose={() => handleProductSelect(null)}
           onAddToCart={onAddToCart}
         />
       )}

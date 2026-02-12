@@ -21,11 +21,73 @@ function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [deliveryType, setDeliveryType] = useState<'pickup' | 'standard' | 'express'>('standard');
   const [products, setProducts] = useState<Product[]>(STATIC_PRODUCTS);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
 
   // Initialize GA
   React.useEffect(() => {
     initGA();
   }, []);
+
+  // Handle initial URL and browser back/forward buttons
+  React.useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state) {
+        if (event.state.img) {
+          // Handle product modal state if it exists 
+          // (assuming we start adding product info to state, 
+          // but for now let's rely on handle lookup if we want robust linking)
+        }
+
+        if (event.state.tab) {
+          setActiveTab(event.state.tab);
+        } else {
+          setActiveTab('home');
+        }
+
+        if (event.state.productHandle) {
+          const product = products.find(p => p.handle === event.state.productHandle);
+          if (product) setSelectedProduct(product);
+        } else {
+          setSelectedProduct(null);
+        }
+      } else {
+        // No state (e.g. initial load or external link), check URL
+        checkUrlForRoute();
+      }
+    };
+
+    const checkUrlForRoute = () => {
+      const path = window.location.pathname;
+      if (path.startsWith('/product/')) {
+        const handle = path.split('/product/')[1];
+        const product = products.find(p => p.handle === handle);
+        if (product) {
+          setSelectedProduct(product);
+          // Map category to tab
+          if (product.category === 'keychain') setActiveTab('keychains');
+          else if (product.category === 'tag') setActiveTab('keychains'); // Assuming tags are in keychains for now or generic
+          else if (product.category === 'tool') setActiveTab('keychains');
+          else setActiveTab('keychains'); // Default fallback
+        }
+      } else {
+        // Handle other routes if necessary
+        const tab = path.substring(1) as any;
+        if (['keychains', 'car-silhouettes', 'portraits', 'customize'].includes(tab)) {
+          setActiveTab(tab);
+        } else {
+          setActiveTab('home');
+        }
+        setSelectedProduct(null);
+      }
+    }
+
+    // Run on mount
+    checkUrlForRoute();
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [products]);
 
   // Track page views
   React.useEffect(() => {
@@ -33,25 +95,37 @@ function App() {
     window.scrollTo(0, 0);
   }, [activeTab]);
 
-  // Handle browser back/forward buttons
-  React.useEffect(() => {
-    const handlePopState = (event: PopStateEvent) => {
-      if (event.state && event.state.tab) {
-        setActiveTab(event.state.tab);
-      } else {
-        setActiveTab('home');
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
 
   // Update URL function
   const handleTabChange = (tab: 'home' | 'keychains' | 'car-silhouettes' | 'portraits' | 'customize') => {
     setActiveTab(tab);
+    setSelectedProduct(null);
     window.history.pushState({ tab }, '', tab === 'home' ? '/' : `/${tab}`);
   };
+
+  const handleProductSelect = (product: Product | null) => {
+    setSelectedProduct(product);
+    if (product) {
+      // When opening a product, push a new history state
+      window.history.pushState(
+        { tab: activeTab, productHandle: product.handle },
+        '',
+        `/product/${product.handle || product.id}`
+      );
+    } else {
+      // When closing, go back to the tab URL
+      // We pushState here to avoid actually going "back" if we want to preserve history stack, 
+      // OR we could use back(). 
+      // Using pushState is safer for avoiding exiting the app.
+      window.history.pushState(
+        { tab: activeTab },
+        '',
+        activeTab === 'home' ? '/' : `/${activeTab}`
+      );
+    }
+  };
+
+
 
   const handleGallerySelection = (category: 'keychains' | 'cars' | 'portraits') => {
     if (category === 'keychains') {
@@ -142,7 +216,13 @@ function App() {
 
       {activeTab === 'keychains' && (
         <main>
-          <ProductGallery products={products} onAddToCart={addToCart} onBack={() => handleTabChange('home')} />
+          <ProductGallery
+            products={products}
+            onAddToCart={addToCart}
+            onBack={() => handleTabChange('home')}
+            selectedProduct={selectedProduct}
+            onSelectProduct={handleProductSelect}
+          />
         </main>
       )}
 
@@ -154,7 +234,13 @@ function App() {
 
       {activeTab === 'customize' && (
         <main>
-          <ProductGallery products={products} onAddToCart={addToCart} onBack={() => handleTabChange('home')} />
+          <ProductGallery
+            products={products}
+            onAddToCart={addToCart}
+            onBack={() => handleTabChange('home')}
+            selectedProduct={selectedProduct}
+            onSelectProduct={handleProductSelect}
+          />
         </main>
       )}
 
