@@ -3,7 +3,7 @@ import { Product } from '../../types.ts';
 export const PRODUCTS: Product[] = [
     {
         id: '1',
-        name: 'CUSTOM PLATE | Lebanon Style',
+        name: 'CUSTOM PLATE',
         handle: 'lebanon-plate-style',
         price: 12.5,
         category: 'keychain',
@@ -13,7 +13,7 @@ export const PRODUCTS: Product[] = [
     },
     {
         id: '2',
-        name: 'SPOTIFY CODE | Musical Memory',
+        name: 'SPOTIFY CODE',
         handle: 'spotify-code-keychain',
         price: 16.25,
         originalPrice: 22.5,
@@ -26,7 +26,7 @@ export const PRODUCTS: Product[] = [
     },
     {
         id: '3',
-        name: 'THE BOND | Couples Edition',
+        name: 'THE BOND',
         handle: 'the-bond-keychain',
         price: 12.5,
         category: 'keychain',
@@ -36,7 +36,7 @@ export const PRODUCTS: Product[] = [
     },
     {
         id: '4',
-        name: 'THE GUARDIAN | Pet Tag',
+        name: 'PET TAG',
         handle: 'pet-tag-guardian',
         price: 12.5,
         category: 'tag',
@@ -46,7 +46,7 @@ export const PRODUCTS: Product[] = [
     },
     {
         id: '5',
-        name: 'THE ORBIT | Round Series',
+        name: 'THE ORBIT',
         handle: 'round-keychain-orbit',
         price: 12.5,
         category: 'keychain',
@@ -56,7 +56,7 @@ export const PRODUCTS: Product[] = [
     },
     {
         id: '6',
-        name: 'THE BREW | Opener',
+        name: 'BOTTLE OPENER',
         handle: 'bottle-opener-brew',
         price: 12.5,
         category: 'tool',
@@ -66,7 +66,7 @@ export const PRODUCTS: Product[] = [
     },
     {
         id: '7',
-        name: 'THE BOND | Couples Edition',
+        name: 'COUPLE TAG',
         handle: 'the-bond-tag',
         price: 12.5,
         category: 'tag',
@@ -76,7 +76,7 @@ export const PRODUCTS: Product[] = [
     },
     {
         id: '8',
-        name: 'THE UNION | Puzzle Hearts',
+        name: 'PUZZLE HEARTS',
         handle: 'puzzle-hearts-union',
         price: 20,
         category: 'keychain',
@@ -86,7 +86,7 @@ export const PRODUCTS: Product[] = [
     },
     {
         id: '9',
-        name: 'THE TOKEN | Custom Circle',
+        name: 'CUSTOM CIRCLE',
         handle: 'custom-circle-token',
         price: 12.5,
         category: 'keychain',
@@ -96,7 +96,7 @@ export const PRODUCTS: Product[] = [
     },
     {
         id: '10',
-        name: 'THE DUO | Gym & Couple Series',
+        name: 'GYM & COUPLE',
         handle: 'gym-couple-duo',
         price: 12.5,
         category: 'keychain',
@@ -107,7 +107,7 @@ export const PRODUCTS: Product[] = [
     },
     {
         id: '11',
-        name: 'AL-HAMD | Gratitude',
+        name: 'AL-HAMD',
         handle: 'al-hamd-gratitude',
         price: 12.5,
         category: 'keychain',
@@ -117,7 +117,7 @@ export const PRODUCTS: Product[] = [
     },
     {
         id: '12',
-        name: 'THE QUOTE | Rectangle Series',
+        name: 'CUSTOM QUOTE',
         handle: 'quote-rectangle-keychain',
         price: 12.5,
         category: 'keychain',
@@ -128,7 +128,7 @@ export const PRODUCTS: Product[] = [
     },
     {
         id: '13',
-        name: 'MOM | Mother\'s Day Special',
+        name: 'MOM SPECIAL',
         handle: 'mom-keychain-special',
         price: 10,
         category: 'keychain',
@@ -139,7 +139,7 @@ export const PRODUCTS: Product[] = [
     },
     {
         id: '14',
-        name: 'CALLI | Islamic Calligraphy',
+        name: 'ISLAMIC CALLI',
         handle: 'islamic-calligraphy-round',
         price: 10,
         category: 'keychain',
