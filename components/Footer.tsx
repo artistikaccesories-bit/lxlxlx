@@ -2,7 +2,7 @@
 import React from 'react';
 
 interface FooterProps {
-  onNavigate: (tab: 'home' | 'keychains' | 'car-silhouettes' | 'portraits' | 'customize') => void;
+  onNavigate: (tab: 'home' | 'keychains' | 'customize') => void;
   onServicesClick: () => void;
 }
 
@@ -23,7 +23,6 @@ const Footer: React.FC<FooterProps> = ({ onNavigate, onServicesClick }) => {
             <ul className="space-y-4 text-sm font-medium text-zinc-600">
               <li><button onClick={() => onNavigate('keychains')} className="hover:text-white transition-colors">Keychains</button></li>
               <li><button onClick={onServicesClick} className="hover:text-white transition-colors">Services</button></li>
-              <li><button onClick={() => onNavigate('portraits')} className="hover:text-white transition-colors">Portrait Silhouette</button></li>
             </ul>
           </div>
           <div>

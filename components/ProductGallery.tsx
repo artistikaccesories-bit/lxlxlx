@@ -126,7 +126,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ products, onAddToCart, 
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 relative z-10">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-12 relative z-10">
         {products.map(product => (
           <ProductCard key={product.id} product={product} onClick={() => handleProductSelect(product)} />
         ))}

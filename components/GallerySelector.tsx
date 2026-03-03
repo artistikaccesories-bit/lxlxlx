@@ -1,8 +1,7 @@
-
 import React from 'react';
 
 interface GallerySelectorProps {
-    onSelectCategory: (category: 'keychains' | 'cars' | 'portraits') => void;
+    onSelectCategory: (category: 'keychains' | 'mom-special') => void;
 }
 
 const GallerySelector: React.FC<GallerySelectorProps> = ({ onSelectCategory }) => {
@@ -16,20 +15,12 @@ const GallerySelector: React.FC<GallerySelectorProps> = ({ onSelectCategory }) =
             available: true
         },
         {
-            id: 'cars',
-            title: 'Car Silhouettes',
-            description: 'Iconic automotive profiles for your wall.',
-            image: '/images/car.jpeg',
-            action: 'Configure Now',
+            id: 'mom-special',
+            title: 'Mother\'s Day Special',
+            description: 'A beautiful custom keychain for Mother\'s Day. The perfect gift to celebrate her.',
+            image: '/images/mom1.jpeg',
+            action: 'Shop Now',
             available: true
-        },
-        {
-            id: 'portraits',
-            title: 'Portrait Silhouettes',
-            description: 'Your favorite memories, immortalized in metal.',
-            image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=600', // Portrait placeholder
-            action: 'View Collection',
-            available: false
         }
     ];
 
@@ -45,7 +36,7 @@ const GallerySelector: React.FC<GallerySelectorProps> = ({ onSelectCategory }) =
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
                     {categories.map((cat) => (
                         <div
                             key={cat.id}

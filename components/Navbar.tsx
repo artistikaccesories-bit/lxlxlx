@@ -3,7 +3,7 @@ import React from 'react';
 
 interface NavbarProps {
   activeTab: string;
-  setActiveTab: (tab: 'home' | 'customize' | 'car-silhouettes') => void;
+  setActiveTab: (tab: 'home' | 'customize') => void;
   cartCount: number;
   onOpenCart: () => void;
 }
@@ -27,14 +27,14 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, cartCount, onO
           </div>
 
           <div className="flex items-center space-x-6 md:space-x-10">
-            {['home', 'customize', 'car-silhouettes'].map((tab) => (
+            {['home', 'customize'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab as any)}
                 className={`relative py-2 text-[10px] uppercase tracking-[0.25em] font-bold transition-all duration-300 group ${activeTab === tab ? 'text-white' : 'text-zinc-600 hover:text-white'
                   }`}
               >
-                {tab === 'customize' ? 'Shop' : tab === 'car-silhouettes' ? 'Car Art' : 'Home'}
+                {tab === 'customize' ? 'Shop' : 'Home'}
                 <span className={`absolute bottom-0 left-0 w-full h-[1px] bg-white transform origin-left transition-transform duration-300 ${activeTab === tab ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
               </button>
             ))}

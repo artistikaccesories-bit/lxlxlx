@@ -10,13 +10,11 @@ import AboutUs from './components/AboutUs.tsx';
 import Services from './components/Services.tsx';
 
 import GallerySelector from './components/GallerySelector.tsx';
-import CarSilhouettes from './components/CarSilhouettes.tsx';
-import PortraitSilhouettes from './components/PortraitSilhouettes.tsx';
 import { Product, CartItem } from './types.ts';
 import { PRODUCTS as STATIC_PRODUCTS } from './src/data/products.ts';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'home' | 'keychains' | 'car-silhouettes' | 'portraits' | 'customize'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'keychains' | 'customize'>('home');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [deliveryType, setDeliveryType] = useState<'pickup' | 'standard' | 'express'>('standard');
@@ -73,7 +71,7 @@ function App() {
       } else {
         // Handle other routes if necessary
         const tab = path.substring(1) as any;
-        if (['keychains', 'car-silhouettes', 'portraits', 'customize'].includes(tab)) {
+        if (['keychains', 'customize'].includes(tab)) {
           setActiveTab(tab);
         } else {
           setActiveTab('home');
@@ -97,7 +95,7 @@ function App() {
 
 
   // Update URL function
-  const handleTabChange = (tab: 'home' | 'keychains' | 'car-silhouettes' | 'portraits' | 'customize') => {
+  const handleTabChange = (tab: 'home' | 'keychains' | 'customize') => {
     setActiveTab(tab);
     setSelectedProduct(null);
     window.history.pushState({ tab }, '', tab === 'home' ? '/' : `/${tab}`);
@@ -127,13 +125,15 @@ function App() {
 
 
 
-  const handleGallerySelection = (category: 'keychains' | 'cars' | 'portraits') => {
+  const handleGallerySelection = (category: 'keychains' | 'mom-special') => {
     if (category === 'keychains') {
       handleTabChange('keychains');
-    } else if (category === 'cars') {
-      handleTabChange('car-silhouettes');
-    } else if (category === 'portraits') {
-      handleTabChange('portraits');
+    } else if (category === 'mom-special') {
+      handleTabChange('keychains');
+      const momProduct = products.find(p => p.handle === 'mom-keychain-special' || p.id === '13');
+      if (momProduct) {
+        handleProductSelect(momProduct);
+      }
     }
   };
 
@@ -226,12 +226,6 @@ function App() {
         </main>
       )}
 
-      {activeTab === 'portraits' && (
-        <main>
-          <PortraitSilhouettes onBack={() => handleTabChange('home')} />
-        </main>
-      )}
-
       {activeTab === 'customize' && (
         <main>
           <ProductGallery
@@ -241,12 +235,6 @@ function App() {
             selectedProduct={selectedProduct}
             onSelectProduct={handleProductSelect}
           />
-        </main>
-      )}
-
-      {activeTab === 'car-silhouettes' && (
-        <main>
-          <CarSilhouettes onBack={() => handleTabChange('home')} />
         </main>
       )}
 
