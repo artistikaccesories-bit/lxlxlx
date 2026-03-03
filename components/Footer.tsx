@@ -1,7 +1,12 @@
 
 import React from 'react';
 
-const Footer: React.FC = () => {
+interface FooterProps {
+  onNavigate: (tab: 'home' | 'keychains' | 'car-silhouettes' | 'portraits' | 'customize') => void;
+  onServicesClick: () => void;
+}
+
+const Footer: React.FC<FooterProps> = ({ onNavigate, onServicesClick }) => {
   return (
     <footer className="bg-black py-24 px-4 border-t border-white/5">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-16 mb-20">
@@ -11,21 +16,21 @@ const Footer: React.FC = () => {
             Lebanon's premier studio for precision stainless steel laser engraving and bespoke silhouette cutting.
           </p>
         </div>
-        
+
         <div className="grid grid-cols-2 gap-8 text-center md:text-left">
           <div>
             <h4 className="text-[10px] uppercase tracking-[0.3em] text-zinc-400 font-bold mb-6">Explore</h4>
             <ul className="space-y-4 text-sm font-medium text-zinc-600">
-               <li><button className="hover:text-white transition-colors">Keychains</button></li>
-               <li><button className="hover:text-white transition-colors">Services</button></li>
-               <li><button className="hover:text-white transition-colors">Portrait Silhouette</button></li>
+              <li><button onClick={() => onNavigate('keychains')} className="hover:text-white transition-colors">Keychains</button></li>
+              <li><button onClick={onServicesClick} className="hover:text-white transition-colors">Services</button></li>
+              <li><button onClick={() => onNavigate('portraits')} className="hover:text-white transition-colors">Portrait Silhouette</button></li>
             </ul>
           </div>
           <div>
             <h4 className="text-[10px] uppercase tracking-[0.3em] text-zinc-400 font-bold mb-6">Contact</h4>
             <ul className="space-y-4 text-sm font-medium text-zinc-600">
-               <li><a href="https://instagram.com/laserart.lb" target="_blank" className="hover:text-white transition-colors">Instagram: laserart.lb</a></li>
-               <li><a href="https://wa.me/96181388115" target="_blank" className="hover:text-white transition-colors">WhatsApp: +961 81 388 115</a></li>
+              <li><a href="https://instagram.com/laserart.lb" target="_blank" className="hover:text-white transition-colors">Instagram: laserart.lb</a></li>
+              <li><a href="https://wa.me/96181388115" target="_blank" className="hover:text-white transition-colors">WhatsApp: +961 81 388 115</a></li>
             </ul>
           </div>
         </div>
@@ -36,12 +41,12 @@ const Footer: React.FC = () => {
           <p className="text-sm font-medium text-zinc-600">Sat: 10:00 — 14:00</p>
         </div>
       </div>
-      
+
       <div className="max-w-7xl mx-auto pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center text-[10px] font-bold tracking-[0.2em] text-zinc-700 gap-6">
         <p>© 2024 LASERARTLB • LEBANON</p>
         <div className="flex gap-12">
-           <a href="https://instagram.com/laserart.lb" target="_blank" className="hover:text-white transition-colors cursor-pointer">INSTAGRAM</a>
-           <a href="https://wa.me/96181388115" target="_blank" className="hover:text-white transition-colors cursor-pointer">WHATSAPP</a>
+          <a href="https://instagram.com/laserart.lb" target="_blank" className="hover:text-white transition-colors cursor-pointer">INSTAGRAM</a>
+          <a href="https://wa.me/96181388115" target="_blank" className="hover:text-white transition-colors cursor-pointer">WHATSAPP</a>
         </div>
       </div>
     </footer>

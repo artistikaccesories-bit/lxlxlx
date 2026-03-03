@@ -25,7 +25,7 @@ const Services: React.FC = () => {
     };
 
     return (
-        <section className="py-24 px-4 bg-deep-black border-t border-white/5">
+        <section id="services" className="py-24 px-4 bg-deep-black border-t border-white/5">
             <div className="max-w-7xl mx-auto">
                 <div className="mb-16 text-center">
                     <h2 className="text-4xl md:text-5xl font-black font-heading text-white mb-4 uppercase tracking-tighter">Professional <span className="text-zinc-500">Services</span></h2>

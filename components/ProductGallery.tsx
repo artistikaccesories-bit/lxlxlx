@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Product } from '../types.ts';
 import ProductModal from './ProductModal.tsx';
 // import { PRODUCTS } from '../src/data/products.ts'; // dynamic now
@@ -11,6 +11,77 @@ interface ProductGalleryProps {
   selectedProduct?: Product | null;
   onSelectProduct?: (product: Product | null) => void;
 }
+
+const ProductCard: React.FC<{ product: Product, onClick: () => void }> = ({ product, onClick }) => {
+  const images = product.images || [product.image];
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    if (images.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [images.length]);
+
+  return (
+    <div onClick={onClick} className="group cursor-pointer relative">
+      <div className="absolute -inset-0.5 bg-white rounded-[2rem] opacity-0 group-hover:opacity-10 blur transition duration-500"></div>
+      <div className="relative aspect-square bg-zinc-900/50 backdrop-blur-sm overflow-hidden mb-6 border border-white/5 rounded-[2rem] transition-all duration-500 group-hover:border-white/20">
+        <div className="absolute inset-0 bg-gradient-to-t from-deep-black/80 to-transparent z-10 opacity-60"></div>
+
+        <img
+          src={images[currentImageIndex]}
+          alt={product.name}
+          loading="lazy"
+          decoding="async"
+          className="w-full h-full object-cover transform group-hover:scale-105 transition-all duration-700 ease-in-out"
+        />
+
+        <div className="absolute bottom-6 left-6 z-20 w-[calc(100%-3rem)]">
+          <div className="flex justify-between items-end">
+            <div>
+              <span className="text-xs font-bold text-white uppercase tracking-widest block mb-2">{product.category}</span>
+            </div>
+            <div className="bg-white/10 backdrop-blur-md p-2 rounded-full border border-white/10 group-hover:bg-white group-hover:text-black transition-all duration-300">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+            </div>
+          </div>
+        </div>
+
+        {images.length > 1 && (
+          <div className="absolute top-4 right-4 z-20 flex gap-1">
+            {images.map((_, idx) => (
+              <div key={idx} className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${idx === currentImageIndex ? 'bg-white w-3' : 'bg-white/40'}`} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="flex justify-between items-start px-2">
+        <div>
+          <h3 className="text-lg md:text-2xl font-black font-heading text-white mb-2 group-hover:text-zinc-300 transition-all duration-300">{product.name}</h3>
+          <div className="flex items-center gap-2">
+            {product.isBestSeller && (
+              <span className="text-[9px] text-black font-bold uppercase tracking-wider bg-white px-2 py-1 rounded-sm">Best Seller</span>
+            )}
+            {product.originalPrice && (
+              <span className="text-[9px] text-white font-bold uppercase tracking-wider bg-zinc-800 px-2 py-1 rounded-sm border border-white/20">Sale</span>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-col items-end">
+          {product.originalPrice && (
+            <span className="text-xs text-zinc-600 line-through mb-0.5">${product.originalPrice}</span>
+          )}
+          <span className={`font-mono text-xl font-bold ${product.originalPrice ? 'text-white' : 'text-zinc-300 group-hover:text-white transition-colors'}`}>${product.price}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const ProductGallery: React.FC<ProductGalleryProps> = ({ products, onAddToCart, onBack, selectedProduct: propSelectedProduct, onSelectProduct }) => {
   const [localSelectedProduct, setLocalSelectedProduct] = useState<Product | null>(null);
@@ -57,55 +128,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ products, onAddToCart, 
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 relative z-10">
         {products.map(product => (
-          <div
-            key={product.id}
-            onClick={() => handleProductSelect(product)}
-            className="group cursor-pointer relative"
-          >
-            <div className="absolute -inset-0.5 bg-white rounded-[2rem] opacity-0 group-hover:opacity-10 blur transition duration-500"></div>
-            <div className="relative aspect-square bg-zinc-900/50 backdrop-blur-sm overflow-hidden mb-6 border border-white/5 rounded-[2rem] transition-all duration-500 group-hover:border-white/20">
-              <div className="absolute inset-0 bg-gradient-to-t from-deep-black/80 to-transparent z-10 opacity-60"></div>
-
-              <img
-                src={product.image}
-                alt={product.name}
-                loading="lazy"
-                decoding="async"
-                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
-              />
-
-              <div className="absolute bottom-6 left-6 z-20 w-[calc(100%-3rem)]">
-                <div className="flex justify-between items-end">
-                  <div>
-                    <span className="text-xs font-bold text-white uppercase tracking-widest block mb-2">{product.category}</span>
-                  </div>
-                  <div className="bg-white/10 backdrop-blur-md p-2 rounded-full border border-white/10 group-hover:bg-white group-hover:text-black transition-all duration-300">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-between items-start px-2">
-              <div>
-                <h3 className="text-lg md:text-2xl font-black font-heading text-white mb-2 group-hover:text-zinc-300 transition-all duration-300">{product.name}</h3>
-                <div className="flex items-center gap-2">
-                  {product.isBestSeller && (
-                    <span className="text-[9px] text-black font-bold uppercase tracking-wider bg-white px-2 py-1 rounded-sm">Best Seller</span>
-                  )}
-                  {product.originalPrice && (
-                    <span className="text-[9px] text-white font-bold uppercase tracking-wider bg-zinc-800 px-2 py-1 rounded-sm border border-white/20">Sale</span>
-                  )}
-                </div>
-              </div>
-              <div className="flex flex-col items-end">
-                {product.originalPrice && (
-                  <span className="text-xs text-zinc-600 line-through mb-0.5">${product.originalPrice}</span>
-                )}
-                <span className={`font-mono text-xl font-bold ${product.originalPrice ? 'text-white' : 'text-zinc-300 group-hover:text-white transition-colors'}`}>${product.price}</span>
-              </div>
-            </div>
-          </div>
+          <ProductCard key={product.id} product={product} onClick={() => handleProductSelect(product)} />
         ))}
       </div>
 

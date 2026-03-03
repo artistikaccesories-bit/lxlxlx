@@ -250,7 +250,16 @@ function App() {
         </main>
       )}
 
-      <Footer />
+      <Footer
+        onNavigate={handleTabChange}
+        onServicesClick={() => {
+          handleTabChange('home');
+          setTimeout(() => {
+            const element = document.getElementById('services');
+            if (element) element.scrollIntoView({ behavior: 'smooth' });
+          }, 100);
+        }}
+      />
 
       <CartDrawer
         isOpen={isCartOpen}

@@ -20,6 +20,7 @@ export const PRODUCTS: Product[] = [
         category: 'keychain',
         description: 'Scan and play. A custom keychain with your favorite song\'s Spotify code and the album art laser engraved. A playable memory in steel.',
         image: '/images/product2.jpg',
+        images: ['/images/product2.jpg', '/images/product2-2.jpeg'],
         stock: 2,
         isBestSeller: true
     },
@@ -124,6 +125,27 @@ export const PRODUCTS: Product[] = [
         image: '/images/qrect.jpeg',
         images: ['/images/qrect.jpeg', '/images/qrecthorizontal.jpeg'],
         stock: 10
+    },
+    {
+        id: '13',
+        name: 'MOM | Mother\'s Day Special',
+        handle: 'mom-keychain-special',
+        price: 10,
+        category: 'keychain',
+        description: 'A beautiful custom keychain for Mother\'s Day. Show your love with a personalized message. The perfect gift to celebrate her.',
+        image: '/images/mom1.jpeg',
+        stock: 10,
+        isBestSeller: true
+    },
+    {
+        id: '14',
+        name: 'CALLI | Islamic Calligraphy',
+        handle: 'islamic-calligraphy-round',
+        price: 10,
+        category: 'keychain',
+        description: 'Elegant round keychain featuring exquisite Islamic calligraphy. A perfect blend of faith and craftsmanship.',
+        image: '/images/calli.jpeg',
+        stock: 8
     }
 ];
 
