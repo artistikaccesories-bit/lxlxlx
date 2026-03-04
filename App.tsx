@@ -200,7 +200,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
-      <Navbar activeTab={activeTab} setActiveTab={handleTabChange} cartCount={cart.reduce((a, b) => a + b.quantity, 0)} onCartClick={() => setIsCartOpen(true)} />
+      <Navbar activeTab={activeTab} setActiveTab={handleTabChange} cartCount={cart.reduce((a, b) => a + b.quantity, 0)} onOpenCart={() => setIsCartOpen(true)} />
 
       {activeTab === 'home' && (
         <main>
