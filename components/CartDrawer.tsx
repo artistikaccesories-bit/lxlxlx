@@ -147,7 +147,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
                       <span className="text-xs font-mono w-4 text-center text-white">{item.quantity}</span>
                       <button onClick={() => updateQuantity(item.internalId, 1)} className="text-zinc-500 hover:text-white transition-colors w-4 text-center">+</button>
                     </div>
-                    <button onClick={() => removeFromCart(item.internalId)} className="text-[10px] uppercase font-bold text-zinc-600 hover:text-red-500 transition-colors">
+                    <button onClick={() => removeFromCart(item.internalId)} className="text-[10px] uppercase font-bold text-zinc-600 hover:text-white transition-colors">
                       Remove
                     </button>
                   </div>
@@ -178,7 +178,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
                 {discountApplied ? 'APPLIED' : 'APPLY'}
               </button>
             </div>
-            {promoError && <p className="text-red-500 text-xs mb-2">{promoError}</p>}
+            {promoError && <p className="text-zinc-400 text-xs mb-2">{promoError}</p>}
             {discountApplied && <p className="text-white text-xs mb-2">Discount Applied: 20% OFF</p>}
 
 

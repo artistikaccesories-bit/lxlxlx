@@ -208,13 +208,13 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
                             <div className="flex items-center gap-2 mb-1">
                                 <p className="text-zinc-500 text-xs font-bold uppercase tracking-[0.2em]">{product.category} Series</p>
                                 {product.originalPrice && (
-                                    <span className="text-xs text-red-500 font-bold uppercase tracking-wider bg-red-500/10 px-2 py-0.5 rounded">Sale</span>
+                                    <span className="text-xs text-black font-bold uppercase tracking-wider bg-white px-2 py-0.5 rounded">Sale</span>
                                 )}
                             </div>
                             <div className="flex items-center gap-2 mt-2">
-                                <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
-                                <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest">
-                                    Only <span className={`inline-block transition-transform duration-500 ${isAnimatingStock ? 'scale-150 text-red-400' : 'scale-100'}`}>{stock}</span> left
+                                <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></div>
+                                <span className="text-[10px] font-bold text-white uppercase tracking-widest">
+                                    Only <span className={`inline-block transition-transform duration-500 ${isAnimatingStock ? 'scale-150 text-zinc-300' : 'scale-100'}`}>{stock}</span> left
                                 </span>
                             </div>
                         </div>

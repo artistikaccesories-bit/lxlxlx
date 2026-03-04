@@ -50,7 +50,7 @@ const Hero: React.FC<HeroProps> = ({ onExplore }) => {
               'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=150&auto=format&fit=crop', // Man portrait
               'https://images.unsplash.com/photo-1595152772835-219674b2a8a6?q=80&w=150&auto=format&fit=crop'  // Smiling man
             ].map((src, i) => (
-              <div key={i} className="w-10 h-10 rounded-full border-2 border-deep-black bg-zinc-800 overflow-hidden ring-2 ring-laser-purple/20">
+              <div key={i} className="w-10 h-10 rounded-full border-2 border-deep-black bg-zinc-800 overflow-hidden ring-2 ring-white/10">
                 <img src={src} alt={`Customer ${i + 1}`} loading="lazy" decoding="async" className="w-full h-full object-cover" />
               </div>
             ))}
@@ -63,7 +63,7 @@ const Hero: React.FC<HeroProps> = ({ onExplore }) => {
 
         <h1 className="text-4xl md:text-[9rem] font-black mb-6 md:mb-8 tracking-tighter leading-[0.9] font-heading text-transparent bg-clip-text bg-gradient-to-b from-white via-zinc-200 to-zinc-600 animate-slide-up" style={{ animationDelay: '0.2s' }}>
           CRAFT YOUR <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-laser-blue via-white to-laser-purple drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]">LEGACY.</span>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-zinc-500 via-white to-zinc-400 drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]">LEGACY.</span>
         </h1>
 
         <p className="text-zinc-400 text-base md:text-xl max-w-2xl mx-auto mb-8 md:mb-14 leading-relaxed tracking-tight font-medium animate-slide-up" style={{ animationDelay: '0.3s' }}>
@@ -76,8 +76,8 @@ const Hero: React.FC<HeroProps> = ({ onExplore }) => {
             onClick={onExplore}
             className="group relative px-8 py-4 md:px-12 md:py-5 overflow-hidden rounded-full bg-white text-black font-black uppercase tracking-[0.2em] text-xs md:text-sm hover:scale-105 transition-transform duration-300"
           >
-            <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-laser-blue to-laser-purple opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <span className="relative z-10 group-hover:text-white transition-colors duration-300">Start Creating</span>
+            <div className="absolute inset-0 w-full h-full bg-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <span className="relative z-10 group-hover:text-black transition-colors duration-300">Start Creating</span>
           </button>
 
           <button
@@ -85,14 +85,14 @@ const Hero: React.FC<HeroProps> = ({ onExplore }) => {
               const element = document.getElementById('gallery-selector');
               if (element) element.scrollIntoView({ behavior: 'smooth' });
             }}
-            className="px-8 py-4 md:px-12 md:py-5 rounded-full border border-zinc-800 text-zinc-400 font-bold uppercase tracking-[0.2em] text-xs md:text-sm hover:border-laser-blue hover:text-white hover:bg-laser-blue/5 transition-all duration-300"
+            className="px-8 py-4 md:px-12 md:py-5 rounded-full border border-zinc-800 text-zinc-400 font-bold uppercase tracking-[0.2em] text-xs md:text-sm hover:border-white hover:text-black hover:bg-white transition-all duration-300"
           >
             View Gallery
           </button>
         </div>
       </div>
 
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-30 text-laser-blue">
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-50 text-white">
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
       </div>
     </div>

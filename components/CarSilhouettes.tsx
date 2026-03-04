@@ -194,7 +194,7 @@ const CarSilhouettes: React.FC<CarSilhouettesProps> = ({ onBack }) => {
                                     {discountApplied ? 'APPLIED' : 'APPLY'}
                                 </button>
                             </div>
-                            {promoError && <p className="text-red-500 text-xs mt-2">{promoError}</p>}
+                            {promoError && <p className="text-zinc-400 text-xs mt-2">{promoError}</p>}
                             {discountApplied && <p className="text-white text-xs mt-2">Discount Applied: 20% OFF</p>}
                         </div>
 
@@ -206,7 +206,7 @@ const CarSilhouettes: React.FC<CarSilhouettesProps> = ({ onBack }) => {
                                     <span className="block text-zinc-500 text-[10px] uppercase tracking-widest mb-1">Estimated Total</span>
                                     <div className="flex items-center gap-2">
                                         {discountApplied && (
-                                            <span className="block text-xl md:text-2xl font-bold text-zinc-500 line-through decoration-red-500 decoration-2">${pricing[selectedSize].price}</span>
+                                            <span className="block text-xl md:text-2xl font-bold text-zinc-500 line-through decoration-zinc-400 decoration-2">${pricing[selectedSize].price}</span>
                                         )}
                                         <span className={`block text-3xl md:text-4xl font-black font-heading text-white`}>
                                             ${getCurrentPrice()}
