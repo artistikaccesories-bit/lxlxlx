@@ -9,6 +9,8 @@ import Footer from './components/Footer.tsx';
 import CartDrawer from './components/CartDrawer.tsx';
 import AboutUs from './components/AboutUs.tsx';
 import Services from './components/Services.tsx';
+import TrustBanner from './components/TrustBanner.tsx';
+import TrustBadges from './components/TrustBadges.tsx';
 
 import GallerySelector from './components/GallerySelector.tsx';
 import { Product, CartItem } from './types.ts';
@@ -351,7 +353,9 @@ function App() {
             const element = document.getElementById('gallery-selector');
             if (element) element.scrollIntoView({ behavior: 'smooth' });
           }} />
+          <TrustBanner />
           <GallerySelector onSelectCategory={handleGallerySelection} />
+          <TrustBadges />
           <AboutUs />
           <Services />
         </main>

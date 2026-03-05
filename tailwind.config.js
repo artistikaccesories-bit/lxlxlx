@@ -22,6 +22,7 @@ export default {
                 'float': 'float 6s ease-in-out infinite',
                 'slide-up': 'slideUp 0.8s ease-out forwards',
                 'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                'marquee': 'marquee 25s linear infinite',
             },
             keyframes: {
                 float: {
@@ -31,6 +32,10 @@ export default {
                 slideUp: {
                     '0%': { opacity: '0', transform: 'translateY(20px)' },
                     '100%': { opacity: '1', transform: 'translateY(0)' },
+                },
+                marquee: {
+                    '0%': { transform: 'translateX(0%)' },
+                    '100%': { transform: 'translateX(-100%)' },
                 },
             },
         },
