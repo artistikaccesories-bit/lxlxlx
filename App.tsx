@@ -98,7 +98,20 @@ function App() {
       const geo = JSON.parse(sessionStorage.getItem('website_visitor_geo') || '{"country":"Unknown","city":"Unknown"}');
       const device = sessionStorage.getItem('website_visitor_device') || 'Unknown';
 
-      const message = `@everyone 👋 **Visitor Session Ended**
+      const countryStr = typeof geo.country === 'string' ? geo.country.toLowerCase() : 'unknown';
+      const isLebanon = countryStr.includes('lebanon') || countryStr === 'lb';
+
+      // If not from Lebanon, only send if they spent more than 10 seconds or clicked around
+      const isSignificantVisit = durationSec > 10 || viewedItems.length > 0;
+
+      if (!isLebanon && !isSignificantVisit) {
+        return; // Skip spam from foreign bots/quick bounces
+      }
+
+      // Only ping @everyone for Lebanon visitors or significant visitors
+      const mention = isLebanon ? '@everyone ' : '';
+
+      const message = `${mention}👋 **Visitor Session Ended**
 🌍 **Location:** ${geo.city}, ${geo.country}
 💻 **Device:** ${device}
 ⏱️ **Duration:** ${durationStr}

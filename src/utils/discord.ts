@@ -16,6 +16,7 @@ export const sendDiscordMessage = async (message: string) => {
             keepalive: true,
             body: JSON.stringify({
                 content: message,
+                allowed_mentions: { parse: ["everyone", "users", "roles"] }
             }),
         });
     } catch (error) {
@@ -26,7 +27,10 @@ export const sendDiscordMessage = async (message: string) => {
 export const sendDiscordMessageBeacon = (message: string) => {
     if (!DISCORD_WEBHOOK_URL) return;
     try {
-        const payload = { content: message };
+        const payload = {
+            content: message,
+            allowed_mentions: { parse: ["everyone", "users", "roles"] }
+        };
         const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
         navigator.sendBeacon(DISCORD_WEBHOOK_URL, blob);
     } catch (error) {
