@@ -28,11 +28,11 @@ const CustomPreview: React.FC = () => {
     const [addGiftBox, setAddGiftBox] = useState(false);
 
     const basePrice = 10;
-    const giftBoxPrice = 5;
+    const giftBoxPrice = 2;
     const totalPrice = basePrice + (addGiftBox ? giftBoxPrice : 0);
 
     const handleOrder = () => {
-        const message = `Hi LaserArtLB! I want a custom keychain:\n\n*Text:* ${previewText || 'YOUR NAME'}\n*Shape:* ${selectedShape.name}\n*Font:* ${selectedFont.name}\n*Gift Box:* ${addGiftBox ? 'Yes (+$5)' : 'No'}\n\n*Estimated Total:* $${totalPrice}`;
+        const message = `Hi LaserArtLB! I want a custom keychain:\n\n*Text:* ${previewText || 'YOUR NAME'}\n*Shape:* ${selectedShape.name}\n*Font:* ${selectedFont.name}\n*Gift Box:* ${addGiftBox ? 'Yes (+$2)' : 'No'}\n\n*Estimated Total:* $${totalPrice}`;
         const whatsappUrl = `https://wa.me/96176399329?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
     };

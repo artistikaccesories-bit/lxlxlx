@@ -9,19 +9,43 @@ const ExitIntentPopup: React.FC<ExitIntentPopupProps> = ({ cartItemsCount }) => 
     const [hasTriggered, setHasTriggered] = useState(false);
 
     useEffect(() => {
+        let lastScrollY = window.scrollY;
+
         const handleMouseLeave = (e: MouseEvent) => {
-            // Check if mouse leaves through the top of the viewport (indicating intent to close tab or change URL)
+            // Check if mouse leaves through the top of the viewport (Desktop)
             if (e.clientY <= 0 && cartItemsCount > 0 && !hasTriggered) {
                 setIsVisible(true);
                 setHasTriggered(true);
             }
         };
 
-        // Add event listener
+        const handleScroll = () => {
+            // Detect fast upward scroll on mobile
+            const currentScrollY = window.scrollY;
+            if (lastScrollY - currentScrollY > 50 && cartItemsCount > 0 && !hasTriggered) {
+                setIsVisible(true);
+                setHasTriggered(true);
+            }
+            lastScrollY = currentScrollY;
+        };
+
+        const handleVisibilityChange = () => {
+            // Detect switching tabs or minimizing the browser (Mobile/Desktop)
+            if (document.hidden && cartItemsCount > 0 && !hasTriggered) {
+                setIsVisible(true);
+                setHasTriggered(true);
+            }
+        };
+
+        // Add event listeners
         document.documentElement.addEventListener('mouseleave', handleMouseLeave);
+        document.addEventListener('scroll', handleScroll, { passive: true });
+        document.addEventListener('visibilitychange', handleVisibilityChange);
 
         return () => {
             document.documentElement.removeEventListener('mouseleave', handleMouseLeave);
+            document.removeEventListener('scroll', handleScroll);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
     }, [cartItemsCount, hasTriggered]);
 
