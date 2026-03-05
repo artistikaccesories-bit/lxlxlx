@@ -214,7 +214,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
                             <div className="flex items-center gap-2 mt-2">
                                 <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
                                 <span className="text-[10px] font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500 uppercase tracking-widest">
-                                    Only <span className={`inline-block transition-transform duration-500 ${isAnimatingStock ? 'scale-150 text-red-400' : 'scale-100'}`}>{stock}</span> left 🔥
+                                    Only <span className={`inline-block transition-transform duration-500 ${isAnimatingStock ? 'scale-150 text-red-400' : 'scale-100 text-orange-500'}`}>{stock}</span> left 🔥
                                 </span>
                             </div>
                         </div>
