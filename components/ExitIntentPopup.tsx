@@ -7,6 +7,15 @@ interface ExitIntentPopupProps {
 const ExitIntentPopup: React.FC<ExitIntentPopupProps> = ({ cartItemsCount }) => {
     const [isVisible, setIsVisible] = useState(false);
     const [hasTriggered, setHasTriggered] = useState(false);
+    const [historyPushed, setHistoryPushed] = useState(false);
+
+    // Push a dummy history state so the first "Back" button press gets caught
+    useEffect(() => {
+        if (cartItemsCount > 0 && !hasTriggered && !historyPushed) {
+            window.history.pushState({ exitIntentHook: true }, '');
+            setHistoryPushed(true);
+        }
+    }, [cartItemsCount, hasTriggered, historyPushed]);
 
     useEffect(() => {
         let lastScrollY = window.scrollY;
@@ -37,15 +46,25 @@ const ExitIntentPopup: React.FC<ExitIntentPopupProps> = ({ cartItemsCount }) => 
             }
         };
 
+        const handlePopState = () => {
+            // Detect mobile "Back" button press
+            if (cartItemsCount > 0 && !hasTriggered) {
+                setIsVisible(true);
+                setHasTriggered(true);
+            }
+        };
+
         // Add event listeners
         document.documentElement.addEventListener('mouseleave', handleMouseLeave);
         document.addEventListener('scroll', handleScroll, { passive: true });
         document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('popstate', handlePopState);
 
         return () => {
             document.documentElement.removeEventListener('mouseleave', handleMouseLeave);
             document.removeEventListener('scroll', handleScroll);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('popstate', handlePopState);
         };
     }, [cartItemsCount, hasTriggered]);
 
