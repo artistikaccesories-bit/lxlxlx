@@ -98,7 +98,7 @@ function App() {
       const geo = JSON.parse(sessionStorage.getItem('website_visitor_geo') || '{"country":"Unknown","city":"Unknown"}');
       const device = sessionStorage.getItem('website_visitor_device') || 'Unknown';
 
-      const message = `👋 **Visitor Session Ended**
+      const message = `@everyone 👋 **Visitor Session Ended**
 🌍 **Location:** ${geo.city}, ${geo.country}
 💻 **Device:** ${device}
 ⏱️ **Duration:** ${durationStr}
