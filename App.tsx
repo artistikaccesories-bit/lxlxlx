@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { initGA, logPageView } from './src/utils/analytics';
+import { sendDiscordMessage } from './src/utils/discord';
 import Navbar from './components/Navbar.tsx';
 import Hero from './components/Hero.tsx';
 import ProductGallery from './components/ProductGallery.tsx';
@@ -25,6 +26,40 @@ function App() {
   // Initialize GA
   React.useEffect(() => {
     initGA();
+  }, []);
+
+  // Discord tracking
+  React.useEffect(() => {
+    const sessionKey = 'website_session_start';
+    let entryTime = sessionStorage.getItem(sessionKey);
+
+    if (!entryTime) {
+      entryTime = Date.now().toString();
+      sessionStorage.setItem(sessionKey, entryTime);
+
+      // Send Entry Notification
+      sendDiscordMessage(`🚀 **New Visitor on Website!**\nTime: ${new Date().toLocaleTimeString()}`);
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        const start = parseInt(sessionStorage.getItem(sessionKey) || Date.now().toString());
+        const durationSec = Math.floor((Date.now() - start) / 1000);
+
+        let durationStr = `${durationSec} seconds`;
+        if (durationSec > 60) {
+          durationStr = `${Math.floor(durationSec / 60)} m ${durationSec % 60} s`;
+        }
+
+        sendDiscordMessage(`👋 **Visitor Left Website**\nDuration: ${durationStr}`);
+        sessionStorage.removeItem(sessionKey);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   // Handle initial URL and browser back/forward buttons
