@@ -49,9 +49,30 @@ function App() {
         })
         .catch(() => console.warn('Geo fetch failed'));
 
-      // Store basic device info
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      sessionStorage.setItem('website_visitor_device', isMobile ? 'Mobile 📱' : 'Desktop 💻');
+      // Store detailed device info
+      const ua = navigator.userAgent;
+      let deviceName = 'Unknown Device';
+
+      if (/windows phone/i.test(ua)) {
+        deviceName = 'Windows Phone 📱';
+      } else if (/android/i.test(ua)) {
+        // Try to extract Android model
+        const match = ua.match(/Android\s+[0-9\.]+(?:;\s+([^;]+))?/);
+        deviceName = match && match[1] ? `Android (${match[1]}) 📱` : 'Android 📱';
+      } else if (/ipad|iphone|ipod/i.test(ua)) {
+        // For iOS, user-agent doesn't expose exact model (e.g., iPhone 13 vs 14)
+        deviceName = /ipad/i.test(ua) ? 'iPad 📱' : 'iPhone 📱';
+      } else if (/mac/i.test(ua)) {
+        deviceName = 'Mac 💻';
+      } else if (/win/i.test(ua)) {
+        deviceName = 'Windows PC 💻';
+      } else if (/linux/i.test(ua)) {
+        deviceName = 'Linux PC 💻';
+      } else {
+        deviceName = /Mobile/.test(ua) ? 'Mobile 📱' : 'Desktop 💻';
+      }
+
+      sessionStorage.setItem('website_visitor_device', deviceName);
     }
 
     let lastSent = 0;
