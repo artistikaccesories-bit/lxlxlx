@@ -22,3 +22,14 @@ export const sendDiscordMessage = async (message: string) => {
         console.error('Error sending Discord message:', error);
     }
 };
+
+export const sendDiscordMessageBeacon = (message: string) => {
+    if (!DISCORD_WEBHOOK_URL) return;
+    try {
+        const payload = { content: message };
+        const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+        navigator.sendBeacon(DISCORD_WEBHOOK_URL, blob);
+    } catch (error) {
+        console.error('Error sending Discord beacon:', error);
+    }
+};

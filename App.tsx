@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { initGA, logPageView } from './src/utils/analytics';
-import { sendDiscordMessage } from './src/utils/discord';
+import { sendDiscordMessage, sendDiscordMessageBeacon } from './src/utils/discord';
 import Navbar from './components/Navbar.tsx';
 import Hero from './components/Hero.tsx';
 import ProductGallery from './components/ProductGallery.tsx';
@@ -48,27 +48,44 @@ function App() {
         });
     }
 
+    let lastSent = 0;
+    const sendExitNotification = () => {
+      const now = Date.now();
+      if (now - lastSent < 2000) return; // Prevent duplicate rapid sends
+      lastSent = now;
+
+      const start = parseInt(sessionStorage.getItem(sessionKey) || Date.now().toString());
+      const durationSec = Math.floor((Date.now() - start) / 1000);
+
+      let durationStr = `${durationSec} seconds`;
+      if (durationSec > 60) {
+        durationStr = `${Math.floor(durationSec / 60)} m ${durationSec % 60} s`;
+      }
+
+      const viewedItems = JSON.parse(sessionStorage.getItem('website_viewed_items') || '[]');
+      const itemsList = viewedItems.length > 0 ? viewedItems.join(', ') : 'None yet';
+
+      // Use beacon for guaranteed delivery on page exit/tab close
+      sendDiscordMessageBeacon(`👋 **Visitor Left (or switched tabs)**\n⏱️ Duration so far: ${durationStr}\n👀 Viewed: ${itemsList}`);
+    };
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
-        const start = parseInt(sessionStorage.getItem(sessionKey) || Date.now().toString());
-        const durationSec = Math.floor((Date.now() - start) / 1000);
-
-        let durationStr = `${durationSec} seconds`;
-        if (durationSec > 60) {
-          durationStr = `${Math.floor(durationSec / 60)} m ${durationSec % 60} s`;
-        }
-
-        const viewedItems = JSON.parse(sessionStorage.getItem('website_viewed_items') || '[]');
-        const itemsList = viewedItems.length > 0 ? viewedItems.join(', ') : 'None yet';
-
-        sendDiscordMessage(`👋 **Visitor Left (or switched tabs)**\n⏱️ Duration so far: ${durationStr}\n👀 Viewed Items: ${itemsList}`);
-        // Note: We don't remove sessionKey here, so if they return to this tab and leave again, it tracks total duration!
+        sendExitNotification();
       }
     };
 
+    const handlePageHide = () => {
+      sendExitNotification();
+    };
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', handlePageHide);
+    window.addEventListener('beforeunload', handlePageHide);
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', handlePageHide);
+      window.removeEventListener('beforeunload', handlePageHide);
     };
   }, []);
 
@@ -143,6 +160,15 @@ function App() {
   const handleTabChange = (tab: 'home' | 'keychains' | 'customize') => {
     setActiveTab(tab);
     setSelectedProduct(null);
+
+    // Track category visited
+    const viewedItems = JSON.parse(sessionStorage.getItem('website_viewed_items') || '[]');
+    const tabName = tab === 'home' ? 'Home Page' : tab === 'keychains' ? 'Keychains Gallery' : 'Customize Gallery';
+    if (!viewedItems.includes(tabName)) {
+      viewedItems.push(tabName);
+      sessionStorage.setItem('website_viewed_items', JSON.stringify(viewedItems));
+    }
+
     window.history.pushState({ tab }, '', tab === 'home' ? '/' : `/${tab}`);
   };
 
