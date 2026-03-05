@@ -61,7 +61,7 @@ const Hero: React.FC<HeroProps> = ({ onExplore }) => {
           </div>
         </div>
 
-        <h1 className="text-3xl sm:text-4xl md:text-[9rem] font-black mb-6 md:mb-8 tracking-tighter leading-[0.9] font-heading text-transparent bg-clip-text bg-gradient-to-b from-white via-zinc-200 to-zinc-600 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+        <h1 className="text-4xl sm:text-6xl md:text-[9rem] font-black mb-6 md:mb-8 tracking-tighter leading-[1.1] font-heading text-transparent bg-clip-text bg-gradient-to-b from-white via-zinc-200 to-zinc-600 animate-slide-up" style={{ animationDelay: '0.2s' }}>
           CRAFT YOUR <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-zinc-500 via-white to-zinc-400 drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]">LEGACY.</span>
         </h1>
