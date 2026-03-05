@@ -36,7 +36,8 @@ export const ProductCard: React.FC<{ product: Product, onClick: () => void }> = 
         <img
           src={images[currentImageIndex]}
           alt={product.name}
-          loading="lazy"
+          fetchpriority="high"
+          loading="eager"
           decoding="async"
           className="w-full h-full object-cover transform group-hover:scale-105 transition-all duration-700 ease-in-out"
         />
@@ -88,6 +89,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ products, onAddToCart, 
   const [localSelectedProduct, setLocalSelectedProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeSearch, setActiveSearch] = useState('');
+  const [lastSearchedQuery, setLastSearchedQuery] = useState('');
 
   // Use prop if provided, otherwise fallback to local state (backward compatibility)
   const selectedProduct = propSelectedProduct !== undefined ? propSelectedProduct : localSelectedProduct;
@@ -99,16 +101,22 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ products, onAddToCart, 
     }
   };
 
+  const filteredProducts = products.filter(p => !activeSearch || p.name.toLowerCase().includes(activeSearch.toLowerCase()) || p.category.toLowerCase().includes(activeSearch.toLowerCase()));
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const query = searchTerm.trim();
     setActiveSearch(query);
-    if (query) {
-      sendDiscordMessage(`🔍 **New Search on Website:** ${query}`);
+
+    // Only notify if no results found, and it's a new query
+    if (query && query !== lastSearchedQuery) {
+      setLastSearchedQuery(query);
+      const tempFiltered = products.filter(p => p.name.toLowerCase().includes(query.toLowerCase()) || p.category.toLowerCase().includes(query.toLowerCase()));
+      if (tempFiltered.length === 0) {
+        sendDiscordMessage(`🔍 **Empty Search:** "${query}" returned no results. Make it?`);
+      }
     }
   };
-
-  const filteredProducts = products.filter(p => !activeSearch || p.name.toLowerCase().includes(activeSearch.toLowerCase()) || p.category.toLowerCase().includes(activeSearch.toLowerCase()));
 
   return (
     <div id="product-gallery" className="py-24 px-4 max-w-7xl mx-auto relative">
@@ -157,6 +165,25 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ products, onAddToCart, 
           <ProductCard key={product.id} product={product} onClick={() => handleProductSelect(product)} />
         ))}
       </div>
+
+      {filteredProducts.length === 0 && (
+        <div className="w-full py-20 flex flex-col items-center justify-center text-center relative z-10 glass rounded-[2rem] mt-8">
+          <svg className="w-16 h-16 text-zinc-500 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 14v-2m0 0V8m0 2h2m-2 0H8" /></svg>
+          <h3 className="text-3xl font-black font-heading text-white mb-4 uppercase">Didn't find what you're looking for?</h3>
+          <p className="text-zinc-400 max-w-lg mb-8">
+            We specialize in custom creations. Let us know what you want to engrave, and we'll make it happen.
+          </p>
+          <a
+            href={`https://wa.me/96181388115?text=${encodeURIComponent(`Hi! I couldn't find exactly what I was looking for. Can you make something custom related to "${activeSearch}"?`)}`}
+            target="_blank"
+            rel="noreferrer"
+            className="px-8 py-4 bg-white text-black font-black uppercase tracking-widest text-xs rounded-full hover:bg-zinc-200 transition-colors inline-flex items-center gap-2 group"
+          >
+            Request Custom Design
+            <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z" /></svg>
+          </a>
+        </div>
+      )}
 
       {selectedProduct && (
         <ProductModal

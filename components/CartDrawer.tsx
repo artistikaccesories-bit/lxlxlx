@@ -69,6 +69,10 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
 
     message += `\n*Total:* $${finalTotal.toFixed(2)}\n\n*Customer Request:* I've confirmed my order via the website.`;
 
+    if (typeof window !== 'undefined' && (window as any).fbq) {
+      (window as any).fbq('track', 'Purchase', { value: finalTotal, currency: 'USD' });
+    }
+
     window.open(`https://wa.me/96181388115?text=${encodeURIComponent(message)}`, '_blank');
   };
 

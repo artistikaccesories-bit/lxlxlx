@@ -9,7 +9,8 @@ import Footer from './components/Footer.tsx';
 import CartDrawer from './components/CartDrawer.tsx';
 import AboutUs from './components/AboutUs.tsx';
 import Services from './components/Services.tsx';
-import TrustBanner from './components/TrustBanner.tsx';
+import CustomPreview from './components/CustomPreview.tsx';
+import SocialProof from './components/SocialProof.tsx';
 import TrustBadges from './components/TrustBadges.tsx';
 
 import GallerySelector from './components/GallerySelector.tsx';
@@ -372,7 +373,8 @@ function App() {
             const element = document.getElementById('gallery-selector');
             if (element) element.scrollIntoView({ behavior: 'smooth' });
           }} />
-          <TrustBanner />
+
+          <CustomPreview />
 
           <section className="py-20 px-4 max-w-7xl mx-auto relative z-10">
             <div className="text-center mb-12">
@@ -388,6 +390,8 @@ function App() {
               ))}
             </div>
           </section>
+
+          <SocialProof />
 
           <GallerySelector onSelectCategory={handleGallerySelection} />
           <TrustBadges />
