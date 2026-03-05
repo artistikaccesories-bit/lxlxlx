@@ -37,15 +37,21 @@ function App() {
       entryTime = Date.now().toString();
       sessionStorage.setItem(sessionKey, entryTime);
 
-      // Fetch Geolocation and Send Entry Notification
+      // Fetch Geolocation and store it for the exit message
       fetch('https://get.geojs.io/v1/ip/geo.json')
         .then(res => res.json())
         .then(data => {
-          sendDiscordMessage(`🚀 **New Visitor on Website!**\n🌍 Country: ${data.country} (${data.city})\n🕒 Time: ${new Date().toLocaleTimeString()}`);
+          sessionStorage.setItem('website_visitor_geo', JSON.stringify({
+            country: data.country,
+            city: data.city,
+            ip: data.ip
+          }));
         })
-        .catch(() => {
-          sendDiscordMessage(`🚀 **New Visitor on Website!**\n🕒 Time: ${new Date().toLocaleTimeString()}`);
-        });
+        .catch(() => console.warn('Geo fetch failed'));
+
+      // Store basic device info
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      sessionStorage.setItem('website_visitor_device', isMobile ? 'Mobile 📱' : 'Desktop 💻');
     }
 
     let lastSent = 0;
@@ -57,16 +63,28 @@ function App() {
       const start = parseInt(sessionStorage.getItem(sessionKey) || Date.now().toString());
       const durationSec = Math.floor((Date.now() - start) / 1000);
 
+      // If they literally just opened and immediately closed (0-2 seconds), maybe don't spam, or just send a quick one.
+      // We'll send it anyway as requested.
+
       let durationStr = `${durationSec} seconds`;
       if (durationSec > 60) {
         durationStr = `${Math.floor(durationSec / 60)} m ${durationSec % 60} s`;
       }
 
       const viewedItems = JSON.parse(sessionStorage.getItem('website_viewed_items') || '[]');
-      const itemsList = viewedItems.length > 0 ? viewedItems.join(', ') : 'None yet';
+      const itemsList = viewedItems.length > 0 ? viewedItems.join(', ') : 'None';
+
+      const geo = JSON.parse(sessionStorage.getItem('website_visitor_geo') || '{"country":"Unknown","city":"Unknown"}');
+      const device = sessionStorage.getItem('website_visitor_device') || 'Unknown';
+
+      const message = `👋 **Visitor Session Ended**
+🌍 **Location:** ${geo.city}, ${geo.country}
+💻 **Device:** ${device}
+⏱️ **Duration:** ${durationStr}
+👀 **Viewed Items/Pages:** ${itemsList}`;
 
       // Use beacon for guaranteed delivery on page exit/tab close
-      sendDiscordMessageBeacon(`👋 **Visitor Left (or switched tabs)**\n⏱️ Duration so far: ${durationStr}\n👀 Viewed: ${itemsList}`);
+      sendDiscordMessageBeacon(message);
     };
 
     const handleVisibilityChange = () => {
