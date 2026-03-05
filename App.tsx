@@ -81,6 +81,16 @@ function App() {
       if (now - lastSent < 2000) return; // Prevent duplicate rapid sends
       lastSent = now;
 
+      // Anti-spam 18h limit per device
+      const lastWebhookSentStr = localStorage.getItem('last_webhook_sent');
+      if (lastWebhookSentStr) {
+        const lastWebhookSent = parseInt(lastWebhookSentStr, 10);
+        const hoursSinceLastSent = (now - lastWebhookSent) / (1000 * 60 * 60);
+        if (hoursSinceLastSent < 18) {
+          return; // Skip if sent within last 18 hours
+        }
+      }
+
       const start = parseInt(sessionStorage.getItem(sessionKey) || Date.now().toString());
       const durationSec = Math.floor((Date.now() - start) / 1000);
 
@@ -119,6 +129,9 @@ function App() {
 
       // Use beacon for guaranteed delivery on page exit/tab close
       sendDiscordMessageBeacon(message);
+
+      // Record successful send
+      localStorage.setItem('last_webhook_sent', now.toString());
     };
 
     const handleVisibilityChange = () => {
