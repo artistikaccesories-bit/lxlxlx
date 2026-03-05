@@ -13,7 +13,7 @@ interface ProductGalleryProps {
   onSelectProduct?: (product: Product | null) => void;
 }
 
-const ProductCard: React.FC<{ product: Product, onClick: () => void }> = ({ product, onClick }) => {
+export const ProductCard: React.FC<{ product: Product, onClick: () => void }> = ({ product, onClick }) => {
   const images = product.images || [product.image];
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 

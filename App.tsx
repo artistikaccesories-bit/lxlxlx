@@ -4,7 +4,7 @@ import { initGA, logPageView } from './src/utils/analytics';
 import { sendDiscordMessage, sendDiscordMessageBeacon } from './src/utils/discord';
 import Navbar from './components/Navbar.tsx';
 import Hero from './components/Hero.tsx';
-import ProductGallery from './components/ProductGallery.tsx';
+import ProductGallery, { ProductCard } from './components/ProductGallery.tsx';
 import Footer from './components/Footer.tsx';
 import CartDrawer from './components/CartDrawer.tsx';
 import AboutUs from './components/AboutUs.tsx';
@@ -282,6 +282,19 @@ function App() {
     }
   };
 
+  const navigateToSearch = () => {
+    handleTabChange('keychains');
+    setTimeout(() => {
+      const searchInput = document.querySelector('input[placeholder="Search products..."]') as HTMLInputElement;
+      if (searchInput) {
+        searchInput.focus();
+        searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }, 100);
+  };
+
   const addToCart = (product: Product, engravingText: string, backText: string | undefined, isDoubleSided: boolean, isGiftBox: boolean) => {
     setCart(prev => {
       const existing = prev.find(item =>
@@ -345,7 +358,13 @@ function App() {
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
-      <Navbar activeTab={activeTab} setActiveTab={handleTabChange} cartCount={cart.reduce((a, b) => a + b.quantity, 0)} onOpenCart={() => setIsCartOpen(true)} />
+      <Navbar
+        activeTab={activeTab}
+        setActiveTab={handleTabChange}
+        cartCount={cart.reduce((a, b) => a + b.quantity, 0)}
+        onOpenCart={() => setIsCartOpen(true)}
+        onToggleSearch={navigateToSearch}
+      />
 
       {activeTab === 'home' && (
         <main>
@@ -354,6 +373,22 @@ function App() {
             if (element) element.scrollIntoView({ behavior: 'smooth' });
           }} />
           <TrustBanner />
+
+          <section className="py-20 px-4 max-w-7xl mx-auto relative z-10">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-5xl font-black font-heading text-white mb-4">BEST <span className="text-zinc-500">SELLERS</span></h2>
+              <p className="text-zinc-400">Our most loved customized pieces.</p>
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
+              {products.filter(p => p.isBestSeller).map(product => (
+                <ProductCard key={product.id} product={product} onClick={() => {
+                  handleTabChange('keychains');
+                  setTimeout(() => handleProductSelect(product), 50);
+                }} />
+              ))}
+            </div>
+          </section>
+
           <GallerySelector onSelectCategory={handleGallerySelection} />
           <TrustBadges />
           <AboutUs />

@@ -6,9 +6,10 @@ interface NavbarProps {
   setActiveTab: (tab: 'home' | 'customize') => void;
   cartCount: number;
   onOpenCart: () => void;
+  onToggleSearch: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, cartCount, onOpenCart }) => {
+const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, cartCount, onOpenCart, onToggleSearch }) => {
   return (
     <nav className="sticky top-0 z-50 glass-nav transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -19,7 +20,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, cartCount, onO
               <img src="/images/logo.webp" alt="LaserArtLB" className="w-full h-full object-contain relative z-10 filter brightness-200" />
             </div>
             <div className="flex flex-col">
-              <span className="text-base md:text-xl font-black tracking-[0.15em] font-heading text-white leading-none relative">
+              <span className="text-xs md:text-lg font-black tracking-[0.15em] font-heading text-white leading-none relative">
                 <span className="absolute -inset-1 blur-sm bg-white/10 opacity-0 group-hover:opacity-50 transition-opacity duration-300"></span>
                 <span className="relative z-10">LASERARTLB</span>
               </span>
@@ -40,10 +41,14 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, cartCount, onO
             ))}
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2 md:gap-6">
+            <button onClick={onToggleSearch} className="relative p-2 text-zinc-400 hover:text-white transition-colors group">
+              <div className="absolute inset-0 bg-white/5 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300"></div>
+              <svg className="w-5 h-5 md:w-6 md:h-6 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            </button>
             <button onClick={onOpenCart} className="relative p-2 text-zinc-400 hover:text-white transition-colors group">
               <div className="absolute inset-0 bg-white/5 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300"></div>
-              <svg className="w-6 h-6 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+              <svg className="w-5 h-5 md:w-6 md:h-6 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
               {cartCount > 0 && (
                 <span className="absolute -top-1 -right-1 w-5 h-5 bg-white text-black text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse-slow">
                   {cartCount}
