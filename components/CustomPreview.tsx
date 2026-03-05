@@ -1,61 +1,177 @@
 import React, { useState } from 'react';
 
+const SHAPES = [
+    { id: 'rectangle', name: 'Rectangle', svg: <rect x="15" y="25" width="70" height="50" rx="4" /> },
+    { id: 'dogtag', name: 'Dog Tag', svg: <path d="M 30,15 h 40 a 10,10 0 0 1 10,10 v 50 a 10,10 0 0 1 -10,10 h -40 a 10,10 0 0 1 -10,-10 v -50 a 10,10 0 0 1 10,-10 z" /> },
+    { id: 'circle', name: 'Circle', svg: <circle cx="50" cy="50" r="35" /> },
+    { id: 'heart', name: 'Heart', svg: <path d="M 50,35 a 15,15 0 0 1 30,0 c 0,20 -30,40 -30,40 c 0,0 -30,-20 -30,-40 a 15,15 0 0 1 30,0 z" /> },
+    { id: 'star', name: 'Star', svg: <polygon points="50,15 61,35 85,35 66,50 73,73 50,60 27,73 34,50 15,35 39,35" /> },
+    { id: 'oval', name: 'Oval', svg: <ellipse cx="50" cy="50" rx="45" ry="30" /> },
+    { id: 'hexagon', name: 'Hexagon', svg: <polygon points="50,15 80,32 80,67 50,85 20,67 20,32" /> },
+    { id: 'shield', name: 'Shield', svg: <path d="M 25,20 h 50 v 30 c 0,20 -25,35 -25,35 c 0,0 -25,-15 -25,-35 z" /> },
+    { id: 'teardrop', name: 'Tear Drop', svg: <path d="M 50,15 c 0,0 25,35 25,50 a 25,25 0 0 1 -50,0 c 0,-15 25,-50 25,-50 z" /> },
+    { id: 'diamond', name: 'Diamond', svg: <polygon points="50,15 80,50 50,85 20,50" /> },
+];
+
+const FONTS = [
+    { id: 'outfit', name: 'Modern', family: "'Outfit', sans-serif" },
+    { id: 'dancing', name: 'Script', family: "'Dancing Script', cursive" },
+    { id: 'cinzel', name: 'Classic', family: "'Cinzel', serif" },
+    { id: 'comic', name: 'Casual', family: "'Comic Neue', cursive" },
+    { id: 'elite', name: 'Typewriter', family: "'Special Elite', system-ui" },
+];
+
 const CustomPreview: React.FC = () => {
     const [previewText, setPreviewText] = useState('YOUR NAME');
+    const [selectedShape, setSelectedShape] = useState(SHAPES[0]);
+    const [selectedFont, setSelectedFont] = useState(FONTS[0]);
+    const [addGiftBox, setAddGiftBox] = useState(false);
+
+    const basePrice = 10;
+    const giftBoxPrice = 5;
+    const totalPrice = basePrice + (addGiftBox ? giftBoxPrice : 0);
+
+    const handleOrder = () => {
+        const message = `Hi LaserArtLB! I want a custom keychain:\n\n*Text:* ${previewText || 'YOUR NAME'}\n*Shape:* ${selectedShape.name}\n*Font:* ${selectedFont.name}\n*Gift Box:* ${addGiftBox ? 'Yes (+$5)' : 'No'}\n\n*Estimated Total:* $${totalPrice}`;
+        const whatsappUrl = `https://wa.me/96176399329?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+    };
 
     return (
         <section className="py-24 px-4 relative bg-black border-t border-white/5 overflow-hidden">
             {/* Dynamic Background Glow */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl h-[400px] bg-[radial-gradient(ellipse_at_center,_rgba(255,255,255,0.05)_0%,_transparent_70%)] pointer-events-none"></div>
 
-            <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-12 relative z-10">
+            <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12 relative z-10">
+
+                {/* Configuration Panel */}
                 <div className="flex-1 w-full text-center md:text-left">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white font-bold text-[10px] uppercase tracking-widest mb-6">
                         <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
                         Live Preview Studio
                     </div>
-                    <h2 className="text-4xl md:text-6xl font-black font-heading text-white mb-6 uppercase tracking-tighter leading-none">
-                        See Your <br className="hidden md:block" />
-                        <span className="text-zinc-500">Vision Reality.</span>
+                    <h2 className="text-4xl md:text-5xl font-black font-heading text-white mb-6 uppercase tracking-tighter leading-none">
+                        Design Your <br className="hidden md:block" />
+                        <span className="text-zinc-500">Masterpiece.</span>
                     </h2>
-                    <p className="text-zinc-400 max-w-md text-lg mx-auto md:mx-0 mb-10 leading-relaxed font-light">
-                        Type your name, an important date, or a motivational quote. Instantly visualize your custom steel engraving.
-                    </p>
 
-                    <div className="max-w-md mx-auto md:mx-0 relative group">
-                        <div className="absolute -inset-1 bg-white/20 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-500"></div>
-                        <input
-                            type="text"
-                            maxLength={20}
-                            value={previewText}
-                            onChange={(e) => setPreviewText(e.target.value.toUpperCase())}
-                            placeholder="ENTER TEXT HERE"
-                            className="relative w-full bg-zinc-900 border border-white/10 rounded-2xl px-6 py-5 text-xl font-black text-white placeholder:text-zinc-600 focus:outline-none focus:border-white/40 transition-all font-heading tracking-widest uppercase text-center md:text-left"
-                        />
+                    <div className="flex flex-col gap-6 max-w-md mx-auto md:mx-0">
+                        {/* Text Input */}
+                        <div>
+                            <label className="block text-zinc-400 text-xs font-bold uppercase tracking-widest mb-2">Engraving Text</label>
+                            <input
+                                type="text"
+                                maxLength={20}
+                                value={previewText}
+                                onChange={(e) => setPreviewText(e.target.value)}
+                                placeholder="ENTER TEXT HERE"
+                                className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-lg font-bold text-white placeholder:text-zinc-600 focus:outline-none focus:border-white/40 transition-all font-heading tracking-widest"
+                            />
+                        </div>
+
+                        {/* Shape Selection */}
+                        <div>
+                            <label className="block text-zinc-400 text-xs font-bold uppercase tracking-widest mb-2">Choose Shape</label>
+                            <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+                                {SHAPES.map(shape => (
+                                    <button
+                                        key={shape.id}
+                                        onClick={() => setSelectedShape(shape)}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider border transition-all ${selectedShape.id === shape.id ? 'bg-white text-black border-white' : 'bg-zinc-900 text-zinc-400 border-white/10 hover:border-white/30'}`}
+                                    >
+                                        {shape.name}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Font Selection */}
+                        <div>
+                            <label className="block text-zinc-400 text-xs font-bold uppercase tracking-widest mb-2">Choose Font</label>
+                            <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+                                {FONTS.map(font => (
+                                    <button
+                                        key={font.id}
+                                        onClick={() => setSelectedFont(font)}
+                                        style={{ fontFamily: font.family }}
+                                        className={`px-4 py-2 rounded-lg text-sm border transition-all ${selectedFont.id === font.id ? 'bg-white text-black border-white' : 'bg-zinc-900 text-zinc-400 border-white/10 hover:border-white/30'}`}
+                                    >
+                                        {font.name}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Upgrades */}
+                        <div className="flex items-center gap-3 bg-zinc-900/50 border border-white/5 p-4 rounded-xl cursor-pointer hover:border-white/20 transition-all" onClick={() => setAddGiftBox(!addGiftBox)}>
+                            <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${addGiftBox ? 'bg-white border-white text-black' : 'border-white/30'}`}>
+                                {addGiftBox && <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-white text-sm font-bold">Premium Gift Box</p>
+                                <p className="text-zinc-500 text-xs">Aesthetic unboxing experience (+${giftBoxPrice})</p>
+                            </div>
+                        </div>
+
+                        {/* Order Button */}
+                        <button
+                            onClick={handleOrder}
+                            className="w-full mt-2 bg-white text-black font-black uppercase tracking-widest py-4 rounded-xl hover:bg-zinc-200 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+                        >
+                            <span>Order Now</span>
+                            <span className="w-1 h-1 rounded-full bg-black/30"></span>
+                            <span>${totalPrice}</span>
+                        </button>
                     </div>
                 </div>
 
-                <div className="flex-1 w-full flex justify-center mt-10 md:mt-0">
-                    <div className="relative w-full max-w-sm aspect-square bg-zinc-900/50 rounded-full flex items-center justify-center p-8 border border-white/5 shadow-[0_0_50px_rgba(255,255,255,0.03)] group transition-all duration-700 hover:border-white/10">
-                        {/* The actual keychain preview representation */}
-                        <div className="relative w-full aspect-[2/3] bg-gradient-to-br from-zinc-300 via-zinc-400 to-zinc-600 rounded-lg shadow-2xl overflow-hidden transform group-hover:-rotate-3 transition-transform duration-700 flex items-center justify-center">
-                            {/* Silver reflections */}
-                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-transparent skew-x-12 translate-x-[-150%] group-hover:translate-x-[150%] transition-transform duration-1000"></div>
+                {/* Preview Display */}
+                <div className="flex-1 w-full flex justify-center lg:justify-end mt-10 md:mt-0">
+                    <div className="relative w-full max-w-[400px] aspect-square bg-zinc-900/50 rounded-full flex items-center justify-center p-8 border border-white/5 shadow-[0_0_50px_rgba(255,255,255,0.02)] group transition-all duration-700 hover:border-white/10">
+                        {/* The animated steel background */}
+                        <div className="relative w-full h-full flex items-center justify-center transform group-hover:scale-105 transition-transform duration-700 drop-shadow-2xl">
 
-                            {/* Engraved text */}
-                            <div
-                                className="text-black/80 font-black tracking-widest font-heading absolute w-full text-center px-4 transform rotate-90"
-                                style={{
-                                    fontSize: previewText.length > 10 ? '1.25rem' : '1.75rem',
-                                    textShadow: '0px 1px 1px rgba(255,255,255,0.5), 0px -1px 1px rgba(0,0,0,0.3)',
-                                    mixBlendMode: 'multiply'
-                                }}
-                            >
-                                {previewText || 'YOUR NAME'}
-                            </div>
+                            <svg viewBox="0 0 100 100" className="w-[80%] h-[80%] drop-shadow-2xl overflow-visible">
+                                <defs>
+                                    <linearGradient id="steel" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stopColor="#e4e4e7" />
+                                        <stop offset="30%" stopColor="#a1a1aa" />
+                                        <stop offset="50%" stopColor="#f4f4f5" />
+                                        <stop offset="70%" stopColor="#71717a" />
+                                        <stop offset="100%" stopColor="#d4d4d8" />
+                                    </linearGradient>
 
-                            {/* Keychain hole */}
-                            <div className="absolute top-4 w-4 h-4 rounded-full bg-zinc-900 shadow-inner"></div>
+                                    <filter id="shadow">
+                                        <feDropShadow dx="0" dy="5" stdDeviation="5" floodOpacity="0.5" />
+                                    </filter>
+                                </defs>
+
+                                <g fill="url(#steel)" filter="url(#shadow)" stroke="#d4d4d8" strokeWidth="0.5">
+                                    {selectedShape.svg}
+                                    {/* Hole for keychain ring */}
+                                    {selectedShape.id !== 'diamond' && selectedShape.id !== 'star' && <circle cx="50" cy="10" r="3" fill="#18181b" stroke="none" />}
+                                </g>
+
+                                {/* Render Text inside SVG for perfect centering */}
+                                <text
+                                    x="50%"
+                                    y="50%"
+                                    dominantBaseline="middle"
+                                    textAnchor="middle"
+                                    fill="#27272a"
+                                    style={{
+                                        fontFamily: selectedFont.family,
+                                        fontSize: previewText.length > 10 ? '8px' : '12px',
+                                        fontWeight: 'bold',
+                                        textShadow: '0.5px 0.5px 0px rgba(255,255,255,0.4)',
+                                    }}
+                                >
+                                    {previewText || 'YOUR NAME'}
+                                </text>
+                            </svg>
+
+                            {/* Silver reflection sweep overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent skew-x-12 translate-x-[-150%] group-hover:translate-x-[150%] transition-transform duration-[1500ms] pointer-events-none rounded-full overflow-hidden"></div>
                         </div>
                     </div>
                 </div>

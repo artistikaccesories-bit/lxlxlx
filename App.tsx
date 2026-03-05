@@ -13,6 +13,8 @@ import CustomPreview from './components/CustomPreview.tsx';
 import SocialProof from './components/SocialProof.tsx';
 import TrustBadges from './components/TrustBadges.tsx';
 import Countdown from './components/Countdown.tsx';
+import LiveVisitorCounter from './components/LiveVisitorCounter.tsx';
+import ExitIntentPopup from './components/ExitIntentPopup.tsx';
 
 import GallerySelector from './components/GallerySelector.tsx';
 import { Product, CartItem } from './types.ts';
@@ -359,7 +361,8 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
+    <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black relative">
+      <LiveVisitorCounter />
       <Countdown />
       <Navbar
         activeTab={activeTab}
@@ -449,6 +452,9 @@ function App() {
         setDeliveryType={setDeliveryType}
         onCheckout={handleCheckout}
       />
+
+      {/* Exit Intent Pop-up */}
+      <ExitIntentPopup cartItemsCount={cart.reduce((total, item) => total + item.quantity, 0)} />
     </div>
   );
 }
