@@ -12,6 +12,7 @@ import Services from './components/Services.tsx';
 import CustomPreview from './components/CustomPreview.tsx';
 import SocialProof from './components/SocialProof.tsx';
 import TrustBadges from './components/TrustBadges.tsx';
+import Countdown from './components/Countdown.tsx';
 
 import GallerySelector from './components/GallerySelector.tsx';
 import { Product, CartItem } from './types.ts';
@@ -359,6 +360,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
+      <Countdown />
       <Navbar
         activeTab={activeTab}
         setActiveTab={handleTabChange}
