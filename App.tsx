@@ -37,8 +37,15 @@ function App() {
       entryTime = Date.now().toString();
       sessionStorage.setItem(sessionKey, entryTime);
 
-      // Send Entry Notification
-      sendDiscordMessage(`🚀 **New Visitor on Website!**\nTime: ${new Date().toLocaleTimeString()}`);
+      // Fetch Geolocation and Send Entry Notification
+      fetch('https://get.geojs.io/v1/ip/geo.json')
+        .then(res => res.json())
+        .then(data => {
+          sendDiscordMessage(`🚀 **New Visitor on Website!**\n🌍 Country: ${data.country} (${data.city})\n🕒 Time: ${new Date().toLocaleTimeString()}`);
+        })
+        .catch(() => {
+          sendDiscordMessage(`🚀 **New Visitor on Website!**\n🕒 Time: ${new Date().toLocaleTimeString()}`);
+        });
     }
 
     const handleVisibilityChange = () => {
@@ -51,8 +58,11 @@ function App() {
           durationStr = `${Math.floor(durationSec / 60)} m ${durationSec % 60} s`;
         }
 
-        sendDiscordMessage(`👋 **Visitor Left Website**\nDuration: ${durationStr}`);
-        sessionStorage.removeItem(sessionKey);
+        const viewedItems = JSON.parse(sessionStorage.getItem('website_viewed_items') || '[]');
+        const itemsList = viewedItems.length > 0 ? viewedItems.join(', ') : 'None yet';
+
+        sendDiscordMessage(`👋 **Visitor Left (or switched tabs)**\n⏱️ Duration so far: ${durationStr}\n👀 Viewed Items: ${itemsList}`);
+        // Note: We don't remove sessionKey here, so if they return to this tab and leave again, it tracks total duration!
       }
     };
 
@@ -139,6 +149,13 @@ function App() {
   const handleProductSelect = (product: Product | null) => {
     setSelectedProduct(product);
     if (product) {
+      // Track viewed item
+      const viewedItems = JSON.parse(sessionStorage.getItem('website_viewed_items') || '[]');
+      if (!viewedItems.includes(product.name)) {
+        viewedItems.push(product.name);
+        sessionStorage.setItem('website_viewed_items', JSON.stringify(viewedItems));
+      }
+
       // When opening a product, push a new history state
       window.history.pushState(
         { tab: activeTab, productHandle: product.handle },
