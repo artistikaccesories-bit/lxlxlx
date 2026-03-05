@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Product } from '../types.ts';
 import ProductModal from './ProductModal.tsx';
+import { sendDiscordMessage } from '../src/utils/discord.ts';
 // import { PRODUCTS } from '../src/data/products.ts'; // dynamic now
 
 interface ProductGalleryProps {
@@ -85,6 +86,8 @@ const ProductCard: React.FC<{ product: Product, onClick: () => void }> = ({ prod
 
 const ProductGallery: React.FC<ProductGalleryProps> = ({ products, onAddToCart, onBack, selectedProduct: propSelectedProduct, onSelectProduct }) => {
   const [localSelectedProduct, setLocalSelectedProduct] = useState<Product | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeSearch, setActiveSearch] = useState('');
 
   // Use prop if provided, otherwise fallback to local state (backward compatibility)
   const selectedProduct = propSelectedProduct !== undefined ? propSelectedProduct : localSelectedProduct;
@@ -95,6 +98,17 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ products, onAddToCart, 
       setLocalSelectedProduct(product);
     }
   };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const query = searchTerm.trim();
+    setActiveSearch(query);
+    if (query) {
+      sendDiscordMessage(`🔍 **New Search on Website:** ${query}`);
+    }
+  };
+
+  const filteredProducts = products.filter(p => !activeSearch || p.name.toLowerCase().includes(activeSearch.toLowerCase()) || p.category.toLowerCase().includes(activeSearch.toLowerCase()));
 
   return (
     <div id="product-gallery" className="py-24 px-4 max-w-7xl mx-auto relative">
@@ -111,23 +125,35 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ products, onAddToCart, 
       )}
 
       <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8 relative z-10">
-        <div>
+        <div className="w-full md:w-auto">
           <h2 className="text-4xl md:text-7xl font-black font-heading tracking-tighter text-white mb-6 leading-none">
             THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 to-zinc-500">COLLECTION</span>
           </h2>
-          <p className="text-zinc-400 max-w-xl text-lg leading-relaxed font-light">
+          <p className="text-zinc-400 max-w-xl text-lg leading-relaxed font-light mb-8">
             Precision-engineered artifacts. Choose your canvas.
           </p>
+          <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full max-w-md">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search products..."
+              className="flex-grow bg-white/5 border border-white/10 rounded-full px-6 py-3 text-white placeholder:text-zinc-500 focus:outline-none focus:border-white/30 transition-colors"
+            />
+            <button type="submit" className="bg-white text-black font-bold uppercase tracking-widest text-xs px-6 py-3 rounded-full hover:bg-zinc-200 transition-colors">
+              Search
+            </button>
+          </form>
         </div>
-        <div className="flex items-center gap-4 text-sm font-bold uppercase tracking-widest text-zinc-500">
-          <span className="text-white">{products.length} Variants</span>
+        <div className="flex items-center gap-4 text-sm font-bold uppercase tracking-widest text-zinc-500 mt-6 md:mt-0">
+          <span className="text-white">{filteredProducts.length} Variants</span>
           <div className="h-px w-12 bg-zinc-800"></div>
           <span>2024 Series</span>
         </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-12 relative z-10">
-        {products.map(product => (
+        {filteredProducts.map(product => (
           <ProductCard key={product.id} product={product} onClick={() => handleProductSelect(product)} />
         ))}
       </div>
