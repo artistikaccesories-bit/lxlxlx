@@ -13,7 +13,8 @@ const AdminDashboard: React.FC = () => {
         activeCarts: 0,
         liveVisitors: 0,
         topDevice: 'Mobile 📱',
-        topCity: 'Beirut'
+        topCity: 'Beirut',
+        hourlyDistribution: {} as Record<number, number>
     });
 
     const [recentVisits, setRecentVisits] = useState<any[]>([]);
@@ -32,15 +33,21 @@ const AdminDashboard: React.FC = () => {
                 const topCities: Record<string, number> = {};
                 const topDevices: Record<string, number> = {};
 
+                const hourlyData: Record<number, number> = {};
+
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     const date = data.timestamp ? data.timestamp.toDate() : new Date();
                     const isToday = date.toDateString() === now.toDateString();
                     if (isToday) todayCount++;
 
+                    // Hourly Chart Logic
+                    const hour = date.getHours();
+                    if (isToday) hourlyData[hour] = (hourlyData[hour] || 0) + 1;
+
                     // Active Tracker Logic
                     const lastActiveDate = data.lastActive ? data.lastActive.toDate() : date;
-                    const isLive = (now.getTime() - lastActiveDate.getTime()) < 5 * 60 * 1000;
+                    const isLive = data.isActive === true && (now.getTime() - lastActiveDate.getTime()) < 10 * 60 * 1000;
 
                     if (isLive) {
                         liveVisitorsCount++;
@@ -73,7 +80,8 @@ const AdminDashboard: React.FC = () => {
                     activeCarts: activeCartsCount,
                     liveVisitors: liveVisitorsCount,
                     topDevice: mostFrequentDevice,
-                    topCity: mostFrequentCity
+                    topCity: mostFrequentCity,
+                    hourlyDistribution: hourlyData
                 });
 
                 setRecentVisits(history);
@@ -198,6 +206,40 @@ const AdminDashboard: React.FC = () => {
                     <div className="bg-zinc-900/50 border border-white/5 p-4 rounded-xl">
                         <p className="text-zinc-500 text-xs uppercase font-bold tracking-widest mb-1">Top City</p>
                         <p className="text-xl font-bold mt-2">{stats.topCity}</p>
+                    </div>
+                </div>
+
+                {/* Traffic Chart */}
+                <div className="bg-zinc-900/30 border border-white/10 p-6 rounded-2xl">
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-xl font-bold">Today's Traffic <span className="text-zinc-500 font-normal">(by hour)</span></h3>
+                        <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 bg-white rounded-sm"></div>
+                            <span className="text-xs text-zinc-400 uppercase tracking-widest font-bold">Visitors</span>
+                        </div>
+                    </div>
+                    <div className="h-48 flex items-end gap-1 md:gap-2">
+                        {Array.from({ length: 24 }).map((_, i) => {
+                            const count = stats.hourlyDistribution[i] || 0;
+                            const max = Math.max(...Object.values(stats.hourlyDistribution), 1);
+                            const height = (count / max) * 100;
+                            const isCurrentHour = new Date().getHours() === i;
+
+                            return (
+                                <div key={i} className="flex-1 flex flex-col items-center gap-2 group relative">
+                                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-black text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                                        {count} visitors
+                                    </div>
+                                    <div
+                                        style={{ height: `${Math.max(4, height)}%` }}
+                                        className={`w-full rounded-t-sm transition-all duration-500 ${isCurrentHour ? 'bg-white' : count > 0 ? 'bg-white/40 group-hover:bg-white/60' : 'bg-white/5'}`}
+                                    ></div>
+                                    <span className={`text-[9px] font-bold ${isCurrentHour ? 'text-white' : 'text-zinc-600'}`}>
+                                        {i === 0 ? '12a' : i === 12 ? '12p' : i > 12 ? `${i - 12}p` : `${i}a`}
+                                    </span>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
 

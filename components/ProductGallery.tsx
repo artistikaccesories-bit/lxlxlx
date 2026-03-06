@@ -60,6 +60,13 @@ export const ProductCard: React.FC<{ product: Product, onClick: () => void }> = 
             ))}
           </div>
         )}
+
+        {/* Quick View Button */}
+        <div className="absolute inset-0 flex items-center justify-center z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="px-6 py-2 bg-white text-black text-xs font-bold uppercase tracking-widest rounded-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+            Quick View
+          </div>
+        </div>
       </div>
 
       <div className="flex justify-between items-start px-2">

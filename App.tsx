@@ -162,6 +162,17 @@ function App() {
     }
 
     let lastSent = 0;
+    const markAsInactive = () => {
+      const docId = sessionStorage.getItem('firebase_doc_id');
+      if (docId && db) {
+        // Use a simple updateDoc. Even if it's async, beforeunload often allows one last request.
+        updateDoc(doc(db, "visitors", docId), {
+          isActive: false,
+          lastActive: Timestamp.now()
+        }).catch(() => { });
+      }
+    };
+
     const sendExitNotification = () => {
       const now = Date.now();
       if (now - lastSent < 2000) return; // Prevent duplicate rapid sends
@@ -173,15 +184,14 @@ function App() {
         const lastWebhookSent = parseInt(lastWebhookSentStr, 10);
         const hoursSinceLastSent = (now - lastWebhookSent) / (1000 * 60 * 60);
         if (hoursSinceLastSent < 18) {
-          return; // Skip if sent within last 18 hours
+          // Still mark as inactive in Firebase even if we don't send Discord
+          markAsInactive();
+          return;
         }
       }
 
       const start = parseInt(sessionStorage.getItem(sessionKey) || Date.now().toString());
       const durationSec = Math.floor((Date.now() - start) / 1000);
-
-      // If they literally just opened and immediately closed (0-2 seconds), maybe don't spam, or just send a quick one.
-      // We'll send it anyway as requested.
 
       let durationStr = `${durationSec} seconds`;
       if (durationSec > 60) {
@@ -203,7 +213,8 @@ function App() {
       const isSignificantVisit = durationSec > 10 || viewedItems.length > 0;
 
       if (!isLebanon && !isSignificantVisit) {
-        return; // Skip spam from foreign bots/quick bounces
+        markAsInactive();
+        return;
       }
 
       // Only ping @everyone for Lebanon visitors or significant visitors
@@ -223,12 +234,12 @@ function App() {
       // Record successful send
       localStorage.setItem('last_webhook_sent', now.toString());
 
-      // Update Firebase on exit if applicable
+      // Update Firebase on exit
+      markAsInactive();
+
       if (db) {
         const docId = sessionStorage.getItem('firebase_doc_id');
         if (docId) {
-          // Usually we'd updateDoc but addDoc for an "exit" event is also fine if we track history.
-          // A simple fire-and-forget exit log to make stats easier for the dashboard:
           addDoc(collection(db, "exits"), {
             sessionKey: start.toString(),
             timestamp: Timestamp.now(),

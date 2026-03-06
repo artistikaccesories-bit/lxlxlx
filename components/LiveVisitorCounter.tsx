@@ -21,9 +21,8 @@ const LiveVisitorCounter: React.FC = () => {
         }
 
         const visitorsRef = collection(db, "visitors");
-        // Only fetch visitors active in the last 10 minutes to save bandwidth/cost
-        const tenMinsAgo = new Date(Date.now() - 10 * 60 * 1000);
-        const q = query(visitorsRef, orderBy("lastActive", "desc"), limit(20)); // Just get the 20 most recent
+        // Only fetch recently active/active visitors
+        const q = query(visitorsRef, orderBy("lastActive", "desc"), limit(30));
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const now = Date.now();
@@ -31,8 +30,8 @@ const LiveVisitorCounter: React.FC = () => {
             snapshot.forEach(doc => {
                 const data = doc.data();
                 const lastActive = data.lastActive ? data.lastActive.toDate().getTime() : 0;
-                // Active if seen in the last 5 minutes
-                if (now - lastActive < 5 * 60 * 1000) {
+                // Active if flag is true AND seen in the last 10 minutes (safety buffer)
+                if (data.isActive === true && (now - lastActive < 10 * 60 * 1000)) {
                     liveCount++;
                 }
             });

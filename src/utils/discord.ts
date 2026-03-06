@@ -1,4 +1,4 @@
-const DISCORD_WEBHOOK_URL = import.meta.env.VITE_DISCORD_WEBHOOK_URL || "https://discord.com/api/webhooks/1346736681026621450/C8uWJm_88_V-WvV0VpG4_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O_O";
+const DISCORD_WEBHOOK_URL = import.meta.env.VITE_DISCORD_WEBHOOK_URL;
 // Note: I will use the one found in previous logs if available, but I'll search for it first.
 
 export const sendDiscordMessage = async (message: string) => {

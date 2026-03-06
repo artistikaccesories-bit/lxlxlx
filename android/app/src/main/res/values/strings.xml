@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">LaserArtLB</string>
+    <string name="title_activity_main">LaserArtLB</string>
+    <string name="package_name">com.laserartlb.app</string>
+    <string name="custom_url_scheme">com.laserartlb.app</string>
+</resources>
