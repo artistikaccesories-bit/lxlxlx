@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
+import { PRODUCTS } from '../src/data/products';
 
 const locations = ['Beirut', 'Jounieh', 'Byblos', 'Sidon', 'Tripoli', 'Zahle', 'Nabatieh', 'Tyre', 'Baalbek'];
-const products = ['Custom Car Keychain', 'Steel Plate Keychain', 'Leather Wrapped Keychain', 'Matte Black Keychain', 'Premium Car Silhouette Keychain'];
+const products = PRODUCTS.map(p => p.name);
 
 const SalesPopup: React.FC = () => {
     const [visible, setVisible] = useState(false);

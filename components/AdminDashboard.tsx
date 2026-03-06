@@ -253,7 +253,7 @@ const AdminDashboard: React.FC = () => {
                         {Array.from({ length: 24 }).map((_, i) => {
                             const count = stats.hourlyDistribution[i] || 0;
                             const distributionValues = Object.values(stats.hourlyDistribution) as number[];
-                            const max = Math.max(...distributionValues, 1);
+                            const max = Math.max(...distributionValues, 0) || 1;
                             const height = (count / max) * 100;
                             const isCurrentHour = new Date().getHours() === i;
 

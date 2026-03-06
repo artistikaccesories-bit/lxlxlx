@@ -8,19 +8,27 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+# Build Artifacts
 dist
 dist-ssr
+out.js
+out.css
+output.css
+hashes.json
 *.local
 .env
-.env
+.firebaserc
+capacitor.config.ts
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# Application Folders
+android/
+ios/
+*-win32-x64
+
+# Icons & Media (Private)
+*.ico
+*.icns
+*.png
+!public/images/*.png
+!public/images/*.ico
+!src/assets/*.png
