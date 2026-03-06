@@ -108,7 +108,7 @@ const AdminDashboard: React.FC = () => {
 
         // Hashes for 'laserart' and 'admin123'
         if (
-            hash === 'cf65aa87fcebf8ee99b352cb276e031eb54cd1c54b2c2fcda5a782875fec2bb7' ||
+            hash === '1903c1940e2986c00efdd9efc7d13a008b114c7ba6a604bf65ac5a49987b9c37' ||
             hash === '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9'
         ) {
             setIsAuthenticated(true);
