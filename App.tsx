@@ -258,7 +258,11 @@ function App() {
     checkUrlForRoute();
 
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    window.addEventListener('hashchange', checkUrlForRoute);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('hashchange', checkUrlForRoute);
+    };
   }, [products]);
 
   // Track page views
