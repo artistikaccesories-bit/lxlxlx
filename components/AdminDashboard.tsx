@@ -1,0 +1,167 @@
+import React, { useState, useEffect } from 'react';
+
+const AdminDashboard: React.FC = () => {
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+
+    // Dummy data generated for display purposes
+    const [stats, setStats] = useState({
+        totalVisitors: 125,
+        todayVisitors: 12,
+        activeCarts: 3,
+        topDevice: 'Mobile 📱',
+        topCity: 'Beirut'
+    });
+
+    const [recentVisits, setRecentVisits] = useState<any[]>([]);
+
+    useEffect(() => {
+        // Generate some mock history + pull from local if available
+        const localGeos = sessionStorage.getItem('website_visitor_geo');
+        let location = 'Beirut, Lebanon';
+        if (localGeos) {
+            const geo = JSON.parse(localGeos);
+            location = `${geo.city}, ${geo.country}`;
+        }
+
+        const mockHistory = [
+            { id: 1, time: 'Just now', device: sessionStorage.getItem('website_visitor_device') || 'Desktop 💻', location, pages: 'Admin Dashboard, Home', duration: '5m' },
+            { id: 2, time: '2 hours ago', device: 'Mobile 📱', location: 'Tripoli, Lebanon', pages: 'Home, Keychains', duration: '2m' },
+            { id: 3, time: '5 hours ago', device: 'Desktop 💻', location: 'Saida, Lebanon', pages: 'Custom Preview', duration: '12m' },
+            { id: 4, time: 'Yesterday', device: 'Mobile 📱', location: 'Jounieh, Lebanon', pages: 'Home', duration: '1m' },
+            { id: 5, time: 'Yesterday', device: 'Tablet 📱', location: 'Zahlé, Lebanon', pages: 'Services, Keychains', duration: '4m' },
+        ];
+        setRecentVisits(mockHistory);
+    }, []);
+
+    const hashPassword = async (pwd: string) => {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(pwd);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashHex;
+    };
+
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const hash = await hashPassword(password);
+
+        // Hashes for 'laserart' and 'admin123'
+        if (
+            hash === 'cf65aa87fcebf8ee99b352cb276e031eb54cd1c54b2c2fcda5a782875fec2bb7' ||
+            hash === '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9'
+        ) {
+            setIsAuthenticated(true);
+            setError('');
+        } else {
+            setError('Invalid password.');
+        }
+    };
+
+    if (!isAuthenticated) {
+        return (
+            <div className="min-h-screen bg-black flex items-center justify-center p-4">
+                <form onSubmit={handleLogin} className="bg-zinc-900 border border-white/10 p-8 rounded-2xl w-full max-w-md text-center">
+                    <h2 className="text-3xl font-black font-heading tracking-tighter text-white mb-2">Restricted Access</h2>
+                    <p className="text-zinc-500 text-sm mb-8">Please enter the admin password</p>
+
+                    <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => { setPassword(e.target.value); setError(''); }}
+                        className="w-full bg-black border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/50 transition-all text-center tracking-widest mb-4"
+                        placeholder="PASSWORD"
+                    />
+
+                    {error && <p className="text-red-500 text-xs mb-4">{error}</p>}
+
+                    <button type="submit" className="w-full bg-white text-black font-bold uppercase tracking-widest py-3 rounded-xl hover:bg-zinc-200 transition-all">
+                        Unlock Dashboard
+                    </button>
+                </form>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-black text-white p-4 md:p-8">
+            <div className="max-w-6xl mx-auto space-y-8">
+                <div className="flex justify-between items-end border-b border-white/10 pb-6">
+                    <div>
+                        <h1 className="text-4xl md:text-5xl font-black font-heading tracking-tighter">Admin <span className="text-zinc-500">Analytics.</span></h1>
+                        <p className="text-zinc-400 mt-2">Live visitor tracking and insights (Mock Data)</p>
+                    </div>
+                    <button onClick={() => {
+                        window.location.hash = '';
+                        window.location.href = '/';
+                    }} className="px-4 py-2 border border-white/20 rounded-lg text-xs font-bold uppercase hover:bg-white hover:text-black transition-all">
+                        Exit Admin
+                    </button>
+                </div>
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <div className="bg-zinc-900/50 border border-white/5 p-4 rounded-xl">
+                        <p className="text-zinc-500 text-xs uppercase font-bold tracking-widest mb-1">Total Visitors</p>
+                        <p className="text-3xl font-black font-heading">{stats.totalVisitors}</p>
+                    </div>
+                    <div className="bg-zinc-900/50 border border-white/5 p-4 rounded-xl">
+                        <p className="text-zinc-500 text-xs uppercase font-bold tracking-widest mb-1">Today</p>
+                        <p className="text-3xl font-black font-heading text-green-400">+{stats.todayVisitors}</p>
+                    </div>
+                    <div className="bg-zinc-900/50 border border-white/5 p-4 rounded-xl">
+                        <p className="text-zinc-500 text-xs uppercase font-bold tracking-widest mb-1">Active Carts</p>
+                        <p className="text-3xl font-black font-heading text-yellow-500">{stats.activeCarts}</p>
+                    </div>
+                    <div className="bg-zinc-900/50 border border-white/5 p-4 rounded-xl">
+                        <p className="text-zinc-500 text-xs uppercase font-bold tracking-widest mb-1">Top Device</p>
+                        <p className="text-xl font-bold mt-2">{stats.topDevice}</p>
+                    </div>
+                    <div className="bg-zinc-900/50 border border-white/5 p-4 rounded-xl">
+                        <p className="text-zinc-500 text-xs uppercase font-bold tracking-widest mb-1">Top City</p>
+                        <p className="text-xl font-bold mt-2">{stats.topCity}</p>
+                    </div>
+                </div>
+
+                {/* Recent Visitors Table */}
+                <div className="bg-zinc-900/30 border border-white/5 rounded-2xl overflow-hidden">
+                    <div className="p-6 border-b border-white/5">
+                        <h3 className="text-xl font-bold">Recent Visits</h3>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left">
+                            <thead className="text-xs text-zinc-500 uppercase bg-black/20">
+                                <tr>
+                                    <th className="px-6 py-4">Time</th>
+                                    <th className="px-6 py-4">Location</th>
+                                    <th className="px-6 py-4">Device</th>
+                                    <th className="px-6 py-4">Pages Viewed</th>
+                                    <th className="px-6 py-4">Duration</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {recentVisits.map((visit) => (
+                                    <tr key={visit.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                                        <td className="px-6 py-4 font-medium whitespace-nowrap">{visit.time}</td>
+                                        <td className="px-6 py-4 text-zinc-300">{visit.location}</td>
+                                        <td className="px-6 py-4 text-zinc-300">{visit.device}</td>
+                                        <td className="px-6 py-4 text-zinc-400 text-xs">{visit.pages}</td>
+                                        <td className="px-6 py-4 font-mono">{visit.duration}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div className="mt-8 p-4 bg-blue-900/20 border border-blue-500/30 rounded-xl text-blue-200 text-sm">
+                    <strong>Note:</strong> Since your application does not currently have a backend database connected to this dashboard, the data displayed above uses a mix of your current local session data and mock data for demonstration purposes. To see real historic data here, a database module (like Supabase or Firebase) needs to be implemented. For now, all real live visitors still trigger Discord and WhatsApp notifications!
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default AdminDashboard;

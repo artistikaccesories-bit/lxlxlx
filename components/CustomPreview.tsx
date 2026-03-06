@@ -2,15 +2,9 @@ import React, { useState } from 'react';
 
 const SHAPES = [
     { id: 'rectangle', name: 'Rectangle', svg: <rect x="15" y="25" width="70" height="50" rx="4" /> },
-    { id: 'dogtag', name: 'Dog Tag', svg: <path d="M 30,15 h 40 a 10,10 0 0 1 10,10 v 50 a 10,10 0 0 1 -10,10 h -40 a 10,10 0 0 1 -10,-10 v -50 a 10,10 0 0 1 10,-10 z" /> },
     { id: 'circle', name: 'Circle', svg: <circle cx="50" cy="50" r="35" /> },
     { id: 'heart', name: 'Heart', svg: <path d="M 50,35 a 15,15 0 0 1 30,0 c 0,20 -30,40 -30,40 c 0,0 -30,-20 -30,-40 a 15,15 0 0 1 30,0 z" /> },
-    { id: 'star', name: 'Star', svg: <polygon points="50,15 61,35 85,35 66,50 73,73 50,60 27,73 34,50 15,35 39,35" /> },
-    { id: 'oval', name: 'Oval', svg: <ellipse cx="50" cy="50" rx="45" ry="30" /> },
-    { id: 'hexagon', name: 'Hexagon', svg: <polygon points="50,15 80,32 80,67 50,85 20,67 20,32" /> },
-    { id: 'shield', name: 'Shield', svg: <path d="M 25,20 h 50 v 30 c 0,20 -25,35 -25,35 c 0,0 -25,-15 -25,-35 z" /> },
-    { id: 'teardrop', name: 'Tear Drop', svg: <path d="M 50,15 c 0,0 25,35 25,50 a 25,25 0 0 1 -50,0 c 0,-15 25,-50 25,-50 z" /> },
-    { id: 'diamond', name: 'Diamond', svg: <polygon points="50,15 80,50 50,85 20,50" /> },
+    { id: 'bone', name: 'Bone', svg: <path d="M30,35 C20,25 10,40 20,50 C10,60 20,75 30,65 L70,65 C80,75 90,60 80,50 C90,40 80,25 70,35 Z" /> },
 ];
 
 const FONTS = [
@@ -26,13 +20,16 @@ const CustomPreview: React.FC = () => {
     const [selectedShape, setSelectedShape] = useState(SHAPES[0]);
     const [selectedFont, setSelectedFont] = useState(FONTS[0]);
     const [addGiftBox, setAddGiftBox] = useState(false);
+    const [deliveryType, setDeliveryType] = useState<'pickup' | 'standard' | 'express'>('standard');
 
     const basePrice = 10;
     const giftBoxPrice = 2;
-    const totalPrice = basePrice + (addGiftBox ? giftBoxPrice : 0);
+    const deliveryCost = deliveryType === 'express' ? 6 : deliveryType === 'standard' ? 4 : 0;
+    const totalPrice = basePrice + (addGiftBox ? giftBoxPrice : 0) + deliveryCost;
 
     const handleOrder = () => {
-        const message = `Hi LaserArtLB! I want a custom keychain:\n\n*Text:* ${previewText || 'YOUR NAME'}\n*Shape:* ${selectedShape.name}\n*Font:* ${selectedFont.name}\n*Gift Box:* ${addGiftBox ? 'Yes (+$2)' : 'No'}\n\n*Estimated Total:* $${totalPrice}`;
+        const deliveryInfo = deliveryType === 'express' ? 'Express (48h) - $6' : deliveryType === 'standard' ? 'Standard - $4' : 'Pickup - $0';
+        const message = `Hi LaserArtLB! I want a custom keychain:\n\n*Text:* ${previewText || 'YOUR NAME'}\n*Shape:* ${selectedShape.name}\n*Font:* ${selectedFont.name}\n*Gift Box:* ${addGiftBox ? 'Yes (+$2)' : 'No'}\n*Delivery:* ${deliveryInfo}\n\n*Estimated Total:* $${totalPrice}`;
         const whatsappUrl = `https://wa.me/96176399329?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
     };
@@ -113,6 +110,34 @@ const CustomPreview: React.FC = () => {
                             </div>
                         </div>
 
+                        {/* Delivery */}
+                        <div>
+                            <label className="block text-zinc-400 text-xs font-bold uppercase tracking-widest mb-2">Delivery Method</label>
+                            <div className="flex flex-wrap gap-2">
+                                <button
+                                    onClick={() => setDeliveryType('pickup')}
+                                    className={`flex-1 min-w-[30%] py-3 px-2 border rounded-xl transition-all text-[10px] md:text-xs font-bold uppercase tracking-wider ${deliveryType === 'pickup' ? 'bg-white text-black border-white' : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:border-zinc-600'}`}
+                                >
+                                    Pickup
+                                    <span className="block text-[9px] opacity-70 mt-1">$0</span>
+                                </button>
+                                <button
+                                    onClick={() => setDeliveryType('standard')}
+                                    className={`flex-1 min-w-[30%] py-3 px-2 border rounded-xl transition-all text-[10px] md:text-xs font-bold uppercase tracking-wider ${deliveryType === 'standard' ? 'bg-white text-black border-white' : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:border-zinc-600'}`}
+                                >
+                                    Standard
+                                    <span className="block text-[9px] opacity-70 mt-1">$4</span>
+                                </button>
+                                <button
+                                    onClick={() => setDeliveryType('express')}
+                                    className={`flex-1 min-w-[30%] py-3 px-2 border rounded-xl transition-all text-[10px] md:text-xs font-bold uppercase tracking-wider ${deliveryType === 'express' ? 'bg-white text-black border-white' : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:border-zinc-600'}`}
+                                >
+                                    Express
+                                    <span className="block text-[9px] opacity-70 mt-1">$6</span>
+                                </button>
+                            </div>
+                        </div>
+
                         {/* Order Button */}
                         <button
                             onClick={handleOrder}
@@ -149,7 +174,10 @@ const CustomPreview: React.FC = () => {
                                 <g fill="url(#steel)" filter="url(#shadow)" stroke="#d4d4d8" strokeWidth="0.5">
                                     {selectedShape.svg}
                                     {/* Hole for keychain ring */}
-                                    {selectedShape.id !== 'diamond' && selectedShape.id !== 'star' && <circle cx="50" cy="10" r="3" fill="#18181b" stroke="none" />}
+                                    {selectedShape.id === 'rectangle' && <circle cx="25" cy="50" r="3.5" fill="#18181b" stroke="none" />}
+                                    {selectedShape.id === 'circle' && <circle cx="50" cy="25" r="3.5" fill="#18181b" stroke="none" />}
+                                    {selectedShape.id === 'heart' && <circle cx="50" cy="27" r="3.5" fill="#18181b" stroke="none" />}
+                                    {selectedShape.id === 'bone' && <circle cx="20" cy="50" r="3.5" fill="#18181b" stroke="none" />}
                                 </g>
 
                                 {/* Render Text inside SVG for perfect centering */}
