@@ -29,8 +29,8 @@ const CustomPreview: React.FC = () => {
 
     const handleOrder = () => {
         const deliveryInfo = deliveryType === 'express' ? 'Express (48h) - $6' : deliveryType === 'standard' ? 'Standard - $4' : 'Pickup - $0';
-        const message = `Hi LaserArtLB! I want a custom keychain:\n\n*Text:* ${previewText || 'YOUR NAME'}\n*Shape:* ${selectedShape.name}\n*Font:* ${selectedFont.name}\n*Gift Box:* ${addGiftBox ? 'Yes (+$2)' : 'No'}\n*Delivery:* ${deliveryInfo}\n\n*Estimated Total:* $${totalPrice}`;
-        const whatsappUrl = `https://wa.me/96176399329?text=${encodeURIComponent(message)}`;
+        const message = `Hi LaserArtLB! I want a custom keychain:\n\n*Text:* ${previewText || 'YOUR NAME'}\n*Shape:* ${selectedShape.name}\n*Font:* ${selectedFont.name}\n*Gift Box:* ${addGiftBox ? 'Yes (+$2)' : 'No'}\n*Delivery:* ${deliveryInfo}\n*Total:* $${totalPrice}\n\n*Customer Request:* I'm ready to order my custom design.`;
+        const whatsappUrl = `https://wa.me/96181388115?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
     };
 

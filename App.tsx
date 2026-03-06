@@ -195,72 +195,66 @@ function App() {
 
   // Handle initial URL and browser back/forward buttons
   React.useEffect(() => {
-    const handlePopState = (event: PopStateEvent) => {
-      if (event.state) {
-        if (event.state.img) {
-          // Handle product modal state if it exists 
-          // (assuming we start adding product info to state, 
-          // but for now let's rely on handle lookup if we want robust linking)
-        }
+    const handleNavigationEvent = () => {
+      const path = window.location.pathname;
+      const hash = window.location.hash;
 
-        if (event.state.tab) {
-          setActiveTab(event.state.tab);
+      if (path === '/admin' || hash === '#admin') {
+        setIsAdminView(true);
+        return; // Don't do other tab logic if we are an admin
+      } else {
+        setIsAdminView(false);
+      }
+
+      // Existing PopState logic
+      if (window.history.state) {
+        if (window.history.state.tab) {
+          setActiveTab(window.history.state.tab);
         } else {
           setActiveTab('home');
         }
 
-        if (event.state.productHandle) {
-          const product = products.find(p => p.handle === event.state.productHandle);
+        if (window.history.state.productHandle) {
+          const product = products.find(p => p.handle === window.history.state.productHandle);
           if (product) setSelectedProduct(product);
         } else {
           setSelectedProduct(null);
         }
       } else {
-        // No state (e.g. initial load or external link), check URL
-        checkUrlForRoute();
+        // Fallback checks
+        if (path.startsWith('/product/')) {
+          const handle = path.split('/product/')[1];
+          const product = products.find(p => p.handle === handle);
+          if (product) {
+            setSelectedProduct(product);
+            if (product.category === 'keychain') setActiveTab('keychains');
+            else if (product.category === 'tag') setActiveTab('keychains');
+            else if (product.category === 'tool') setActiveTab('keychains');
+            else setActiveTab('keychains');
+          }
+        } else {
+          const tab = path.substring(1) as any;
+          if (['keychains', 'customize'].includes(tab)) {
+            setActiveTab(tab);
+          } else {
+            setActiveTab('home');
+          }
+          setSelectedProduct(null);
+        }
       }
     };
 
     const checkUrlForRoute = () => {
-      const path = window.location.pathname;
-      const hash = window.location.hash;
-      if (path === '/admin' || hash === '#admin') {
-        setIsAdminView(true);
-        return;
-      } else {
-        setIsAdminView(false);
-      }
-
-      if (path.startsWith('/product/')) {
-        const handle = path.split('/product/')[1];
-        const product = products.find(p => p.handle === handle);
-        if (product) {
-          setSelectedProduct(product);
-          // Map category to tab
-          if (product.category === 'keychain') setActiveTab('keychains');
-          else if (product.category === 'tag') setActiveTab('keychains'); // Assuming tags are in keychains for now or generic
-          else if (product.category === 'tool') setActiveTab('keychains');
-          else setActiveTab('keychains'); // Default fallback
-        }
-      } else {
-        // Handle other routes if necessary
-        const tab = path.substring(1) as any;
-        if (['keychains', 'customize'].includes(tab)) {
-          setActiveTab(tab);
-        } else {
-          setActiveTab('home');
-        }
-        setSelectedProduct(null);
-      }
-    }
+      handleNavigationEvent();
+    };
 
     // Run on mount
     checkUrlForRoute();
 
-    window.addEventListener('popstate', handlePopState);
+    window.addEventListener('popstate', checkUrlForRoute);
     window.addEventListener('hashchange', checkUrlForRoute);
     return () => {
-      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('popstate', checkUrlForRoute);
       window.removeEventListener('hashchange', checkUrlForRoute);
     };
   }, [products]);
