@@ -31,7 +31,7 @@ const LiveVisitorCounter: React.FC = () => {
                 const data = doc.data();
                 const lastActive = data.lastActive ? data.lastActive.toDate().getTime() : 0;
                 // Active if flag is true AND seen in the last 10 minutes (safety buffer)
-                if (data.isActive === true && (now - lastActive < 10 * 60 * 1000)) {
+                if (data.isActive === true && (now - lastActive < 3 * 60 * 1000)) {
                     liveCount++;
                 }
             });

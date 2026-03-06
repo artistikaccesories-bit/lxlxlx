@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 
 const locations = ['Beirut', 'Jounieh', 'Byblos', 'Sidon', 'Tripoli', 'Zahle', 'Nabatieh', 'Tyre', 'Baalbek'];
-const products = ['Custom Car Keychain', 'Laser Engraved Bracelet', 'Steel Keychain', 'Premium Gift Box Set', 'Portrait Silhouette'];
+const products = ['Custom Car Keychain', 'Steel Plate Keychain', 'Leather Wrapped Keychain', 'Matte Black Keychain', 'Premium Car Silhouette Keychain'];
 
 const SalesPopup: React.FC = () => {
     const [visible, setVisible] = useState(false);

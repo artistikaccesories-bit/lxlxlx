@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { db, collection, getDocs, query, orderBy, limit, onSnapshot } from '../src/utils/firebase';
+import { db, collection, getDocs, query, orderBy, limit, onSnapshot, doc, deleteDoc } from '../src/utils/firebase';
 
 const AdminDashboard: React.FC = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -47,7 +47,7 @@ const AdminDashboard: React.FC = () => {
 
                     // Active Tracker Logic
                     const lastActiveDate = data.lastActive ? data.lastActive.toDate() : date;
-                    const isLive = data.isActive === true && (now.getTime() - lastActiveDate.getTime()) < 10 * 60 * 1000;
+                    const isLive = data.isActive === true && (now.getTime() - lastActiveDate.getTime()) < 3 * 60 * 1000;
 
                     if (isLive) {
                         liveVisitorsCount++;
@@ -110,6 +110,32 @@ const AdminDashboard: React.FC = () => {
         }
     }, []);
 
+    const deleteVisit = async (id: string) => {
+        if (!db) return;
+        if (window.confirm('Delete this visit record?')) {
+            try {
+                await deleteDoc(doc(db, "visitors", id));
+            } catch (err) {
+                console.error("Error deleting visit", err);
+            }
+        }
+    };
+
+    const resetDashboard = async () => {
+        if (!db) return;
+        if (window.confirm('WARNING: This will delete ALL visitor records from the database. Proceed?')) {
+            try {
+                const visitorsRef = collection(db, "visitors");
+                const snapshot = await getDocs(visitorsRef);
+                const deletePromises = snapshot.docs.map(d => deleteDoc(doc(db, "visitors", d.id)));
+                await Promise.all(deletePromises);
+                alert('Dashboard reset successfully.');
+            } catch (err) {
+                console.error("Error resetting dashboard", err);
+            }
+        }
+    };
+
     const hashPassword = async (pwd: string) => {
         const encoder = new TextEncoder();
         const data = encoder.encode(pwd);
@@ -170,14 +196,19 @@ const AdminDashboard: React.FC = () => {
                 <div className="flex justify-between items-end border-b border-white/10 pb-6">
                     <div>
                         <h1 className="text-4xl md:text-5xl font-black font-heading tracking-tighter">Admin <span className="text-zinc-500">Analytics.</span></h1>
-                        <p className="text-zinc-400 mt-2">Live visitor tracking and insights (Mock Data)</p>
+                        <p className="text-zinc-400 mt-2">Live visitor tracking and insights</p>
                     </div>
-                    <button onClick={() => {
-                        window.location.hash = '';
-                        window.location.href = '/';
-                    }} className="px-4 py-2 border border-white/20 rounded-lg text-xs font-bold uppercase hover:bg-white hover:text-black transition-all">
-                        Exit Admin
-                    </button>
+                    <div className="flex gap-3">
+                        <button onClick={resetDashboard} className="px-4 py-2 border border-red-500/30 text-red-500 rounded-lg text-xs font-bold uppercase hover:bg-red-500 hover:text-white transition-all">
+                            Reset Database
+                        </button>
+                        <button onClick={() => {
+                            window.location.hash = '';
+                            window.location.href = '/';
+                        }} className="px-4 py-2 border border-white/20 rounded-lg text-xs font-bold uppercase hover:bg-white hover:text-black transition-all">
+                            Exit Admin
+                        </button>
+                    </div>
                 </div>
 
                 {/* Stats Grid */}
@@ -221,7 +252,8 @@ const AdminDashboard: React.FC = () => {
                     <div className="h-48 flex items-end gap-[2px] md:gap-2">
                         {Array.from({ length: 24 }).map((_, i) => {
                             const count = stats.hourlyDistribution[i] || 0;
-                            const max = Math.max(...Object.values(stats.hourlyDistribution), 1);
+                            const distributionValues = Object.values(stats.hourlyDistribution) as number[];
+                            const max = Math.max(...distributionValues, 1);
                             const height = (count / max) * 100;
                             const isCurrentHour = new Date().getHours() === i;
 
@@ -256,17 +288,26 @@ const AdminDashboard: React.FC = () => {
                                     <th className="px-6 py-4">Location</th>
                                     <th className="px-6 py-4">Device</th>
                                     <th className="px-6 py-4">Pages Viewed</th>
-                                    <th className="px-6 py-4">Duration</th>
+                                    <th className="px-6 py-4 text-right">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {recentVisits.map((visit) => (
-                                    <tr key={visit.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                                    <tr key={visit.id} className="border-b border-white/5 hover:bg-white/5 transition-colors group/row">
                                         <td className="px-6 py-4 font-medium whitespace-nowrap">{visit.time}</td>
                                         <td className="px-6 py-4 text-zinc-300">{visit.location}</td>
                                         <td className="px-6 py-4 text-zinc-300">{visit.device}</td>
                                         <td className="px-6 py-4 text-zinc-400 text-xs">{visit.pages}</td>
                                         <td className="px-6 py-4 font-mono">{visit.duration}</td>
+                                        <td className="px-6 py-4 text-right">
+                                            <button
+                                                onClick={() => deleteVisit(visit.id)}
+                                                className="opacity-0 group-hover/row:opacity-100 p-2 text-zinc-500 hover:text-red-500 transition-all"
+                                                title="Delete Record"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -283,6 +324,12 @@ const AdminDashboard: React.FC = () => {
                                         <span className="text-sm font-bold text-white mt-1">{visit.location}</span>
                                     </div>
                                     <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] font-mono">{visit.duration}</span>
+                                    <button
+                                        onClick={() => deleteVisit(visit.id)}
+                                        className="p-1 px-2 bg-red-500/10 text-red-500 rounded text-[10px] font-bold uppercase"
+                                    >
+                                        Delete
+                                    </button>
                                 </div>
                                 <div className="flex items-center gap-2 text-[10px] text-zinc-400">
                                     <span className="p-1 bg-white/5 rounded">{visit.device}</span>

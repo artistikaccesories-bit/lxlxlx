@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, Timestamp, onSnapshot, doc, updateDoc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, Timestamp, onSnapshot, doc, updateDoc, deleteDoc } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 // These will be loaded from your .env.local file
@@ -27,4 +27,4 @@ try {
     console.error("Firebase initialization error", error);
 }
 
-export { db, collection, addDoc, getDocs, query, orderBy, limit, Timestamp, onSnapshot, doc, updateDoc };
+export { db, collection, addDoc, getDocs, query, orderBy, limit, Timestamp, onSnapshot, doc, updateDoc, deleteDoc };
