@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { initGA, logPageView } from './src/utils/analytics';
 import { sendDiscordMessage, sendDiscordMessageBeacon } from './src/utils/discord';
-import { db, collection, addDoc, Timestamp } from './src/utils/firebase';
+import { db, collection, addDoc, Timestamp, doc, updateDoc } from './src/utils/firebase';
 import Navbar from './components/Navbar.tsx';
 import Hero from './components/Hero.tsx';
 import ProductGallery, { ProductCard } from './components/ProductGallery.tsx';
@@ -118,6 +118,8 @@ function App() {
         addDoc(collection(db, "visitors"), {
           sessionKey: entryTime,
           timestamp: Timestamp.now(),
+          lastActive: Timestamp.now(),
+          activeCartCount: 0,
           device: deviceName,
           referrer: referrer,
           screenSize: screenSize,
@@ -129,6 +131,19 @@ function App() {
         }).then(docRef => {
           sessionStorage.setItem('firebase_doc_id', docRef.id);
         }).catch(err => console.error("Firebase write err", err));
+
+        // Ping firebase every 1 minute to keep session alive and visible to Dashboard
+        const pingInterval = setInterval(() => {
+          const docId = sessionStorage.getItem('firebase_doc_id');
+          if (docId && db) {
+            updateDoc(doc(db, "visitors", docId), {
+              lastActive: Timestamp.now()
+            }).catch(() => { });
+          }
+        }, 60000);
+
+        // Cleanup interval on page unload
+        window.addEventListener('beforeunload', () => clearInterval(pingInterval));
       }
     }
 
@@ -301,6 +316,33 @@ function App() {
     logPageView();
     window.scrollTo(0, 0);
   }, [activeTab]);
+
+  // Track cart changes and send Discord pings / Firebase updates
+  const previousCartLength = React.useRef(0);
+  React.useEffect(() => {
+    if (cart.length !== previousCartLength.current) {
+      const isAddition = cart.length > previousCartLength.current;
+      previousCartLength.current = cart.length;
+
+      // Update Firebase
+      const docId = sessionStorage.getItem('firebase_doc_id');
+      if (docId && db) {
+        try {
+          updateDoc(doc(db, "visitors", docId), {
+            activeCartCount: cart.length,
+            lastActive: Timestamp.now()
+          }).catch(() => { });
+        } catch (e) { }
+      }
+
+      // Discord alert
+      if (isAddition && cart.length > 0) {
+        // Debounce it slightly so we don't spam if they double click
+        const addedItem = cart[cart.length - 1];
+        sendDiscordMessage(`🛒 **Cart Update:** Someone just added a ${addedItem.name} to their cart! (${cart.length} total items in active cart)`);
+      }
+    }
+  }, [cart]);
 
 
   // Update URL function

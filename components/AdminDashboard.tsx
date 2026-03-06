@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { db, collection, getDocs, query, orderBy, limit } from '../src/utils/firebase';
+import { db, collection, getDocs, query, orderBy, limit, onSnapshot } from '../src/utils/firebase';
 
 const AdminDashboard: React.FC = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
-    // Dummy data generated for display purposes
+    // Statistics map
     const [stats, setStats] = useState({
-        totalVisitors: 125,
-        todayVisitors: 12,
-        activeCarts: 3,
+        totalVisitors: 0,
+        todayVisitors: 0,
+        activeCarts: 0,
+        liveVisitors: 0,
         topDevice: 'Mobile 📱',
         topCity: 'Beirut'
     });
@@ -18,79 +19,87 @@ const AdminDashboard: React.FC = () => {
     const [recentVisits, setRecentVisits] = useState<any[]>([]);
 
     useEffect(() => {
-        const loadDashboardData = async () => {
-            if (db) {
-                try {
-                    // Fetch real data from Firebase
-                    const visitorsRef = collection(db, "visitors");
-                    const q = query(visitorsRef, orderBy("timestamp", "desc"), limit(20));
-                    const snapshot = await getDocs(q);
+        if (db) {
+            const visitorsRef = collection(db, "visitors");
+            const q = query(visitorsRef, orderBy("timestamp", "desc"), limit(50));
 
-                    const history = [];
-                    let todayCount = 0;
-                    const now = new Date();
-                    const topCities: Record<string, number> = {};
-                    const topDevices: Record<string, number> = {};
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                const history: any[] = [];
+                let todayCount = 0;
+                let activeCartsCount = 0;
+                let liveVisitorsCount = 0;
+                const now = new Date();
+                const topCities: Record<string, number> = {};
+                const topDevices: Record<string, number> = {};
 
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        const date = data.timestamp ? data.timestamp.toDate() : new Date();
-                        const isToday = date.toDateString() === now.toDateString();
-                        if (isToday) todayCount++;
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const date = data.timestamp ? data.timestamp.toDate() : new Date();
+                    const isToday = date.toDateString() === now.toDateString();
+                    if (isToday) todayCount++;
 
-                        const city = data.location?.city || 'Unknown';
-                        topCities[city] = (topCities[city] || 0) + 1;
+                    // Active Tracker Logic
+                    const lastActiveDate = data.lastActive ? data.lastActive.toDate() : date;
+                    const isLive = (now.getTime() - lastActiveDate.getTime()) < 5 * 60 * 1000;
 
-                        const device = data.device || 'Unknown';
-                        topDevices[device] = (topDevices[device] || 0) + 1;
+                    if (isLive) {
+                        liveVisitorsCount++;
+                        if (data.activeCartCount > 0) activeCartsCount += 1; // Assuming 1 active cart session per live visitor possessing an active cart item
+                    }
 
-                        history.push({
-                            id: doc.id,
-                            time: date.toLocaleString(),
-                            device: data.device,
-                            location: `${city}, ${data.location?.country || 'Unknown'}`,
-                            pages: data.pagesViewed ? data.pagesViewed.join(', ') : 'Home',
-                            duration: data.durationSec ? `${data.durationSec}s` : 'Active'
-                        });
+                    const city = data.location?.city || 'Unknown';
+                    topCities[city] = (topCities[city] || 0) + 1;
+
+                    const device = data.device || 'Unknown';
+                    topDevices[device] = (topDevices[device] || 0) + 1;
+
+                    history.push({
+                        id: doc.id,
+                        time: date.toLocaleString(),
+                        device: data.device,
+                        location: `${city}, ${data.location?.country || 'Unknown'}`,
+                        pages: data.pagesViewed ? data.pagesViewed.join(', ') : 'Home',
+                        duration: data.durationSec ? `${data.durationSec}s` : 'Active'
                     });
+                });
 
-                    // Determine top city & device
-                    const mostFrequentCity = Object.keys(topCities).sort((a, b) => topCities[b] - topCities[a])[0] || 'Unknown';
-                    const mostFrequentDevice = Object.keys(topDevices).sort((a, b) => topDevices[b] - topDevices[a])[0] || 'Unknown';
+                // Determine top city & device
+                const mostFrequentCity = Object.keys(topCities).sort((a, b) => topCities[b] - topCities[a])[0] || 'Unknown';
+                const mostFrequentDevice = Object.keys(topDevices).sort((a, b) => topDevices[b] - topDevices[a])[0] || 'Unknown';
 
-                    setStats({
-                        totalVisitors: snapshot.size, // in a real app you'd need a separate aggregation
-                        todayVisitors: todayCount,
-                        activeCarts: 0, // Mock for now
-                        topDevice: mostFrequentDevice,
-                        topCity: mostFrequentCity
-                    });
+                setStats({
+                    totalVisitors: snapshot.size, // Current batch size
+                    todayVisitors: todayCount,
+                    activeCarts: activeCartsCount,
+                    liveVisitors: liveVisitorsCount,
+                    topDevice: mostFrequentDevice,
+                    topCity: mostFrequentCity
+                });
 
-                    setRecentVisits(history);
-                } catch (error) {
-                    console.error("Error fetching Firebase data", error);
-                }
-            } else {
-                // Fallback Mock Data if Firebase not configured
-                const localGeos = sessionStorage.getItem('website_visitor_geo');
-                let location = 'Beirut, Lebanon';
-                if (localGeos) {
-                    const geo = JSON.parse(localGeos);
-                    location = `${geo.city}, ${geo.country}`;
-                }
+                setRecentVisits(history);
+            }, (error) => {
+                console.error("Error fetching real-time Firebase data", error);
+            });
 
-                const mockHistory = [
-                    { id: 1, time: 'Just now', device: sessionStorage.getItem('website_visitor_device') || 'Desktop 💻', location, pages: 'Admin Dashboard, Home', duration: '5m' },
-                    { id: 2, time: '2 hours ago', device: 'Mobile 📱', location: 'Tripoli, Lebanon', pages: 'Home, Keychains', duration: '2m' },
-                    { id: 3, time: '5 hours ago', device: 'Desktop 💻', location: 'Saida, Lebanon', pages: 'Custom Preview', duration: '12m' },
-                    { id: 4, time: 'Yesterday', device: 'Mobile 📱', location: 'Jounieh, Lebanon', pages: 'Home', duration: '1m' },
-                    { id: 5, time: 'Yesterday', device: 'Tablet 📱', location: 'Zahlé, Lebanon', pages: 'Services, Keychains', duration: '4m' },
-                ];
-                setRecentVisits(mockHistory);
+            return () => unsubscribe();
+        } else {
+            // Fallback Mock Data if Firebase not configured
+            const localGeos = sessionStorage.getItem('website_visitor_geo');
+            let location = 'Beirut, Lebanon';
+            if (localGeos) {
+                const geo = JSON.parse(localGeos);
+                location = `${geo.city}, ${geo.country}`;
             }
-        };
 
-        loadDashboardData();
+            const mockHistory = [
+                { id: 1, time: 'Just now', device: sessionStorage.getItem('website_visitor_device') || 'Desktop 💻', location, pages: 'Admin Dashboard, Home', duration: '5m' },
+                { id: 2, time: '2 hours ago', device: 'Mobile 📱', location: 'Tripoli, Lebanon', pages: 'Home, Keychains', duration: '2m' },
+                { id: 3, time: '5 hours ago', device: 'Desktop 💻', location: 'Saida, Lebanon', pages: 'Custom Preview', duration: '12m' },
+                { id: 4, time: 'Yesterday', device: 'Mobile 📱', location: 'Jounieh, Lebanon', pages: 'Home', duration: '1m' },
+                { id: 5, time: 'Yesterday', device: 'Tablet 📱', location: 'Zahlé, Lebanon', pages: 'Services, Keychains', duration: '4m' },
+            ];
+            setRecentVisits(mockHistory);
+        }
     }, []);
 
     const hashPassword = async (pwd: string) => {
@@ -106,10 +115,14 @@ const AdminDashboard: React.FC = () => {
         e.preventDefault();
         const hash = await hashPassword(password);
 
-        // Hashes for 'laserart' and 'admin123'
+        // Secure Login Validation against .env.local
+        const validHash1 = import.meta.env.VITE_ADMIN_HASH_1;
+        const validHash2 = import.meta.env.VITE_ADMIN_HASH_2;
+
         if (
-            hash === '1903c1940e2986c00efdd9efc7d13a008b114c7ba6a604bf65ac5a49987b9c37' ||
-            hash === '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9'
+            (validHash1 && hash === validHash1) ||
+            (validHash2 && hash === validHash2) ||
+            (!validHash1 && hash === '1903c1940e2986c00efdd9efc7d13a008b114c7ba6a604bf65ac5a49987b9c37') // Fallback if env missing
         ) {
             setIsAuthenticated(true);
             setError('');
@@ -160,7 +173,12 @@ const AdminDashboard: React.FC = () => {
                 </div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+                    <div className="bg-zinc-900/50 border border-white/5 p-4 rounded-xl relative overflow-hidden">
+                        <div className="absolute top-4 right-4 w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                        <p className="text-zinc-500 text-xs uppercase font-bold tracking-widest mb-1">Live Online</p>
+                        <p className="text-3xl font-black font-heading text-red-500">{stats.liveVisitors}</p>
+                    </div>
                     <div className="bg-zinc-900/50 border border-white/5 p-4 rounded-xl">
                         <p className="text-zinc-500 text-xs uppercase font-bold tracking-widest mb-1">Total Visitors</p>
                         <p className="text-3xl font-black font-heading">{stats.totalVisitors}</p>
@@ -212,10 +230,6 @@ const AdminDashboard: React.FC = () => {
                             </tbody>
                         </table>
                     </div>
-                </div>
-
-                <div className="mt-8 p-4 bg-blue-900/20 border border-blue-500/30 rounded-xl text-blue-200 text-sm">
-                    <strong>Note:</strong> Since your application does not currently have a backend database connected to this dashboard, the data displayed above uses a mix of your current local session data and mock data for demonstration purposes. To see real historic data here, a database module (like Supabase or Firebase) needs to be implemented. For now, all real live visitors still trigger Discord and WhatsApp notifications!
                 </div>
             </div>
         </div>
