@@ -73,7 +73,9 @@ function App() {
           sessionStorage.setItem('website_visitor_geo', JSON.stringify({
             country: data.country,
             city: data.city,
-            ip: data.ip
+            ip: data.ip,
+            organization: data.organization_name || 'Unknown ISP',
+            region: data.region || 'Unknown Region'
           }));
         })
         .catch(() => console.warn('Geo fetch failed'));
@@ -101,7 +103,15 @@ function App() {
         deviceName = /Mobile/.test(ua) ? 'Mobile 📱' : 'Desktop 💻';
       }
 
+      // Capture advanced details: Referrer and Screen Size
+      const referrer = document.referrer ? new URL(document.referrer).hostname : 'Direct Entry';
+      const screenSize = `${window.screen.width}x${window.screen.height}`;
+      const browserLanguage = navigator.language || 'Unknown';
+
       sessionStorage.setItem('website_visitor_device', deviceName);
+      sessionStorage.setItem('website_visitor_referrer', referrer);
+      sessionStorage.setItem('website_visitor_screen', screenSize);
+      sessionStorage.setItem('website_visitor_language', browserLanguage);
 
       // Save initial visit to Firebase if configured
       if (db) {
@@ -109,7 +119,10 @@ function App() {
           sessionKey: entryTime,
           timestamp: Timestamp.now(),
           device: deviceName,
-          location: sessionStorage.getItem('website_visitor_geo') ? JSON.parse(sessionStorage.getItem('website_visitor_geo')!) : { city: 'Unknown', country: 'Unknown' },
+          referrer: referrer,
+          screenSize: screenSize,
+          language: browserLanguage,
+          location: sessionStorage.getItem('website_visitor_geo') ? JSON.parse(sessionStorage.getItem('website_visitor_geo')!) : { city: 'Unknown', country: 'Unknown', region: 'Unknown' },
           pagesViewed: ['Home'],
           durationSec: 0,
           isActive: true
@@ -149,8 +162,10 @@ function App() {
       const viewedItems = JSON.parse(sessionStorage.getItem('website_viewed_items') || '[]');
       const itemsList = viewedItems.length > 0 ? viewedItems.join(', ') : 'None';
 
-      const geo = JSON.parse(sessionStorage.getItem('website_visitor_geo') || '{"country":"Unknown","city":"Unknown"}');
+      const geo = JSON.parse(sessionStorage.getItem('website_visitor_geo') || '{"country":"Unknown","city":"Unknown","region":"Unknown","organization":"Unknown"}');
       const device = sessionStorage.getItem('website_visitor_device') || 'Unknown';
+      const referrer = sessionStorage.getItem('website_visitor_referrer') || 'Unknown';
+      const screenSize = sessionStorage.getItem('website_visitor_screen') || 'Unknown';
 
       const countryStr = typeof geo.country === 'string' ? geo.country.toLowerCase() : 'unknown';
       const isLebanon = countryStr.includes('lebanon') || countryStr === 'lb';
@@ -166,8 +181,10 @@ function App() {
       const mention = isLebanon ? '@everyone ' : '';
 
       const message = `${mention}👋 **Visitor Session Ended**
-🌍 **Location:** ${geo.city}, ${geo.country}
-💻 **Device:** ${device}
+🌍 **Location:** ${geo.city}, ${geo.region}, ${geo.country}
+🏢 **Network:** ${geo.organization}
+💻 **Device:** ${device} (Screen: ${screenSize})
+🔍 **Source:** ${referrer}
 ⏱️ **Duration:** ${durationStr}
 👀 **Viewed Items/Pages:** ${itemsList}`;
 
