@@ -31,6 +31,26 @@ function App() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isAdminView, setIsAdminView] = useState(false);
 
+  // Foolproof fallback to check admin route constantly just in case events fail
+  React.useEffect(() => {
+    const checkHash = () => {
+      const hash = window.location.hash;
+      const path = window.location.pathname;
+      if (hash === '#admin' || path === '/admin') {
+        if (!isAdminView) setIsAdminView(true);
+      } else {
+        if (isAdminView) setIsAdminView(false);
+      }
+    };
+
+    // Check immediately
+    checkHash();
+
+    // Check periodically for tricky browser caching/anchor bugs
+    const interval = setInterval(checkHash, 500);
+    return () => clearInterval(interval);
+  }, [isAdminView]);
+
 
   // Initialize GA
   React.useEffect(() => {
@@ -201,7 +221,7 @@ function App() {
 
       if (path === '/admin' || hash === '#admin') {
         setIsAdminView(true);
-        return; // Don't do other tab logic if we are an admin
+        // Do not return here so the rest of the states can reset properly if needed
       } else {
         setIsAdminView(false);
       }
