@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { initGA, logPageView } from './src/utils/analytics';
 import { sendDiscordMessage, sendDiscordMessageBeacon } from './src/utils/discord';
+import { db, collection, addDoc, Timestamp } from './src/utils/firebase';
 import Navbar from './components/Navbar.tsx';
 import Hero from './components/Hero.tsx';
 import ProductGallery, { ProductCard } from './components/ProductGallery.tsx';
@@ -81,6 +82,21 @@ function App() {
       }
 
       sessionStorage.setItem('website_visitor_device', deviceName);
+
+      // Save initial visit to Firebase if configured
+      if (db) {
+        addDoc(collection(db, "visitors"), {
+          sessionKey: entryTime,
+          timestamp: Timestamp.now(),
+          device: deviceName,
+          location: sessionStorage.getItem('website_visitor_geo') ? JSON.parse(sessionStorage.getItem('website_visitor_geo')!) : { city: 'Unknown', country: 'Unknown' },
+          pagesViewed: ['Home'],
+          durationSec: 0,
+          isActive: true
+        }).then(docRef => {
+          sessionStorage.setItem('firebase_doc_id', docRef.id);
+        }).catch(err => console.error("Firebase write err", err));
+      }
     }
 
     let lastSent = 0;
@@ -140,6 +156,21 @@ function App() {
 
       // Record successful send
       localStorage.setItem('last_webhook_sent', now.toString());
+
+      // Update Firebase on exit if applicable
+      if (db) {
+        const docId = sessionStorage.getItem('firebase_doc_id');
+        if (docId) {
+          // Usually we'd updateDoc but addDoc for an "exit" event is also fine if we track history.
+          // A simple fire-and-forget exit log to make stats easier for the dashboard:
+          addDoc(collection(db, "exits"), {
+            sessionKey: start.toString(),
+            timestamp: Timestamp.now(),
+            durationSec: durationSec,
+            pagesCount: viewedItems.length
+          }).catch(e => console.error(e));
+        }
+      }
     };
 
     const handleVisibilityChange = () => {

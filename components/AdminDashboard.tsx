@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { db, collection, getDocs, query, orderBy, limit } from '../src/utils/firebase';
 
 const AdminDashboard: React.FC = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -17,22 +18,79 @@ const AdminDashboard: React.FC = () => {
     const [recentVisits, setRecentVisits] = useState<any[]>([]);
 
     useEffect(() => {
-        // Generate some mock history + pull from local if available
-        const localGeos = sessionStorage.getItem('website_visitor_geo');
-        let location = 'Beirut, Lebanon';
-        if (localGeos) {
-            const geo = JSON.parse(localGeos);
-            location = `${geo.city}, ${geo.country}`;
-        }
+        const loadDashboardData = async () => {
+            if (db) {
+                try {
+                    // Fetch real data from Firebase
+                    const visitorsRef = collection(db, "visitors");
+                    const q = query(visitorsRef, orderBy("timestamp", "desc"), limit(20));
+                    const snapshot = await getDocs(q);
 
-        const mockHistory = [
-            { id: 1, time: 'Just now', device: sessionStorage.getItem('website_visitor_device') || 'Desktop 💻', location, pages: 'Admin Dashboard, Home', duration: '5m' },
-            { id: 2, time: '2 hours ago', device: 'Mobile 📱', location: 'Tripoli, Lebanon', pages: 'Home, Keychains', duration: '2m' },
-            { id: 3, time: '5 hours ago', device: 'Desktop 💻', location: 'Saida, Lebanon', pages: 'Custom Preview', duration: '12m' },
-            { id: 4, time: 'Yesterday', device: 'Mobile 📱', location: 'Jounieh, Lebanon', pages: 'Home', duration: '1m' },
-            { id: 5, time: 'Yesterday', device: 'Tablet 📱', location: 'Zahlé, Lebanon', pages: 'Services, Keychains', duration: '4m' },
-        ];
-        setRecentVisits(mockHistory);
+                    const history = [];
+                    let todayCount = 0;
+                    const now = new Date();
+                    const topCities: Record<string, number> = {};
+                    const topDevices: Record<string, number> = {};
+
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        const date = data.timestamp ? data.timestamp.toDate() : new Date();
+                        const isToday = date.toDateString() === now.toDateString();
+                        if (isToday) todayCount++;
+
+                        const city = data.location?.city || 'Unknown';
+                        topCities[city] = (topCities[city] || 0) + 1;
+
+                        const device = data.device || 'Unknown';
+                        topDevices[device] = (topDevices[device] || 0) + 1;
+
+                        history.push({
+                            id: doc.id,
+                            time: date.toLocaleString(),
+                            device: data.device,
+                            location: `${city}, ${data.location?.country || 'Unknown'}`,
+                            pages: data.pagesViewed ? data.pagesViewed.join(', ') : 'Home',
+                            duration: data.durationSec ? `${data.durationSec}s` : 'Active'
+                        });
+                    });
+
+                    // Determine top city & device
+                    const mostFrequentCity = Object.keys(topCities).sort((a, b) => topCities[b] - topCities[a])[0] || 'Unknown';
+                    const mostFrequentDevice = Object.keys(topDevices).sort((a, b) => topDevices[b] - topDevices[a])[0] || 'Unknown';
+
+                    setStats({
+                        totalVisitors: snapshot.size, // in a real app you'd need a separate aggregation
+                        todayVisitors: todayCount,
+                        activeCarts: 0, // Mock for now
+                        topDevice: mostFrequentDevice,
+                        topCity: mostFrequentCity
+                    });
+
+                    setRecentVisits(history);
+                } catch (error) {
+                    console.error("Error fetching Firebase data", error);
+                }
+            } else {
+                // Fallback Mock Data if Firebase not configured
+                const localGeos = sessionStorage.getItem('website_visitor_geo');
+                let location = 'Beirut, Lebanon';
+                if (localGeos) {
+                    const geo = JSON.parse(localGeos);
+                    location = `${geo.city}, ${geo.country}`;
+                }
+
+                const mockHistory = [
+                    { id: 1, time: 'Just now', device: sessionStorage.getItem('website_visitor_device') || 'Desktop 💻', location, pages: 'Admin Dashboard, Home', duration: '5m' },
+                    { id: 2, time: '2 hours ago', device: 'Mobile 📱', location: 'Tripoli, Lebanon', pages: 'Home, Keychains', duration: '2m' },
+                    { id: 3, time: '5 hours ago', device: 'Desktop 💻', location: 'Saida, Lebanon', pages: 'Custom Preview', duration: '12m' },
+                    { id: 4, time: 'Yesterday', device: 'Mobile 📱', location: 'Jounieh, Lebanon', pages: 'Home', duration: '1m' },
+                    { id: 5, time: 'Yesterday', device: 'Tablet 📱', location: 'Zahlé, Lebanon', pages: 'Services, Keychains', duration: '4m' },
+                ];
+                setRecentVisits(mockHistory);
+            }
+        };
+
+        loadDashboardData();
     }, []);
 
     const hashPassword = async (pwd: string) => {
