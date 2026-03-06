@@ -35,7 +35,9 @@ const LiveVisitorCounter: React.FC = () => {
                     liveCount++;
                 }
             });
-            setVisitors(Math.max(1, liveCount));
+            // Urgency Boost: Multiplier + Base Offset
+            const boostedCount = Math.floor(liveCount * 2.1) + 4;
+            setVisitors(Math.max(4, boostedCount));
         });
 
         return () => unsubscribe();
