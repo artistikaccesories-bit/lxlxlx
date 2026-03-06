@@ -202,11 +202,11 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
 
                 {/* Content Section */}
                 <div className="w-full md:w-1/2 flex-1 p-6 md:p-12 flex flex-col overflow-y-auto custom-scrollbar bg-zinc-950/50 min-h-0 relative z-10">
-                    <div className="flex justify-between items-start mb-8">
+                    <div className="flex justify-between items-start mb-6 md:mb-8">
                         <div>
-                            <h2 className="text-3xl lg:text-4xl font-black font-heading silver-gradient mb-2">{product.name}</h2>
+                            <h2 className="text-2xl md:text-4xl font-black font-heading silver-gradient mb-1 md:mb-2">{product.name}</h2>
                             <div className="flex items-center gap-2 mb-1">
-                                <p className="text-zinc-500 text-xs font-bold uppercase tracking-[0.2em]">{product.category} Series</p>
+                                <p className="text-zinc-500 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em]">{product.category} Series</p>
                                 {product.originalPrice && (
                                     <span className="text-xs text-black font-bold uppercase tracking-wider bg-white px-2 py-0.5 rounded">Sale</span>
                                 )}
@@ -225,8 +225,8 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
 
                     <div className="space-y-8 flex-grow">
                         <div>
-                            <h3 className="text-xs font-black uppercase tracking-widest text-zinc-400 mb-3">Description</h3>
-                            <p className="text-sm text-zinc-400 leading-relaxed font-medium">
+                            <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2 md:mb-3">Description</h3>
+                            <p className="text-xs md:text-sm text-zinc-400 leading-relaxed font-medium">
                                 {product.description}
                             </p>
                         </div>
@@ -303,15 +303,15 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
 
                     <div className="mt-8 pt-8 border-t border-white/10 flex items-center justify-between gap-6">
                         <div className="flex flex-col">
-                            <span className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Total Price</span>
-                            <span className="text-3xl font-black text-white">${totalPrice}</span>
+                            <span className="text-zinc-500 text-[9px] md:text-[10px] font-bold uppercase tracking-widest">Total Price</span>
+                            <span className="text-2xl md:text-3xl font-black text-white">${totalPrice}</span>
                         </div>
                         <button
                             onClick={handleSubmit}
-                            className="flex-grow py-5 bg-white text-black font-black uppercase tracking-[0.2em] text-xs rounded-2xl hover:bg-zinc-200 transition-all flex items-center justify-center gap-3 group/btn silver-glow"
+                            className="flex-grow py-4 md:py-5 bg-white text-black font-black uppercase tracking-[0.2em] text-[10px] md:text-xs rounded-2xl hover:bg-zinc-200 transition-all flex items-center justify-center gap-2 md:gap-3 group/btn silver-glow"
                         >
                             Add to Cart
-                            <svg className="w-5 h-5 transform group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
+                            <svg className="w-4 h-4 md:w-5 md:h-5 transform group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
                         </button>
                     </div>
                 </div>

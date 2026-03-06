@@ -141,10 +141,10 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ products, onAddToCart, 
 
       <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8 relative z-10">
         <div className="w-full md:w-auto">
-          <h2 className="text-4xl md:text-7xl font-black font-heading tracking-tighter text-white mb-6 leading-none">
+          <h2 className="text-3xl md:text-7xl font-black font-heading tracking-tighter text-white mb-4 md:mb-6 leading-none uppercase">
             THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 to-zinc-500">COLLECTION</span>
           </h2>
-          <p className="text-zinc-400 max-w-xl text-lg leading-relaxed font-light mb-8">
+          <p className="text-zinc-400 max-w-xl text-sm md:text-lg leading-relaxed font-light mb-6 md:mb-8">
             Precision-engineered artifacts. Choose your canvas.
           </p>
           <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full max-w-md">
@@ -155,7 +155,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ products, onAddToCart, 
               placeholder="Search products..."
               className="flex-grow bg-white/5 border border-white/10 rounded-full px-6 py-3 text-white placeholder:text-zinc-500 focus:outline-none focus:border-white/30 transition-colors"
             />
-            <button type="submit" className="bg-white text-black font-bold uppercase tracking-widest text-xs px-6 py-3 rounded-full hover:bg-zinc-200 transition-colors">
+            <button type="submit" className="bg-white text-black font-bold uppercase tracking-widest text-[10px] md:text-xs px-5 md:px-6 py-3 md:py-3 rounded-full hover:bg-zinc-200 transition-colors">
               Search
             </button>
           </form>

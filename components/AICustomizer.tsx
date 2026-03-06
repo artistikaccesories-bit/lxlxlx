@@ -37,8 +37,8 @@ const AICustomizer: React.FC = () => {
             <svg className="w-3 h-3 text-white animate-pulse" fill="currentColor" viewBox="0 0 20 20"><path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1a1 1 0 112 0v1a1 1 0 11-2 0zM13.536 14.95a1 1 0 011.414 0l.707.707a1 1 0 11-1.414 1.414l-.707-.707a1 1 0 010-1.414zM15.657 14.243a1 1 0 00-1.414 1.414l.707.707a1 1 0 001.414-1.414l-.707-.707z" /></svg>
             Design Intelligence Studio
           </div>
-          <h2 className="text-5xl md:text-7xl font-black mb-6 font-heading silver-gradient tracking-tight">CRAFT YOUR <br />LEGACY.</h2>
-          <p className="text-zinc-500 text-lg max-w-lg mx-auto leading-relaxed">Describe your vision or the person you're gifting to. Our AI will conceptualize a premium steel engraving for you.</p>
+          <h2 className="text-4xl md:text-7xl font-black mb-4 md:mb-6 font-heading silver-gradient tracking-tight leading-tight">CRAFT YOUR <br />LEGACY.</h2>
+          <p className="text-zinc-500 text-sm md:text-lg max-w-lg mx-auto leading-relaxed">Describe your vision or the person you're gifting to. Our AI will conceptualize a premium steel engraving for you.</p>
         </div>
 
         <form onSubmit={handleConsult} className="relative mb-20">
@@ -47,13 +47,13 @@ const AICustomizer: React.FC = () => {
               type="text"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="e.g. A graduation gift for a law student who loves minimalism..."
-              className="flex-grow bg-transparent px-8 py-5 outline-none text-white placeholder:text-zinc-700 text-lg font-medium"
+              placeholder="e.g. A graduation gift..."
+              className="flex-grow bg-transparent px-6 md:px-8 py-4 md:py-5 outline-none text-white placeholder:text-zinc-700 text-base md:text-lg font-medium"
             />
             <button
               type="submit"
               disabled={loading}
-              className="bg-white text-black font-black uppercase tracking-widest text-xs px-12 py-5 rounded-2xl hover:bg-zinc-200 transition-all disabled:opacity-50 min-w-[200px] flex items-center justify-center"
+              className="bg-white text-black font-black uppercase tracking-widest text-[10px] md:text-xs px-10 md:px-12 py-4 md:py-5 rounded-2xl hover:bg-zinc-200 transition-all disabled:opacity-50 min-w-[150px] md:min-w-[200px] flex items-center justify-center"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
@@ -67,13 +67,13 @@ const AICustomizer: React.FC = () => {
           <div className="glass rounded-[2.5rem] p-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
               <div>
-                <span className="text-zinc-600 text-[10px] font-black uppercase tracking-[0.3em] mb-4 block">Design Blueprint</span>
-                <h4 className="text-4xl font-black mb-8 font-heading">{concept.conceptName}</h4>
+                <span className="text-zinc-600 text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] mb-4 block">Design Blueprint</span>
+                <h4 className="text-2xl md:text-4xl font-black mb-6 md:mb-8 font-heading">{concept.conceptName}</h4>
 
                 <div className="space-y-10">
                   <div>
-                    <label className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest block mb-2">Engraving Text</label>
-                    <p className="text-2xl text-white font-heading italic tracking-tight">"{concept.engravingText}"</p>
+                    <label className="text-zinc-500 text-[9px] md:text-[10px] font-bold uppercase tracking-widest block mb-2">Engraving Text</label>
+                    <p className="text-lg md:text-2xl text-white font-heading italic tracking-tight">"{concept.engravingText}"</p>
                   </div>
                   <div className="grid grid-cols-2 gap-8">
                     <div>

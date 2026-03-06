@@ -218,7 +218,7 @@ const AdminDashboard: React.FC = () => {
                             <span className="text-xs text-zinc-400 uppercase tracking-widest font-bold">Visitors</span>
                         </div>
                     </div>
-                    <div className="h-48 flex items-end gap-1 md:gap-2">
+                    <div className="h-48 flex items-end gap-[2px] md:gap-2">
                         {Array.from({ length: 24 }).map((_, i) => {
                             const count = stats.hourlyDistribution[i] || 0;
                             const max = Math.max(...Object.values(stats.hourlyDistribution), 1);
@@ -234,7 +234,7 @@ const AdminDashboard: React.FC = () => {
                                         style={{ height: `${Math.max(4, height)}%` }}
                                         className={`w-full rounded-t-sm transition-all duration-500 ${isCurrentHour ? 'bg-white' : count > 0 ? 'bg-white/40 group-hover:bg-white/60' : 'bg-white/5'}`}
                                     ></div>
-                                    <span className={`text-[9px] font-bold ${isCurrentHour ? 'text-white' : 'text-zinc-600'}`}>
+                                    <span className={`text-[8px] md:text-[9px] font-bold ${isCurrentHour ? 'text-white' : 'text-zinc-600'}`}>
                                         {i === 0 ? '12a' : i === 12 ? '12p' : i > 12 ? `${i - 12}p` : `${i}a`}
                                     </span>
                                 </div>
@@ -248,7 +248,7 @@ const AdminDashboard: React.FC = () => {
                     <div className="p-6 border-b border-white/5">
                         <h3 className="text-xl font-bold">Recent Visits</h3>
                     </div>
-                    <div className="overflow-x-auto">
+                    <div className="hidden md:block overflow-x-auto">
                         <table className="w-full text-sm text-left">
                             <thead className="text-xs text-zinc-500 uppercase bg-black/20">
                                 <tr>
@@ -271,6 +271,25 @@ const AdminDashboard: React.FC = () => {
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="md:hidden divide-y divide-white/5">
+                        {recentVisits.map((visit) => (
+                            <div key={visit.id} className="p-4 space-y-3">
+                                <div className="flex justify-between items-start">
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">{visit.time}</span>
+                                        <span className="text-sm font-bold text-white mt-1">{visit.location}</span>
+                                    </div>
+                                    <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] font-mono">{visit.duration}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-[10px] text-zinc-400">
+                                    <span className="p-1 bg-white/5 rounded">{visit.device}</span>
+                                    <span className="truncate flex-1">Views: {visit.pages}</span>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>

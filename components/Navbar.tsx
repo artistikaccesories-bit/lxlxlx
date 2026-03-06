@@ -20,7 +20,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, cartCount, onO
               <img src="/images/logo.webp" alt="LaserArtLB" fetchpriority="high" loading="eager" className="w-full h-full object-contain relative z-10 filter brightness-200" />
             </div>
             <div className="flex flex-col">
-              <span className="text-xs md:text-lg font-black tracking-[0.15em] font-heading text-white leading-none relative">
+              <span className="text-[14px] md:text-lg font-black tracking-[0.15em] font-heading text-white leading-none relative">
                 <span className="absolute -inset-1 blur-sm bg-white/10 opacity-0 group-hover:opacity-50 transition-opacity duration-300"></span>
                 <span className="relative z-10">LASERARTLB</span>
               </span>
