@@ -39,7 +39,7 @@ export const PRODUCTS: Product[] = [
         name: 'PET TAG',
         handle: 'pet-tag-guardian',
         price: 10,
-        category: 'tag',
+        category: 'keychain',
         description: 'Safety meets style. Durable custom dog tag engraved with your pet\'s name and your phone number. Built to last through every adventure.',
         image: '/images/p4.jpg',
         stock: 3
@@ -59,7 +59,7 @@ export const PRODUCTS: Product[] = [
         name: 'BOTTLE OPENER',
         handle: 'bottle-opener-brew',
         price: 10,
-        category: 'tool',
+        category: 'keychain',
         description: 'Utility refined. A robust stainless steel bottle opener that doubles as a personal statement. Engrave any text or name for a gift that will actually be used.',
         image: '/images/p6.jpg.jpg',
         stock: 2
@@ -69,7 +69,7 @@ export const PRODUCTS: Product[] = [
         name: 'COUPLE TAG',
         handle: 'the-bond-tag',
         price: 10,
-        category: 'tag',
+        category: 'keychain',
         description: 'Stainless steel tag shape designed for couples. Deeply engraved with your custom text. A modern symbol of connection.',
         image: '/images/product7.jpeg',
         stock: 4
