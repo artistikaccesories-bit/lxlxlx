@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { initGA, logPageView } from './src/utils/analytics';
-import { sendDiscordMessage, sendDiscordMessageBeacon } from './src/utils/discord';
+import { sendDiscordMessage, sendDiscordMessageBeacon, sendDiscordEntryMessage } from './src/utils/discord';
 import { db, collection, addDoc, Timestamp, doc, updateDoc } from './src/utils/firebase';
 import Navbar from './components/Navbar.tsx';
 import Hero from './components/Hero.tsx';
@@ -66,20 +66,6 @@ function App() {
       entryTime = Date.now().toString();
       sessionStorage.setItem(sessionKey, entryTime);
 
-      // Fetch Geolocation and store it for the exit message
-      fetch('https://get.geojs.io/v1/ip/geo.json')
-        .then(res => res.json())
-        .then(data => {
-          sessionStorage.setItem('website_visitor_geo', JSON.stringify({
-            country: data.country,
-            city: data.city,
-            ip: data.ip,
-            organization: data.organization_name || 'Unknown ISP',
-            region: data.region || 'Unknown Region'
-          }));
-        })
-        .catch(() => console.warn('Geo fetch failed'));
-
       // Store detailed device info
       const ua = navigator.userAgent;
       let deviceName = 'Unknown Device';
@@ -87,11 +73,9 @@ function App() {
       if (/windows phone/i.test(ua)) {
         deviceName = 'Windows Phone 📱';
       } else if (/android/i.test(ua)) {
-        // Try to extract Android model
         const match = ua.match(/Android\s+[0-9\.]+(?:;\s+([^;]+))?/);
         deviceName = match && match[1] ? `Android (${match[1]}) 📱` : 'Android 📱';
       } else if (/ipad|iphone|ipod/i.test(ua)) {
-        // For iOS, user-agent doesn't expose exact model (e.g., iPhone 13 vs 14)
         deviceName = /ipad/i.test(ua) ? 'iPad 📱' : 'iPhone 📱';
       } else if (/mac/i.test(ua)) {
         deviceName = 'Mac 💻';
@@ -103,7 +87,6 @@ function App() {
         deviceName = /Mobile/.test(ua) ? 'Mobile 📱' : 'Desktop 💻';
       }
 
-      // Capture advanced details: Referrer and Screen Size
       const referrer = document.referrer ? new URL(document.referrer).hostname : 'Direct Entry';
       const screenSize = `${window.screen.width}x${window.screen.height}`;
       const browserLanguage = navigator.language || 'Unknown';
@@ -113,7 +96,7 @@ function App() {
       sessionStorage.setItem('website_visitor_screen', screenSize);
       sessionStorage.setItem('website_visitor_language', browserLanguage);
 
-      // Save initial visit to Firebase if configured
+      // 1. Add to Firebase IMMEDIATELY
       if (db) {
         addDoc(collection(db, "visitors"), {
           sessionKey: entryTime,
@@ -124,27 +107,58 @@ function App() {
           referrer: referrer,
           screenSize: screenSize,
           language: browserLanguage,
-          location: sessionStorage.getItem('website_visitor_geo') ? JSON.parse(sessionStorage.getItem('website_visitor_geo')!) : { city: 'Unknown', country: 'Unknown', region: 'Unknown' },
+          location: { city: 'Fetching...', country: '', region: '' },
           pagesViewed: ['Home'],
           durationSec: 0,
           isActive: true
         }).then(docRef => {
           sessionStorage.setItem('firebase_doc_id', docRef.id);
-        }).catch(err => console.error("Firebase write err", err));
 
-        // Ping firebase every 1 minute to keep session alive and visible to Dashboard
-        const pingInterval = setInterval(() => {
-          const docId = sessionStorage.getItem('firebase_doc_id');
-          if (docId && db) {
-            updateDoc(doc(db, "visitors", docId), {
-              lastActive: Timestamp.now()
-            }).catch(() => { });
-          }
-        }, 60000);
+          // 2. Fetch Geolocation and update
+          fetch('https://get.geojs.io/v1/ip/geo.json')
+            .then(res => res.json())
+            .then(data => {
+              const geoData = {
+                country: data.country, city: data.city, ip: data.ip,
+                organization: data.organization_name || 'Unknown ISP',
+                region: data.region || 'Unknown Region'
+              };
+              sessionStorage.setItem('website_visitor_geo', JSON.stringify(geoData));
 
-        // Cleanup interval on page unload
-        window.addEventListener('beforeunload', () => clearInterval(pingInterval));
+              updateDoc(doc(db, "visitors", docRef.id), {
+                location: geoData
+              }).catch(() => { });
+
+              // 3. Send immediate notification on entry
+              sendDiscordEntryMessage(geoData, deviceName, referrer).catch(() => { });
+            })
+            .catch(() => {
+              updateDoc(doc(db, "visitors", docRef.id), {
+                location: { city: 'Unknown', country: 'Unknown', region: 'Unknown' }
+              }).catch(() => { });
+              sendDiscordEntryMessage({ city: 'Unknown', country: 'Unknown' }, deviceName, referrer).catch(() => { });
+            });
+        }).catch(err => {
+          console.error("Firebase write err", err);
+          // Still try Discord even if Firebase fails
+          sendDiscordEntryMessage({ city: 'Unknown', country: 'Unknown' }, deviceName, referrer).catch(() => { });
+        });
+      } else {
+        // Mock mode: still try Discord
+        sendDiscordEntryMessage({ city: 'Mocked', country: 'Local' }, deviceName, referrer).catch(() => { });
       }
+
+      // Ping firebase every 1 minute
+      const pingInterval = setInterval(() => {
+        const docId = sessionStorage.getItem('firebase_doc_id');
+        if (docId && db) {
+          updateDoc(doc(db, "visitors", docId), {
+            lastActive: Timestamp.now()
+          }).catch(() => { });
+        }
+      }, 60000);
+
+      window.addEventListener('beforeunload', () => clearInterval(pingInterval));
     }
 
     let lastSent = 0;

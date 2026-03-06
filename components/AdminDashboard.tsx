@@ -44,7 +44,7 @@ const AdminDashboard: React.FC = () => {
 
                     if (isLive) {
                         liveVisitorsCount++;
-                        if (data.activeCartCount > 0) activeCartsCount += 1; // Assuming 1 active cart session per live visitor possessing an active cart item
+                        if (data.activeCartCount > 0) activeCartsCount++;
                     }
 
                     const city = data.location?.city || 'Unknown';
