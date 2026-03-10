@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { db, collection, getDocs, query, orderBy, limit, onSnapshot, doc, deleteDoc } from '../src/utils/firebase';
+import { db, collection, getDocs, query, orderBy, limit, onSnapshot, doc, deleteDoc, setDoc } from '../src/utils/firebase';
+import { PRODUCTS as STATIC_PRODUCTS } from '../src/data/products';
 
 const AdminDashboard: React.FC = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -17,14 +18,29 @@ const AdminDashboard: React.FC = () => {
         hourlyDistribution: {} as Record<number, number>
     });
 
+    const [activeTab, setActiveTab] = useState<'analytics' | 'products'>('analytics');
+    const [products, setProducts] = useState<any[]>([]);
+    const [newProduct, setNewProduct] = useState({
+        id: '',
+        name: '',
+        price: '',
+        description: '',
+        image: '',
+        category: 'keychain'
+    });
+    const [isSaving, setIsSaving] = useState(false);
+
     const [recentVisits, setRecentVisits] = useState<any[]>([]);
 
     useEffect(() => {
+        let unsubscribeVisitors: () => void;
+        let unsubscribeProducts: () => void;
+
         if (db) {
             const visitorsRef = collection(db, "visitors");
             const q = query(visitorsRef, orderBy("timestamp", "desc"), limit(50));
 
-            const unsubscribe = onSnapshot(q, (snapshot) => {
+            unsubscribeVisitors = onSnapshot(q, (snapshot) => {
                 const history: any[] = [];
                 let todayCount = 0;
                 let dailyTotalCarts = 0;
@@ -92,7 +108,20 @@ const AdminDashboard: React.FC = () => {
                 console.error("Error fetching real-time Firebase data", error);
             });
 
-            return () => unsubscribe();
+            // Products sync
+            const productsRef = collection(db, "products");
+            unsubscribeProducts = onSnapshot(productsRef, (snapshot) => {
+                const dynamicProducts: any[] = [];
+                snapshot.forEach(doc => {
+                    dynamicProducts.push({ ...doc.data(), id: doc.id });
+                });
+                setProducts(dynamicProducts);
+            });
+
+            return () => {
+                unsubscribeVisitors();
+                unsubscribeProducts();
+            };
         } else {
             // Fallback Mock Data if Firebase not configured
             const localGeos = sessionStorage.getItem('website_visitor_geo');
@@ -168,6 +197,53 @@ const AdminDashboard: React.FC = () => {
         }
     };
 
+    const handleAddProduct = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!db || isSaving) return;
+
+        if (!newProduct.name || !newProduct.price || !newProduct.image || !newProduct.category) {
+            alert('Please fill in all required fields (Name, Price, Image URL, Category).');
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            const productId = newProduct.id || `p_${Date.now()}`;
+            await setDoc(doc(db, "products", productId), {
+                ...newProduct,
+                id: productId,
+                price: parseFloat(newProduct.price as string),
+                timestamp: new Date()
+            });
+
+            setNewProduct({
+                id: '',
+                name: '',
+                price: '',
+                description: '',
+                image: '',
+                category: 'keychain'
+            });
+            alert('Product added successfully!');
+        } catch (err) {
+            console.error("Error adding product", err);
+            alert('Failed to add product.');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const deleteProduct = async (id: string) => {
+        if (!db) return;
+        if (window.confirm('Delete this product? It will no longer show on the website.')) {
+            try {
+                await deleteDoc(doc(db, "products", id));
+            } catch (err) {
+                console.error("Error deleting product", err);
+            }
+        }
+    };
+
     if (!isAuthenticated) {
         return (
             <div className="min-h-screen bg-black flex items-center justify-center p-4">
@@ -198,13 +274,15 @@ const AdminDashboard: React.FC = () => {
             <div className="max-w-6xl mx-auto space-y-8">
                 <div className="flex justify-between items-end border-b border-white/10 pb-6">
                     <div>
-                        <h1 className="text-4xl md:text-5xl font-black font-heading tracking-tighter">Admin <span className="text-zinc-500">Analytics.</span></h1>
-                        <p className="text-zinc-400 mt-2">Live visitor tracking and insights</p>
+                        <h1 className="text-4xl md:text-5xl font-black font-heading tracking-tighter">Admin <span className="text-zinc-500">{activeTab === 'analytics' ? 'Analytics.' : 'Products.'}</span></h1>
+                        <p className="text-zinc-400 mt-2">{activeTab === 'analytics' ? 'Live visitor tracking and insights' : 'Manage your store catalog'}</p>
                     </div>
                     <div className="flex gap-3">
-                        <button onClick={resetDashboard} className="px-4 py-2 border border-red-500/30 text-red-500 rounded-lg text-xs font-bold uppercase hover:bg-red-500 hover:text-white transition-all">
-                            Reset Database
-                        </button>
+                        {activeTab === 'analytics' && (
+                            <button onClick={resetDashboard} className="px-4 py-2 border border-red-500/30 text-red-500 rounded-lg text-xs font-bold uppercase hover:bg-red-500 hover:text-white transition-all">
+                                Reset Database
+                            </button>
+                        )}
                         <button onClick={() => {
                             window.location.hash = '';
                             window.location.href = '/';
@@ -214,6 +292,23 @@ const AdminDashboard: React.FC = () => {
                     </div>
                 </div>
 
+                <div className="flex gap-4 border-b border-white/5 pb-4">
+                    <button
+                        onClick={() => setActiveTab('analytics')}
+                        className={`text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full transition-all ${activeTab === 'analytics' ? 'bg-white text-black' : 'text-zinc-500 hover:text-white'}`}
+                    >
+                        Analytics
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('products')}
+                        className={`text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full transition-all ${activeTab === 'products' ? 'bg-white text-black' : 'text-zinc-500 hover:text-white'}`}
+                    >
+                        Manage Products
+                    </button>
+                </div>
+
+                {activeTab === 'analytics' ? (
+                    <>
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
                     <div className="bg-zinc-900/50 border border-white/5 p-4 rounded-xl relative overflow-hidden">
@@ -291,6 +386,7 @@ const AdminDashboard: React.FC = () => {
                                     <th className="px-6 py-4">Location</th>
                                     <th className="px-6 py-4">Device</th>
                                     <th className="px-6 py-4">Pages Viewed</th>
+                                    <th className="px-6 py-4 font-mono">Duration</th>
                                     <th className="px-6 py-4 text-right">Action</th>
                                 </tr>
                             </thead>
@@ -342,6 +438,139 @@ const AdminDashboard: React.FC = () => {
                         ))}
                     </div>
                 </div>
+                    </>
+                ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* Add Product Form */}
+                        <div className="bg-zinc-900/30 border border-white/10 p-8 rounded-3xl">
+                            <h3 className="text-xl font-bold mb-6">Add New Product</h3>
+                            <form onSubmit={handleAddProduct} className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] uppercase font-bold text-zinc-500">Product Name *</label>
+                                        <input
+                                            type="text"
+                                            value={newProduct.name}
+                                            onChange={e => setNewProduct({ ...newProduct, name: e.target.value })}
+                                            className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm"
+                                            placeholder="e.g. CUSTOM PLATE"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] uppercase font-bold text-zinc-500">Price ($) *</label>
+                                        <input
+                                            type="number"
+                                            value={newProduct.price}
+                                            onChange={e => setNewProduct({ ...newProduct, price: e.target.value })}
+                                            className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm"
+                                            placeholder="10"
+                                            step="0.01"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] uppercase font-bold text-zinc-500">Image URL (path or link) *</label>
+                                    <input
+                                        type="text"
+                                        value={newProduct.image}
+                                        onChange={e => setNewProduct({ ...newProduct, image: e.target.value })}
+                                        className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm"
+                                        placeholder="/images/product.jpg"
+                                        required
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] uppercase font-bold text-zinc-500">Category *</label>
+                                        <select
+                                            value={newProduct.category}
+                                            onChange={e => setNewProduct({ ...newProduct, category: e.target.value })}
+                                            className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm"
+                                        >
+                                            <option value="keychain">Keychain</option>
+                                            <option value="tag">Tag</option>
+                                            <option value="tool">Tool</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] uppercase font-bold text-zinc-500">Custom ID (Optional)</label>
+                                        <input
+                                            type="text"
+                                            value={newProduct.id}
+                                            onChange={e => setNewProduct({ ...newProduct, id: e.target.value })}
+                                            className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm"
+                                            placeholder="lebanon-plate-style"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] uppercase font-bold text-zinc-500">Description</label>
+                                    <textarea
+                                        value={newProduct.description}
+                                        onChange={e => setNewProduct({ ...newProduct, description: e.target.value })}
+                                        className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm h-32 resize-none"
+                                        placeholder="Precision laser engraved..."
+                                    />
+                                </div>
+                                <button
+                                    type="submit"
+                                    disabled={isSaving}
+                                    className="w-full bg-white text-black font-bold uppercase tracking-widest py-4 rounded-xl hover:bg-zinc-200 transition-all disabled:opacity-50"
+                                >
+                                    {isSaving ? 'Creating...' : 'Create Product'}
+                                </button>
+                            </form>
+                        </div>
+
+                        {/* Product List */}
+                        <div className="bg-zinc-900/30 border border-white/10 rounded-3xl p-8">
+                            <h3 className="text-xl font-bold mb-6">Current Catalog</h3>
+                            <div className="space-y-4 max-h-[600px] overflow-y-auto custom-scrollbar pr-2">
+                                {products.length === 0 && (
+                                    <p className="text-zinc-500 text-sm text-center py-20">No dynamic products found. Add one to see it here.</p>
+                                )}
+                                {products.map(p => (
+                                    <div key={p.id} className="flex items-center gap-4 p-4 bg-black/50 border border-white/5 rounded-2xl group/product">
+                                        <div className="w-16 h-16 rounded-xl overflow-hidden bg-zinc-800 flex-shrink-0">
+                                            <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
+                                        </div>
+                                        <div className="flex-grow">
+                                            <h4 className="font-bold text-sm">{p.name}</h4>
+                                            <p className="text-zinc-500 text-[10px] uppercase tracking-widest">${p.price} • {p.category}</p>
+                                        </div>
+                                        <button
+                                            onClick={() => deleteProduct(p.id)}
+                                            className="p-2 text-zinc-500 hover:text-red-500 transition-colors"
+                                            title="Delete Product"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                        </button>
+                                    </div>
+                                ))}
+
+                                <div className="mt-8 pt-8 border-t border-white/5">
+                                    <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest mb-4">Static Products (From Code)</p>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {STATIC_PRODUCTS.slice(0, 6).map(p => (
+                                            <div key={p.id} className="flex items-center gap-2 p-2 bg-white/5 rounded-lg opacity-50 grayscale">
+                                                <div className="w-8 h-8 rounded-md overflow-hidden flex-shrink-0">
+                                                    <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
+                                                </div>
+                                                <span className="text-[10px] truncate">{p.name}</span>
+                                            </div>
+                                        ))}
+                                        <div className="col-span-2 text-center text-[10px] text-zinc-600 mt-2">
+                                            + {STATIC_PRODUCTS.length - 6} more static items
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

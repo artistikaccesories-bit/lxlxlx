@@ -6,6 +6,7 @@ import { db, collection, addDoc, Timestamp, doc, updateDoc } from './src/utils/f
 import Navbar from './components/Navbar.tsx';
 import Hero from './components/Hero.tsx';
 import ProductGallery, { ProductCard } from './components/ProductGallery.tsx';
+import { Capacitor } from '@capacitor/core';
 import Footer from './components/Footer.tsx';
 import CartDrawer from './components/CartDrawer.tsx';
 import AboutUs from './components/AboutUs.tsx';
@@ -31,24 +32,55 @@ function App() {
   const [products, setProducts] = useState<Product[]>(STATIC_PRODUCTS);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isAdminView, setIsAdminView] = useState(false);
+  const [viewedItems, setViewedItems] = useState<string[]>([]);
+
+  // Platform check for Admin
+  const isAppEnvironment = Capacitor.isNativePlatform() || window.location.search.includes('env=app');
+
+  // Sync Products from Firebase
+  useEffect(() => {
+    if (!db) return;
+
+    const productsRef = collection(db, "products");
+    const unsubscribe = onSnapshot(productsRef, (snapshot) => {
+      const dynamicProducts: Product[] = [];
+      snapshot.forEach(doc => {
+        dynamicProducts.push({ id: doc.id, ...doc.data() } as Product);
+      });
+
+      // Merge: Dynamic products overwrite static ones with same ID, and new ones are added
+      setProducts(prev => {
+        const productMap = new Map(STATIC_PRODUCTS.map(p => [p.id, p]));
+        dynamicProducts.forEach(p => productMap.set(p.id, p));
+        return Array.from(productMap.values());
+      });
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // Foolproof fallback to check admin route constantly just in case events fail
-  React.useEffect(() => {
-    const checkHash = () => {
-      const hash = window.location.hash;
+  useEffect(() => {
+    const handleHashChange = () => {
       const path = window.location.pathname;
-      if (hash === '#dashboard-secure' || path === '/dashboard-secure') {
-        if (!isAdminView) setIsAdminView(true);
-      } else {
-        if (isAdminView) setIsAdminView(false);
+      const hash = window.location.hash;
+
+      // Admin access restricted to app environment
+      if (isAppEnvironment) {
+        if (hash === '#dashboard-secure' || path === '/dashboard-secure') {
+          if (!isAdminView) setIsAdminView(true);
+        }
+        if (hash === '' && path !== '/dashboard-secure' && isAdminView) {
+          setIsAdminView(false);
+        }
       }
     };
 
     // Check immediately
-    checkHash();
+    handleHashChange();
 
     // Check periodically for tricky browser caching/anchor bugs
-    const interval = setInterval(checkHash, 500);
+    const interval = setInterval(handleHashChange, 500);
     return () => clearInterval(interval);
   }, [isAdminView]);
 
@@ -342,7 +374,11 @@ function App() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.shiftKey && e.key === 'A') {
         e.preventDefault();
-        setIsAdminView(prev => !prev);
+        if (isAppEnvironment) {
+          setIsAdminView(prev => !prev);
+        } else {
+          console.log("Admin shortcut only available in application environment.");
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
