@@ -9,7 +9,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "npx firebase-tools deploy --only hosting",
+    "push-deploy": "powershell.exe -File ./push-deploy.ps1"
   },
   "dependencies": {
     "@capacitor/android": "^8.2.0",
