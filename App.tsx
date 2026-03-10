@@ -1,8 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { initGA, logPageView } from './src/utils/analytics';
 import { sendDiscordMessage, sendDiscordMessageBeacon, sendDiscordEntryMessage } from './src/utils/discord';
-import { db, collection, addDoc, Timestamp, doc, updateDoc } from './src/utils/firebase';
+import { db, collection, addDoc, Timestamp, doc, updateDoc, onSnapshot } from './src/utils/firebase';
 import Navbar from './components/Navbar.tsx';
 import Hero from './components/Hero.tsx';
 import ProductGallery, { ProductCard } from './components/ProductGallery.tsx';
@@ -31,11 +31,12 @@ function App() {
   const [deliveryType, setDeliveryType] = useState<'pickup' | 'standard' | 'express'>('standard');
   const [products, setProducts] = useState<Product[]>(STATIC_PRODUCTS);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isAdminView, setIsAdminView] = useState(false);
-  const [viewedItems, setViewedItems] = useState<string[]>([]);
-
   // Platform check for Admin
   const isAppEnvironment = Capacitor.isNativePlatform() || window.location.search.includes('env=app');
+
+  const [isAdminView, setIsAdminView] = useState(() => {
+    return isAppEnvironment || window.location.hash.includes('dashboard-secure');
+  });
 
   // Sync Products from Firebase
   useEffect(() => {
@@ -59,30 +60,29 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  // Foolproof fallback to check admin route constantly just in case events fail
+  // Foolproof fallback to check admin route
   useEffect(() => {
     const handleHashChange = () => {
       const path = window.location.pathname;
       const hash = window.location.hash;
 
-      // Admin access restricted to app environment
       if (isAppEnvironment) {
-        if (hash === '#dashboard-secure' || path === '/dashboard-secure') {
-          if (!isAdminView) setIsAdminView(true);
-        }
-        if (hash === '' && path !== '/dashboard-secure' && isAdminView) {
-          setIsAdminView(false);
-        }
+        setIsAdminView(true); // Permanently lock to admin if in app environment
+        return;
+      }
+
+      if (hash === '#dashboard-secure' || path === '/dashboard-secure') {
+        if (!isAdminView) setIsAdminView(true);
+      }
+      if (hash === '' && path !== '/dashboard-secure' && isAdminView) {
+        setIsAdminView(false);
       }
     };
 
-    // Check immediately
     handleHashChange();
-
-    // Check periodically for tricky browser caching/anchor bugs
     const interval = setInterval(handleHashChange, 500);
     return () => clearInterval(interval);
-  }, [isAdminView]);
+  }, [isAdminView, isAppEnvironment]);
 
 
   // Initialize GA
@@ -309,9 +309,9 @@ function App() {
       const path = window.location.pathname;
       const hash = window.location.hash;
 
-      if (path === '/dashboard-secure' || hash === '#dashboard-secure') {
+      if (path === '/dashboard-secure' || hash === '#dashboard-secure' || isAppEnvironment) {
         setIsAdminView(true);
-        // Do not return here so the rest of the states can reset properly if needed
+        if (isAppEnvironment) return; // Never escape admin if in app env
       } else {
         setIsAdminView(false);
       }
@@ -402,8 +402,17 @@ function App() {
       const docId = sessionStorage.getItem('firebase_doc_id');
       if (docId && db) {
         try {
+          const cartTotal = cart.reduce((sum, item) => sum + ((item.price + (item.isDoubleSided ? 5 : 0) + (item.isGiftBox ? 2 : 0)) * item.quantity), 0);
+          const cartItemsSummary = cart.map(item => ({
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price + (item.isDoubleSided ? 5 : 0) + (item.isGiftBox ? 2 : 0)
+          }));
+
           updateDoc(doc(db, "visitors", docId), {
             activeCartCount: cart.length,
+            cartTotal: cartTotal,
+            cartItems: cartItemsSummary,
             lastActive: Timestamp.now()
           }).catch(() => { });
         } catch (e) { }
@@ -552,8 +561,8 @@ function App() {
     window.open(`https://wa.me/96181388115?text=${encodeURIComponent(message)}`, '_blank');
   };
 
-  if (isAdminView) {
-    return <AdminDashboard />;
+  if (isAdminView || isAppEnvironment) {
+    return <AdminDashboard isStandalone={isAppEnvironment} />;
   }
 
   return (

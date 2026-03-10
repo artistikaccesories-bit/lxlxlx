@@ -2,7 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { db, collection, getDocs, query, orderBy, limit, onSnapshot, doc, deleteDoc, setDoc } from '../src/utils/firebase';
 import { PRODUCTS as STATIC_PRODUCTS } from '../src/data/products';
 
-const AdminDashboard: React.FC = () => {
+interface AdminDashboardProps {
+    isStandalone?: boolean;
+}
+
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ isStandalone = false }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -12,6 +16,7 @@ const AdminDashboard: React.FC = () => {
         totalVisitors: 0,
         todayVisitors: 0,
         activeCarts: 0,
+        todayRevenue: 0,
         liveVisitors: 0,
         topDevice: 'Mobile 📱',
         topCity: 'Beirut',
@@ -44,6 +49,7 @@ const AdminDashboard: React.FC = () => {
                 const history: any[] = [];
                 let todayCount = 0;
                 let dailyTotalCarts = 0;
+                let dailyTotalRevenue = 0;
                 let liveVisitorsCount = 0;
                 const now = new Date();
                 const topCities: Record<string, number> = {};
@@ -59,6 +65,7 @@ const AdminDashboard: React.FC = () => {
                         todayCount++;
                         // Accumulate daily total carts
                         dailyTotalCarts += (data.activeCartCount || 0);
+                        dailyTotalRevenue += (data.cartTotal || 0);
                     }
 
                     // Hourly Chart Logic
@@ -83,8 +90,10 @@ const AdminDashboard: React.FC = () => {
                         id: doc.id,
                         time: date.toLocaleString(),
                         device: data.device,
-                        location: `${city}, ${data.location?.country || 'Unknown'}`,
+                        location: `${city}, ${data.location?.country || 'Unknown'} (IP: ${data.location?.ip || 'Unknown'})`,
                         pages: data.pagesViewed ? data.pagesViewed.join(', ') : 'Home',
+                        cartDetails: data.cartItems && data.cartItems.length > 0 ? data.cartItems.map((item: any) => `${item.quantity}x ${item.name}`).join(', ') : 'Empty',
+                        cartTotal: data.cartTotal || 0,
                         duration: data.durationSec ? `${data.durationSec}s` : 'Active'
                     });
                 });
@@ -97,6 +106,7 @@ const AdminDashboard: React.FC = () => {
                     totalVisitors: snapshot.size, // Current batch size
                     todayVisitors: todayCount,
                     activeCarts: dailyTotalCarts,
+                    todayRevenue: dailyTotalRevenue,
                     liveVisitors: liveVisitorsCount,
                     topDevice: mostFrequentDevice,
                     topCity: mostFrequentCity,
@@ -132,11 +142,11 @@ const AdminDashboard: React.FC = () => {
             }
 
             const mockHistory = [
-                { id: 1, time: 'Just now', device: sessionStorage.getItem('website_visitor_device') || 'Desktop 💻', location, pages: 'Admin Dashboard, Home', duration: '5m' },
-                { id: 2, time: '2 hours ago', device: 'Mobile 📱', location: 'Tripoli, Lebanon', pages: 'Home, Keychains', duration: '2m' },
-                { id: 3, time: '5 hours ago', device: 'Desktop 💻', location: 'Saida, Lebanon', pages: 'Custom Preview', duration: '12m' },
-                { id: 4, time: 'Yesterday', device: 'Mobile 📱', location: 'Jounieh, Lebanon', pages: 'Home', duration: '1m' },
-                { id: 5, time: 'Yesterday', device: 'Tablet 📱', location: 'Zahlé, Lebanon', pages: 'Services, Keychains', duration: '4m' },
+                { id: 1, time: 'Just now', device: sessionStorage.getItem('website_visitor_device') || 'Desktop 💻', location: location + ' (IP: 192.168.1.1)', pages: 'Admin Dashboard, Home', duration: '5m', cartTotal: 0, cartDetails: 'Empty' },
+                { id: 2, time: '2 hours ago', device: 'Mobile 📱', location: 'Tripoli, Lebanon (IP: 10.0.0.5)', pages: 'Home, Keychains', duration: '2m', cartTotal: 25, cartDetails: '1x CUSTOM PLATE' },
+                { id: 3, time: '5 hours ago', device: 'Desktop 💻', location: 'Saida, Lebanon (IP: 8.8.8.8)', pages: 'Custom Preview', duration: '12m', cartTotal: 0, cartDetails: 'Empty' },
+                { id: 4, time: 'Yesterday', device: 'Mobile 📱', location: 'Jounieh, Lebanon (IP: Unknown)', pages: 'Home', duration: '1m', cartTotal: 0, cartDetails: 'Empty' },
+                { id: 5, time: 'Yesterday', device: 'Tablet 📱', location: 'Zahlé, Lebanon (IP: Unknown)', pages: 'Services, Keychains', duration: '4m', cartTotal: 0, cartDetails: 'Empty' },
             ];
             setRecentVisits(mockHistory);
         }
@@ -250,7 +260,7 @@ const AdminDashboard: React.FC = () => {
                 <form onSubmit={handleLogin} className="bg-zinc-900 border border-white/10 p-8 rounded-2xl w-full max-w-md text-center">
                     <h2 className="text-3xl font-black font-heading tracking-tighter text-white mb-2">Restricted Access</h2>
                     <p className="text-zinc-500 text-sm mb-8">Please enter the admin password</p>
- 
+
                     <input
                         type="password"
                         value={password}
@@ -283,12 +293,14 @@ const AdminDashboard: React.FC = () => {
                                 Reset Database
                             </button>
                         )}
-                        <button onClick={() => {
-                            window.location.hash = '';
-                            window.location.href = '/';
-                        }} className="px-4 py-2 border border-white/20 rounded-lg text-xs font-bold uppercase hover:bg-white hover:text-black transition-all">
-                            Exit Admin
-                        </button>
+                        {!isStandalone && (
+                            <button onClick={() => {
+                                window.location.hash = '';
+                                window.location.href = '/';
+                            }} className="px-4 py-2 border border-white/20 rounded-lg text-xs font-bold uppercase hover:bg-white hover:text-black transition-all">
+                                Exit Admin
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -309,135 +321,155 @@ const AdminDashboard: React.FC = () => {
 
                 {activeTab === 'analytics' ? (
                     <>
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-                    <div className="bg-zinc-900/50 border border-white/5 p-4 rounded-xl relative overflow-hidden">
-                        <div className="absolute top-4 right-4 w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                        <p className="text-zinc-500 text-xs uppercase font-bold tracking-widest mb-1">Live Online</p>
-                        <p className="text-3xl font-black font-heading text-red-500">{stats.liveVisitors}</p>
-                    </div>
-                    <div className="bg-zinc-900/50 border border-white/5 p-4 rounded-xl">
-                        <p className="text-zinc-500 text-xs uppercase font-bold tracking-widest mb-1">Total Visitors</p>
-                        <p className="text-3xl font-black font-heading">{stats.totalVisitors}</p>
-                    </div>
-                    <div className="bg-zinc-900/50 border border-white/5 p-4 rounded-xl">
-                        <p className="text-zinc-500 text-xs uppercase font-bold tracking-widest mb-1">Today</p>
-                        <p className="text-3xl font-black font-heading text-green-400">+{stats.todayVisitors}</p>
-                    </div>
-                    <div className="bg-zinc-900/50 border border-white/5 p-4 rounded-xl">
-                        <p className="text-zinc-500 text-xs uppercase font-bold tracking-widest mb-1">Daily Totals</p>
-                        <p className="text-3xl font-black font-heading text-yellow-500">{stats.activeCarts}</p>
-                    </div>
-                    <div className="bg-zinc-900/50 border border-white/5 p-4 rounded-xl">
-                        <p className="text-zinc-500 text-xs uppercase font-bold tracking-widest mb-1">Top Device</p>
-                        <p className="text-xl font-bold mt-2">{stats.topDevice}</p>
-                    </div>
-                    <div className="bg-zinc-900/50 border border-white/5 p-4 rounded-xl">
-                        <p className="text-zinc-500 text-xs uppercase font-bold tracking-widest mb-1">Top City</p>
-                        <p className="text-xl font-bold mt-2">{stats.topCity}</p>
-                    </div>
-                </div>
-
-                {/* Traffic Chart */}
-                <div className="bg-zinc-900/30 border border-white/10 p-6 rounded-2xl">
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-xl font-bold">Today's Traffic <span className="text-zinc-500 font-normal">(by hour)</span></h3>
-                        <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-white rounded-sm"></div>
-                            <span className="text-xs text-zinc-400 uppercase tracking-widest font-bold">Visitors</span>
+                        {/* Stats Grid */}
+                        <div className="grid grid-cols-2 md:grid-cols-7 gap-4">
+                            <div className="bg-zinc-900/50 border border-white/5 p-4 rounded-xl relative overflow-hidden">
+                                <div className="absolute top-4 right-4 w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                                <p className="text-zinc-500 text-xs uppercase font-bold tracking-widest mb-1">Live Online</p>
+                                <p className="text-3xl font-black font-heading text-red-500">{stats.liveVisitors}</p>
+                            </div>
+                            <div className="bg-zinc-900/50 border border-white/5 p-4 rounded-xl">
+                                <p className="text-zinc-500 text-xs uppercase font-bold tracking-widest mb-1">Total Visitors</p>
+                                <p className="text-3xl font-black font-heading">{stats.totalVisitors}</p>
+                            </div>
+                            <div className="bg-zinc-900/50 border border-white/5 p-4 rounded-xl">
+                                <p className="text-zinc-500 text-xs uppercase font-bold tracking-widest mb-1">Today</p>
+                                <p className="text-3xl font-black font-heading text-green-400">+{stats.todayVisitors}</p>
+                            </div>
+                            <div className="bg-zinc-900/50 border border-white/5 p-4 rounded-xl">
+                                <p className="text-zinc-500 text-xs uppercase font-bold tracking-widest mb-1">Items in Cart (Today)</p>
+                                <p className="text-3xl font-black font-heading text-yellow-500">{stats.activeCarts}</p>
+                            </div>
+                            <div className="bg-zinc-900/50 border border-white/5 p-4 rounded-xl">
+                                <p className="text-zinc-500 text-xs uppercase font-bold tracking-widest mb-1">Est. Revenue</p>
+                                <p className="text-3xl font-black font-heading text-green-400">${stats.todayRevenue}</p>
+                            </div>
+                            <div className="bg-zinc-900/50 border border-white/5 p-4 rounded-xl">
+                                <p className="text-zinc-500 text-xs uppercase font-bold tracking-widest mb-1">Top Device</p>
+                                <p className="text-xl font-bold mt-2">{stats.topDevice}</p>
+                            </div>
+                            <div className="bg-zinc-900/50 border border-white/5 p-4 rounded-xl">
+                                <p className="text-zinc-500 text-xs uppercase font-bold tracking-widest mb-1">Top City</p>
+                                <p className="text-xl font-bold mt-2">{stats.topCity}</p>
+                            </div>
                         </div>
-                    </div>
-                    <div className="h-48 flex items-end gap-[2px] md:gap-2">
-                        {Array.from({ length: 24 }).map((_, i) => {
-                            const count = stats.hourlyDistribution[i] || 0;
-                            const distributionValues = Object.values(stats.hourlyDistribution) as number[];
-                            const max = Math.max(...distributionValues, 0) || 1;
-                            const height = (count / max) * 100;
-                            const isCurrentHour = new Date().getHours() === i;
 
-                            return (
-                                <div key={i} className="flex-1 flex flex-col items-center gap-2 group relative">
-                                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-black text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                                        {count} visitors
-                                    </div>
-                                    <div
-                                        style={{ height: `${Math.max(4, height)}%` }}
-                                        className={`w-full rounded-t-sm transition-all duration-500 ${isCurrentHour ? 'bg-white' : count > 0 ? 'bg-white/40 group-hover:bg-white/60' : 'bg-white/5'}`}
-                                    ></div>
-                                    <span className={`text-[8px] md:text-[9px] font-bold ${isCurrentHour ? 'text-white' : 'text-zinc-600'}`}>
-                                        {i === 0 ? '12a' : i === 12 ? '12p' : i > 12 ? `${i - 12}p` : `${i}a`}
-                                    </span>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                {/* Recent Visitors Table */}
-                <div className="bg-zinc-900/30 border border-white/5 rounded-2xl overflow-hidden">
-                    <div className="p-6 border-b border-white/5">
-                        <h3 className="text-xl font-bold">Recent Visits</h3>
-                    </div>
-                    <div className="hidden md:block overflow-x-auto">
-                        <table className="w-full text-sm text-left">
-                            <thead className="text-xs text-zinc-500 uppercase bg-black/20">
-                                <tr>
-                                    <th className="px-6 py-4">Time</th>
-                                    <th className="px-6 py-4">Location</th>
-                                    <th className="px-6 py-4">Device</th>
-                                    <th className="px-6 py-4">Pages Viewed</th>
-                                    <th className="px-6 py-4 font-mono">Duration</th>
-                                    <th className="px-6 py-4 text-right">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {recentVisits.map((visit) => (
-                                    <tr key={visit.id} className="border-b border-white/5 hover:bg-white/5 transition-colors group/row">
-                                        <td className="px-6 py-4 font-medium whitespace-nowrap">{visit.time}</td>
-                                        <td className="px-6 py-4 text-zinc-300">{visit.location}</td>
-                                        <td className="px-6 py-4 text-zinc-300">{visit.device}</td>
-                                        <td className="px-6 py-4 text-zinc-400 text-xs">{visit.pages}</td>
-                                        <td className="px-6 py-4 font-mono">{visit.duration}</td>
-                                        <td className="px-6 py-4 text-right">
-                                            <button
-                                                onClick={() => deleteVisit(visit.id)}
-                                                className="opacity-0 group-hover/row:opacity-100 p-2 text-zinc-500 hover:text-red-500 transition-all"
-                                                title="Delete Record"
-                                            >
-                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* Mobile Card View */}
-                    <div className="md:hidden divide-y divide-white/5">
-                        {recentVisits.map((visit) => (
-                            <div key={visit.id} className="p-4 space-y-3">
-                                <div className="flex justify-between items-start">
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">{visit.time}</span>
-                                        <span className="text-sm font-bold text-white mt-1">{visit.location}</span>
-                                    </div>
-                                    <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] font-mono">{visit.duration}</span>
-                                    <button
-                                        onClick={() => deleteVisit(visit.id)}
-                                        className="p-1 px-2 bg-red-500/10 text-red-500 rounded text-[10px] font-bold uppercase"
-                                    >
-                                        Delete
-                                    </button>
-                                </div>
-                                <div className="flex items-center gap-2 text-[10px] text-zinc-400">
-                                    <span className="p-1 bg-white/5 rounded">{visit.device}</span>
-                                    <span className="truncate flex-1">Views: {visit.pages}</span>
+                        {/* Traffic Chart */}
+                        <div className="bg-zinc-900/30 border border-white/10 p-6 rounded-2xl">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-xl font-bold">Today's Traffic <span className="text-zinc-500 font-normal">(by hour)</span></h3>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 bg-white rounded-sm"></div>
+                                    <span className="text-xs text-zinc-400 uppercase tracking-widest font-bold">Visitors</span>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                </div>
+                            <div className="h-48 flex items-end gap-[2px] md:gap-2">
+                                {Array.from({ length: 24 }).map((_, i) => {
+                                    const count = stats.hourlyDistribution[i] || 0;
+                                    const distributionValues = Object.values(stats.hourlyDistribution) as number[];
+                                    const max = Math.max(...distributionValues, 0) || 1;
+                                    const height = (count / max) * 100;
+                                    const isCurrentHour = new Date().getHours() === i;
+
+                                    return (
+                                        <div key={i} className="flex-1 flex flex-col items-center gap-2 group relative">
+                                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-black text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                                                {count} visitors
+                                            </div>
+                                            <div
+                                                style={{ height: `${Math.max(4, height)}%` }}
+                                                className={`w-full rounded-t-sm transition-all duration-500 ${isCurrentHour ? 'bg-white' : count > 0 ? 'bg-white/40 group-hover:bg-white/60' : 'bg-white/5'}`}
+                                            ></div>
+                                            <span className={`text-[8px] md:text-[9px] font-bold ${isCurrentHour ? 'text-white' : 'text-zinc-600'}`}>
+                                                {i === 0 ? '12a' : i === 12 ? '12p' : i > 12 ? `${i - 12}p` : `${i}a`}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Recent Visitors Table */}
+                        <div className="bg-zinc-900/30 border border-white/5 rounded-2xl overflow-hidden">
+                            <div className="p-6 border-b border-white/5">
+                                <h3 className="text-xl font-bold">Recent Visits</h3>
+                            </div>
+                            <div className="hidden md:block overflow-x-auto">
+                                <table className="w-full text-sm text-left">
+                                    <thead className="text-xs text-zinc-500 uppercase bg-black/20">
+                                        <tr>
+                                            <th className="px-6 py-4">Time</th>
+                                            <th className="px-6 py-4">Location & IP</th>
+                                            <th className="px-6 py-4">Device</th>
+                                            <th className="px-6 py-4">Cart & Pages</th>
+                                            <th className="px-6 py-4 font-mono">Duration</th>
+                                            <th className="px-6 py-4 text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {recentVisits.map((visit) => (
+                                            <tr key={visit.id} className="border-b border-white/5 hover:bg-white/5 transition-colors group/row">
+                                                <td className="px-6 py-4 font-medium whitespace-nowrap">{visit.time}</td>
+                                                <td className="px-6 py-4 text-zinc-300">
+                                                    <div>{visit.location.split(' (IP:')[0]}</div>
+                                                    <div className="text-[10px] text-zinc-500 font-mono">IP: {visit.location.split(' (IP: ')[1]?.replace(')', '') || 'Unknown'}</div>
+                                                </td>
+                                                <td className="px-6 py-4 text-zinc-300">{visit.device}</td>
+                                                <td className="px-6 py-4 text-zinc-400 text-xs">
+                                                    {visit.cartTotal > 0 && (
+                                                        <div className="mb-1">
+                                                            <span className="text-green-400 font-bold">${visit.cartTotal} in Cart:</span> {visit.cartDetails}
+                                                        </div>
+                                                    )}
+                                                    <div className="opacity-50">Views: {visit.pages}</div>
+                                                </td>
+                                                <td className="px-6 py-4 font-mono">{visit.duration}</td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <button
+                                                        onClick={() => deleteVisit(visit.id)}
+                                                        className="opacity-0 group-hover/row:opacity-100 p-2 text-zinc-500 hover:text-red-500 transition-all"
+                                                        title="Delete Record"
+                                                    >
+                                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Mobile Card View */}
+                            <div className="md:hidden divide-y divide-white/5">
+                                {recentVisits.map((visit) => (
+                                    <div key={visit.id} className="p-4 space-y-3">
+                                        <div className="flex justify-between items-start">
+                                            <div className="flex flex-col">
+                                                <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">{visit.time}</span>
+                                                <span className="text-sm font-bold text-white mt-1">{visit.location.split(' (IP:')[0]}</span>
+                                                <span className="text-[10px] text-zinc-500 font-mono mt-0.5">IP: {visit.location.split(' (IP: ')[1]?.replace(')', '') || 'Unknown'}</span>
+                                            </div>
+                                            <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] font-mono">{visit.duration}</span>
+                                            <button
+                                                onClick={() => deleteVisit(visit.id)}
+                                                className="p-1 px-2 bg-red-500/10 text-red-500 rounded text-[10px] font-bold uppercase"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-[10px] text-zinc-400">
+                                            <span className="p-1 bg-white/5 rounded flex-shrink-0">{visit.device}</span>
+                                            <div className="flex-1 flex flex-col gap-1 min-w-0">
+                                                {visit.cartTotal > 0 && (
+                                                    <span className="text-green-400 text-[10px] font-bold truncate">${visit.cartTotal} - {visit.cartDetails}</span>
+                                                )}
+                                                <span className="truncate opacity-50">Views: {visit.pages}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </>
                 ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

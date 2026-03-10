@@ -16,10 +16,10 @@ if ($LASTEXITCODE -ne 0) {
     Write-Host "Git push failed! Check your authentication/permissions." -ForegroundColor Yellow
 }
 
-Write-Host "--- Deploying to Firebase ---" -ForegroundColor Cyan
-.\node_modules\.bin\firebase.cmd deploy --only hosting
+Write-Host "--- Deploying to GitHub Pages (laserartlb.com) ---" -ForegroundColor Cyan
+npm run deploy
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "Firebase deployment failed! Try running '.\node_modules\.bin\firebase.cmd login' manually if needed." -ForegroundColor Yellow
+    Write-Host "Deployment failed! Check your gh-pages configuration." -ForegroundColor Yellow
 }
 
 Write-Host "--- Process Completed ---" -ForegroundColor Green
