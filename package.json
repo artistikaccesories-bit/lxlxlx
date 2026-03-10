@@ -9,8 +9,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "npx firebase-tools deploy --only hosting",
-    "push-deploy": "powershell.exe -File ./push-deploy.ps1"
+    "deploy": ".\\node_modules\\.bin\\firebase.cmd deploy --only hosting",
+    "push-deploy": "powershell.exe -ExecutionPolicy Bypass -File ./push-deploy.ps1"
   },
   "dependencies": {
     "@capacitor/android": "^8.2.0",

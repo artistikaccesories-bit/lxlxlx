@@ -17,9 +17,9 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "--- Deploying to Firebase ---" -ForegroundColor Cyan
-npx firebase-tools deploy --only hosting
+.\node_modules\.bin\firebase.cmd deploy --only hosting
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "Firebase deployment failed! Try running 'npx firebase login' manually if needed." -ForegroundColor Yellow
+    Write-Host "Firebase deployment failed! Try running '.\node_modules\.bin\firebase.cmd login' manually if needed." -ForegroundColor Yellow
 }
 
 Write-Host "--- Process Completed ---" -ForegroundColor Green
