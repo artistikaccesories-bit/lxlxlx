@@ -126,17 +126,7 @@ export const PRODUCTS: Product[] = [
         images: ['/images/qrect.jpeg', '/images/qrecthorizontal.jpeg'],
         stock: 10
     },
-    {
-        id: '13',
-        name: 'MOM SPECIAL',
-        handle: 'mom-keychain-special',
-        price: 10,
-        category: 'keychain',
-        description: 'A beautiful custom keychain for Mother\'s Day. Show your love with a personalized message. The perfect gift to celebrate her.',
-        image: '/images/mom1.jpeg',
-        stock: 10,
-        isBestSeller: true
-    },
+
     {
         id: '14',
         name: 'ISLAMIC CALLI',

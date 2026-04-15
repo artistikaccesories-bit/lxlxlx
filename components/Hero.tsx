@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import ParticlesBackground from './ParticlesBackground';
 
@@ -29,55 +28,60 @@ const Hero: React.FC<HeroProps> = ({ onExplore }) => {
   }, []);
 
   return (
-    <div className="relative min-h-[90vh] flex items-center overflow-hidden bg-deep-black">
+    <div className="relative min-h-[95vh] flex items-center overflow-hidden bg-deep-black">
       {/* Dynamic Background */}
       <div className="absolute inset-0 z-0">
         <ParticlesBackground />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#050505_80%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#050505_90%)]"></div>
 
-        {/* Animated Glow Orbs - Monochrome */}
-        <div className="absolute top-1/4 -right-20 w-[500px] h-[500px] bg-white/5 rounded-full blur-[120px] animate-float opacity-30"></div>
-        <div className="absolute -bottom-20 -left-20 w-[600px] h-[600px] bg-white/5 rounded-full blur-[150px] animate-float opacity-30" style={{ animationDelay: '2s' }}></div>
+        {/* Animated Glow Orbs - Modern Monochrome */}
+        <div className="absolute top-1/4 -right-20 w-[600px] h-[600px] bg-white/5 rounded-full blur-[120px] animate-float opacity-40"></div>
+        <div className="absolute -bottom-40 -left-20 w-[700px] h-[700px] bg-white/5 rounded-full blur-[160px] animate-float opacity-30" style={{ animationDelay: '3s' }}></div>
+        
+        {/* Subtle Grid Pattern */}
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03]"></div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-20">
         {/* Animated Customer Counter */}
-        <div className="flex items-center gap-4 mb-10 bg-glass-black border border-white/5 p-2 pr-6 rounded-full w-fit mx-auto backdrop-blur-md animate-slide-up" style={{ animationDelay: '0.1s' }}>
+        <div className="flex items-center gap-4 mb-12 bg-white/5 border border-white/10 p-2 pr-6 rounded-full w-fit mx-auto backdrop-blur-xl animate-slide-up shadow-[0_0_30px_rgba(255,255,255,0.05)]" style={{ animationDelay: '0.1s' }}>
           <div className="flex -space-x-4">
             {[
-              'https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?q=80&w=150&auto=format&fit=crop', // Man with glasses
-              'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=150&auto=format&fit=crop', // Business woman
-              'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=150&auto=format&fit=crop', // Man portrait
-              'https://images.unsplash.com/photo-1595152772835-219674b2a8a6?q=80&w=150&auto=format&fit=crop'  // Smiling man
+              'https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?q=80&w=150&auto=format&fit=crop',
+              'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=150&auto=format&fit=crop',
+              'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=150&auto=format&fit=crop',
+              'https://images.unsplash.com/photo-1595152772835-219674b2a8a6?q=80&w=150&auto=format&fit=crop'
             ].map((src, i) => (
-              <div key={i} className="w-10 h-10 rounded-full border-2 border-deep-black bg-zinc-800 overflow-hidden ring-2 ring-white/10">
-                <img src={src} alt={`Customer ${i + 1}`} fetchpriority="high" loading="eager" decoding="async" className="w-full h-full object-cover" />
+              <div key={i} className="w-10 h-10 rounded-full border-2 border-deep-black overflow-hidden ring-1 ring-white/20">
+                <img src={src} alt={`User ${i + 1}`} className="w-full h-full object-cover" />
               </div>
             ))}
           </div>
           <div className="text-left pl-2">
-            <span className="block text-white text-sm font-bold"><span className="text-white">{count}+</span> Happy</span>
-            <span className="block text-zinc-500 text-[10px] tracking-wider uppercase">Customers</span>
+            <span className="block text-white text-sm font-bold tracking-tight"><span className="text-white">{count}+</span> Happy</span>
+            <span className="block text-zinc-500 text-[10px] tracking-widest uppercase font-black">LaserArt Owners</span>
           </div>
         </div>
 
-        <h1 className="text-5xl sm:text-6xl md:text-[9rem] font-black mb-6 md:mb-8 tracking-tighter leading-[0.9] font-heading text-transparent bg-clip-text bg-gradient-to-b from-white via-zinc-200 to-zinc-600 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-          CRAFT YOUR <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-zinc-500 via-white to-zinc-400 drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]">LEGACY.</span>
+        <h1 className="text-5xl sm:text-7xl md:text-[10rem] font-black mb-8 md:mb-12 tracking-tighter leading-[0.85] font-heading animate-slide-up" style={{ animationDelay: '0.2s' }}>
+          <span className="block text-zinc-600">CRAFT YOUR</span>
+          <span className="premium-gradient">LEGACY.</span>
         </h1>
 
-        <p className="text-zinc-400 text-sm sm:text-base md:text-xl max-w-2xl mx-auto mb-10 md:mb-14 leading-relaxed tracking-tight font-medium animate-slide-up" style={{ animationDelay: '0.3s' }}>
-          Premium stainless steel engraving for those who value permanence. <br className="hidden md:block" />
-          <span className="text-white font-bold">Keychains • Accessories • Gifts</span>
+        <p className="text-zinc-500 text-sm sm:text-base md:text-2xl max-w-3xl mx-auto mb-12 md:mb-20 leading-relaxed tracking-tight font-medium animate-slide-up flex flex-col gap-2" style={{ animationDelay: '0.3s' }}>
+          <span>Premium stainless steel engraving for those who value permanence.</span>
+          <span className="text-white/80 font-bold bg-white/5 py-1 px-4 rounded-full w-fit mx-auto border border-white/5 backdrop-blur-sm">
+            Keychains • Accessories • Custom Gifts
+          </span>
         </p>
 
-        <div className="flex flex-col sm:flex-row justify-center gap-4 md:gap-6 animate-slide-up" style={{ animationDelay: '0.4s' }}>
+        <div className="flex flex-col sm:flex-row justify-center gap-6 md:gap-8 animate-slide-up pb-20" style={{ animationDelay: '0.4s' }}>
           <button
             onClick={onExplore}
-            className="group relative px-8 py-4 md:px-12 md:py-5 overflow-hidden rounded-full bg-white text-black font-black uppercase tracking-[0.2em] text-xs md:text-sm hover:scale-105 transition-transform duration-300"
+            className="group relative px-10 py-5 md:px-14 md:py-6 overflow-hidden rounded-full bg-white text-black font-black uppercase tracking-[0.3em] text-xs md:text-sm hover:scale-110 transition-all duration-500 shadow-[0_0_40px_rgba(255,255,255,0.2)]"
           >
-            <div className="absolute inset-0 w-full h-full bg-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <span className="relative z-10 group-hover:text-black transition-colors duration-300">Start Creating</span>
+            <div className="absolute inset-0 w-full h-full bg-zinc-200 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+            <span className="relative z-10 transition-colors duration-500">Start Creating</span>
           </button>
 
           <button
@@ -85,15 +89,18 @@ const Hero: React.FC<HeroProps> = ({ onExplore }) => {
               const element = document.getElementById('gallery-selector');
               if (element) element.scrollIntoView({ behavior: 'smooth' });
             }}
-            className="px-8 py-4 md:px-12 md:py-5 rounded-full border border-zinc-800 text-zinc-400 font-bold uppercase tracking-[0.2em] text-xs md:text-sm hover:border-white hover:text-black hover:bg-white transition-all duration-300"
+            className="px-10 py-5 md:px-14 md:py-6 rounded-full border border-zinc-800 text-zinc-500 font-bold uppercase tracking-[0.3em] text-xs md:text-sm hover:border-white hover:text-white transition-all duration-500 relative group overflow-hidden"
           >
-            View Gallery
+            <div className="absolute inset-0 bg-white/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+            <span className="relative z-10">View Gallery</span>
           </button>
         </div>
       </div>
 
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-50 text-white">
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
+      {/* Floating Scroll Indicator */}
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-30 hover:opacity-100 transition-opacity duration-500 cursor-pointer" onClick={onExplore}>
+        <span className="text-[10px] uppercase tracking-[0.4em] font-black text-white">Scroll</span>
+        <div className="w-[1px] h-12 bg-gradient-to-b from-white to-transparent"></div>
       </div>
     </div>
   );

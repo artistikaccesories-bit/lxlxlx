@@ -43,40 +43,65 @@ const InventoryScreen: React.FC = () => {
 
     const handleAddProduct = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!db || !storage || !files || files.length === 0) {
+        
+        if (!db || !storage) {
+            alert("Database or Storage not initialized. Please check your connection.");
+            return;
+        }
+
+        if (!files || files.length === 0) {
             alert("Please select at least one image.");
             return;
         }
 
+        if (!name || !price || !description) {
+            alert("Please fill in all required fields.");
+            return;
+        }
+
         setUploading(true);
+        console.log("Starting product upload...");
+
         try {
             const uploadPromises = Array.from(files).map(async (file) => {
+                console.log(`Uploading ${file.name}...`);
                 const storageRef = ref(storage, `products/${Date.now()}_${Math.random().toString(36).substring(7)}_${file.name}`);
                 const uploadResult = await uploadBytes(storageRef, file);
-                return getDownloadURL(uploadResult.ref);
+                const url = await getDownloadURL(uploadResult.ref);
+                console.log(`Uploaded ${file.name}: ${url}`);
+                return url;
             });
 
             const imageUrls = await Promise.all(uploadPromises);
 
-            await addDoc(collection(db, 'products'), {
-                name,
+            const productData = {
+                name: name.trim(),
                 price: parseFloat(price),
                 category,
-                description,
+                description: description.trim(),
                 image: imageUrls[0],
                 images: imageUrls,
                 stock: 10, // Default stock
-                createdAt: new Date()
-            });
+                createdAt: new Date(),
+                handle: name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+            };
 
+            console.log("Saving product to Firestore:", productData);
+            await addDoc(collection(db, 'products'), productData);
+
+            console.log("Product added successfully!");
+            alert("Product added successfully!");
+            
+            // Reset form
             setShowAddModal(false);
             setName('');
             setPrice('');
             setDescription('');
             setFiles(null);
-        } catch (error) {
-            console.error("Error adding product:", error);
-            alert("Failed to add product.");
+            setCategory('keychain');
+        } catch (error: any) {
+            console.error("Detailed error adding product:", error);
+            alert(`Failed to add product: ${error.message || 'Unknown error'}`);
         } finally {
             setUploading(false);
         }
