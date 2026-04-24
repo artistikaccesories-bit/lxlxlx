@@ -9,6 +9,7 @@ export interface Product {
   category: string;
   stock?: number;
   isBestSeller?: boolean;
+  isProductOfTheWeek?: boolean;
   variants?: any[]; // Shopify variants
   handle?: string;
   images?: string[];

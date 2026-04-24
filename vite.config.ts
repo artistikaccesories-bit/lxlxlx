@@ -11,7 +11,7 @@ const __dirname = new URL('.', import.meta.url).pathname;
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
-    base: '/',
+    base: './',
     plugins: [react()],
     css: {
       postcss: {

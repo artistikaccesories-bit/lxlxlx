@@ -5,11 +5,12 @@ import LiveVisitorsScreen from './screens/LiveVisitorsScreen';
 import CartScreen from './screens/CartScreen';
 import OrdersScreen from './screens/OrdersScreen';
 import InventoryScreen from './screens/InventoryScreen';
+import MarketplaceScreen from './screens/MarketplaceScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import BottomNav from './components/BottomNav';
 import './index.css';
 
-type Tab = 'dashboard' | 'live' | 'carts' | 'orders' | 'inventory' | 'settings';
+type Tab = 'dashboard' | 'live' | 'carts' | 'orders' | 'inventory' | 'marketplace' | 'settings';
 
 function App() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -31,6 +32,7 @@ function App() {
       case 'carts': return <CartScreen />;
       case 'orders': return <OrdersScreen />;
       case 'inventory': return <InventoryScreen />;
+      case 'marketplace': return <MarketplaceScreen />;
       case 'settings': return <SettingsScreen onLogout={handleLogout} />;
       default: return <DashboardScreen />;
     }

@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import {
   getFirestore, collection, addDoc, getDocs,
-  query, orderBy, limit, Timestamp, onSnapshot,
+  query, orderBy, limit, Timestamp, onSnapshot, where,
   doc, updateDoc, deleteDoc, setDoc, getDoc
 } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -21,18 +21,20 @@ let storage: any = null;
 
 try {
   if (firebaseConfig.apiKey) {
+    console.log("Firebase: Initializing for " + firebaseConfig.projectId);
     app = initializeApp(firebaseConfig);
     db = getFirestore(app);
     storage = getStorage(app);
   } else {
-    console.warn("Firebase config missing.");
+    console.error("Firebase: Config missing API Key! Check your environment variables.");
   }
 } catch (error) {
-  console.error("Firebase init error", error);
+  console.error("Firebase: Initialization failed", error);
 }
 
 export {
   db, storage, collection, addDoc, getDocs, query, orderBy,
   limit, Timestamp, onSnapshot, doc, updateDoc, deleteDoc, setDoc, getDoc,
+  where,
   ref, uploadBytes, getDownloadURL
 };

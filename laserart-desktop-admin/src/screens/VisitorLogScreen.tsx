@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import type { } from 'react/jsx-runtime';
+
 import { db, collection, query, orderBy, limit, onSnapshot, doc, deleteDoc, getDocs } from '../utils/firebase';
 import { Search, Trash2, AlertTriangle } from 'lucide-react';
 

@@ -32,28 +32,43 @@ function App() {
 
   // Fetch dynamic products and settings
   React.useEffect(() => {
+    // 0. Fetch Automated Sync Products (from Admin App Git Pushes)
+    let syncItems: Product[] = [];
+    fetch('/data/products_live.json')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) syncItems = data;
+      })
+      .catch(() => { /* Silent fail if file doesn't exist yet */ });
+
     if (!db) return;
 
-    // 1. Fetch Products
+    // 1. Fetch Products from Firebase
     const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
     const unsubProducts = onSnapshot(q, (snapshot) => {
-      const dynamicItems: Product[] = [];
+      const firebaseItems: Product[] = [];
       snapshot.forEach(doc => {
-        dynamicItems.push({ id: doc.id, ...doc.data() } as Product);
+        firebaseItems.push({ id: doc.id, ...doc.data() } as Product);
       });
 
-      if (dynamicItems.length > 0) {
-        // Merge dynamic items with static ones, prioritized by dynamic
-        const staticIds = new Set(STATIC_PRODUCTS.map(p => p.id));
-        const filteredStatic = STATIC_PRODUCTS.filter(p => {
-          // If a dynamic product has the same ID or name or handle, we might want to hide the static one
-          // But for now, let's just filter by ID to avoid literal duplicates
-          return !dynamicItems.some(dp => dp.id === p.id || dp.handle === p.handle);
-        });
-        setProducts([...dynamicItems, ...filteredStatic]);
-      } else {
-        setProducts(STATIC_PRODUCTS);
-      }
+      // Merge: Firebase (Newest) > Sync (Repo) > Static (Hardcoded)
+      const combined = [...firebaseItems];
+      
+      // Add sync items if not already in firebase
+      syncItems.forEach(si => {
+        if (!combined.some(p => p.id === si.id || p.handle === si.handle)) {
+          combined.push(si);
+        }
+      });
+
+      // Add static items if not already in combined
+      STATIC_PRODUCTS.forEach(sp => {
+        if (!combined.some(p => p.id === sp.id || p.handle === sp.handle)) {
+          combined.push(sp);
+        }
+      });
+
+      setProducts(combined);
     });
 
     // 2. Fetch Delivery Settings (Real-time)
@@ -583,6 +598,44 @@ function App() {
           }} />
 
           <CustomPreview deliveryCosts={deliveryCosts} />
+
+          {/* Product of the Week */}
+          {products.some(p => p.isProductOfTheWeek) && (
+            <section className="py-20 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-b from-purple-900/10 to-transparent pointer-events-none" />
+              <div className="max-w-7xl mx-auto px-4 relative z-10">
+                <div className="flex flex-col md:flex-row items-end justify-between mb-12 gap-4">
+                  <div>
+                    <h2 className="text-4xl md:text-6xl font-black font-heading tracking-tighter text-white mb-2">
+                      PICKS OF THE <span className="text-purple-500">WEEK</span>
+                    </h2>
+                    <p className="text-zinc-400 font-medium">Hand-selected pieces by our master artisans.</p>
+                  </div>
+                  <div className="hidden md:flex items-center gap-2 text-purple-400 text-sm font-bold tracking-widest uppercase">
+                    <div className="w-12 h-px bg-purple-500/30" />
+                    Refreshed Weekly
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  {products.filter(p => p.isProductOfTheWeek).slice(0, 3).map((product, idx) => (
+                    <div key={product.id} className="group relative">
+                      <div className={`absolute -inset-1 bg-gradient-to-r ${idx === 1 ? 'from-purple-600 to-blue-600' : 'from-zinc-800 to-zinc-900'} rounded-2xl blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200`} />
+                      <ProductCard product={product} onClick={() => {
+                        handleTabChange('keychains');
+                        setTimeout(() => handleProductSelect(product), 50);
+                      }} />
+                      {idx === 1 && (
+                        <div className="absolute -top-3 -right-3 bg-purple-600 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-xl z-20 animate-bounce">
+                          CRAFTSMAN'S CHOICE
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
 
           <section className="py-20 px-4 max-w-7xl mx-auto relative z-10">
             <div className="text-center mb-12">

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import type { } from 'react/jsx-runtime';
-import { LogOut, Shield, Info, ExternalLink, Truck, Save, Loader2 } from 'lucide-react';
+
+import { LogOut, Shield, Info, ExternalLink, Truck, Save, Loader2, Cloud } from 'lucide-react';
 import { db, doc, getDoc, setDoc } from '../utils/firebase';
 
 interface SettingsScreenProps {
@@ -11,6 +11,8 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout }) => {
     const [standardDelivery, setStandardDelivery] = useState('4');
     const [expressDelivery, setExpressDelivery] = useState('6');
     const [saving, setSaving] = useState(false);
+    const [syncing, setSyncing] = useState(false);
+    const [syncStatus, setSyncStatus] = useState<string | null>(null);
 
     useEffect(() => {
         if (!db) return;
@@ -38,6 +40,32 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout }) => {
             alert("Failed to update delivery prices.");
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleGitSync = async () => {
+        if (!window.electron) {
+            alert("GitHub Sync is only available in the Desktop App.");
+            return;
+        }
+
+        setSyncing(true);
+        setSyncStatus("Running: git add .");
+        try {
+            await window.electron.runGitCommand('git add .');
+            setSyncStatus("Running: git commit...");
+            await window.electron.runGitCommand('git commit -m "Update products and settings via Admin App"');
+            setSyncStatus("Running: git push...");
+            await window.electron.runGitCommand('git push');
+            setSyncStatus("Success! Website is updating.");
+            alert("Successfully pushed updates to GitHub! The live website will reflect changes shortly.");
+        } catch (error: any) {
+            console.error(error);
+            setSyncStatus(`Error: ${error}`);
+            alert(`Sync Failed: ${error}`);
+        } finally {
+            setSyncing(false);
+            setTimeout(() => setSyncStatus(null), 5000);
         }
     };
 
@@ -78,8 +106,30 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout }) => {
                 </div>
 
                 <div className="settings-section">
-                    <p className="settings-section__label">Security</p>
+                    <p className="settings-section__label">Sync & Deployment</p>
+                    <div className="settings-card" style={{ border: '1px solid rgba(139, 92, 246, 0.3)' }}>
+                        <div className="settings-card__header">
+                            <Cloud size={18} className="settings-card__icon" style={{ color: '#8b5cf6' }} />
+                            <p className="settings-card__title">GitHub Integration</p>
+                        </div>
+                        <div className="settings-card__body">
+                            <p className="settings-card__desc">Push local changes and product updates to GitHub to trigger website deployment.</p>
+                            <button 
+                                className="push-live-btn" 
+                                onClick={handleGitSync} 
+                                disabled={syncing}
+                                style={{ width: '100%', marginTop: '0.5rem' }}
+                            >
+                                {syncing ? <Loader2 size={18} className="animate-spin" /> : <Cloud size={18} />}
+                                {syncing ? 'Syncing...' : 'Push Updates to Live Site'}
+                            </button>
+                            {syncStatus && <p className="sync-status">{syncStatus}</p>}
+                        </div>
+                    </div>
+                </div>
 
+                <div className="settings-section">
+                    <p className="settings-section__label">Security</p>
                     <div className="settings-item">
                         <div className="settings-item__left">
                             <Shield size={18} className="settings-item__icon settings-item__icon--blue" />
@@ -94,7 +144,6 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout }) => {
 
                 <div className="settings-section">
                     <p className="settings-section__label">Database</p>
-
                     <a
                         href="https://console.firebase.google.com/project/laserart-2eca0"
                         target="_blank"
