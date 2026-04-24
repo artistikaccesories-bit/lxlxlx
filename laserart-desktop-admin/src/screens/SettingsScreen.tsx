@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
-import { LogOut, Shield, Info, ExternalLink, Truck, Save, Loader2, Cloud } from 'lucide-react';
-import { db, doc, getDoc, setDoc } from '../utils/firebase';
+import { LogOut, Shield, Info, ExternalLink, Truck, Save, Loader2, Cloud, DollarSign, Percent, AlertTriangle } from 'lucide-react';
+import { db, doc, getDoc, setDoc, collection, getDocs, updateDoc } from '../utils/firebase';
 
 interface SettingsScreenProps {
     onLogout: () => void;
@@ -13,6 +13,9 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout }) => {
     const [saving, setSaving] = useState(false);
     const [syncing, setSyncing] = useState(false);
     const [syncStatus, setSyncStatus] = useState<string | null>(null);
+    const [priceAdjustValue, setPriceAdjustValue] = useState('');
+    const [adjustMode, setAdjustMode] = useState<'fixed' | 'percent'>('fixed');
+    const [isAdjusting, setIsAdjusting] = useState(false);
 
     useEffect(() => {
         if (!db) return;
@@ -40,6 +43,55 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout }) => {
             alert("Failed to update delivery prices.");
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleGlobalPriceAdjust = async (isIncrease: boolean) => {
+        if (!db) return;
+        const val = parseFloat(priceAdjustValue);
+        if (isNaN(val) || val <= 0) {
+            alert("Please enter a valid positive number.");
+            return;
+        }
+
+        const confirmMsg = `Are you SURE? This will ${isIncrease ? 'INCREASE' : 'DECREASE'} all product prices by ${adjustMode === 'fixed' ? '$' : ''}${val}${adjustMode === 'percent' ? '%' : ''}. This cannot be undone automatically.`;
+        
+        if (!window.confirm(confirmMsg)) return;
+
+        setIsAdjusting(true);
+        try {
+            const querySnapshot = await getDocs(collection(db, 'products'));
+            let updatedCount = 0;
+
+            const promises = querySnapshot.docs.map(async (productDoc) => {
+                const currentPrice = productDoc.data().price;
+                let newPrice = currentPrice;
+
+                if (adjustMode === 'fixed') {
+                    newPrice = isIncrease ? currentPrice + val : currentPrice - val;
+                } else {
+                    const factor = val / 100;
+                    newPrice = isIncrease ? currentPrice * (1 + factor) : currentPrice * (1 - factor);
+                }
+
+                // Ensure price doesn't go negative
+                newPrice = Math.max(0, parseFloat(newPrice.toFixed(2)));
+
+                await updateDoc(doc(db, 'products', productDoc.id), {
+                    price: newPrice,
+                    updatedAt: new Date()
+                });
+                updatedCount++;
+            });
+
+            await Promise.all(promises);
+            alert(`Success! Updated prices for ${updatedCount} products.`);
+            setPriceAdjustValue('');
+        } catch (error) {
+            console.error(error);
+            alert("Error updating bulk prices.");
+        } finally {
+            setIsAdjusting(false);
         }
     };
 
@@ -101,6 +153,58 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout }) => {
                                 {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
                                 {saving ? 'Saving...' : 'Update All Delivery Prices'}
                             </button>
+                        </div>
+                    </div>
+
+                    <div className="settings-card mt-3" style={{ border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                        <div className="settings-card__header">
+                            <DollarSign size={18} className="settings-card__icon text-red-500" />
+                            <p className="settings-card__title">Global Price Adjustment</p>
+                        </div>
+                        <div className="settings-card__body">
+                            <p className="text-[10px] text-zinc-400 mb-3 flex items-center gap-2">
+                                <AlertTriangle size={12} className="text-orange-500" />
+                                WARNING: This modifies ALL products in your catalog instantly.
+                            </p>
+                            <div className="flex gap-2 mb-3">
+                                <div className="flex-1 flex bg-black/40 rounded-lg p-1 border border-white/5">
+                                    <button 
+                                        className={`flex-1 py-1.5 rounded-md text-[10px] font-bold transition-all ${adjustMode === 'fixed' ? 'bg-white/10 text-white' : 'text-zinc-500'}`}
+                                        onClick={() => setAdjustMode('fixed')}
+                                    >
+                                        <DollarSign size={10} className="inline mr-1" /> Fixed ($)
+                                    </button>
+                                    <button 
+                                        className={`flex-1 py-1.5 rounded-md text-[10px] font-bold transition-all ${adjustMode === 'percent' ? 'bg-white/10 text-white' : 'text-zinc-500'}`}
+                                        onClick={() => setAdjustMode('percent')}
+                                    >
+                                        <Percent size={10} className="inline mr-1" /> Percent (%)
+                                    </button>
+                                </div>
+                                <input 
+                                    type="number" 
+                                    className="w-24 bg-black/40 border border-white/10 rounded-lg px-3 text-xs font-bold"
+                                    placeholder={adjustMode === 'fixed' ? "0.00" : "0"}
+                                    value={priceAdjustValue}
+                                    onChange={e => setPriceAdjustValue(e.target.value)}
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                                <button 
+                                    className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all disabled:opacity-50"
+                                    onClick={() => handleGlobalPriceAdjust(false)}
+                                    disabled={isAdjusting}
+                                >
+                                    Decrease All
+                                </button>
+                                <button 
+                                    className="p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-500 text-[10px] font-black uppercase tracking-widest hover:bg-green-500 hover:text-white transition-all disabled:opacity-50"
+                                    onClick={() => handleGlobalPriceAdjust(true)}
+                                    disabled={isAdjusting}
+                                >
+                                    {isAdjusting ? 'Processing...' : 'Increase All'}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

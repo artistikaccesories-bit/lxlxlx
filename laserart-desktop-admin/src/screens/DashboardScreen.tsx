@@ -18,6 +18,7 @@ interface Stats {
     topDevice: string;
     topCity: string;
     hourlyDistribution: Record<number, number>;
+    featuredProducts: any[];
 }
 
 interface RecentOrder {
@@ -33,7 +34,8 @@ const DashboardScreen: React.FC = () => {
         totalVisitors: 0, todayVisitors: 0, activeCarts: 0,
         liveVisitors: 0, totalOrders: 0, totalRevenue: 0, 
         pendingOrders: 0, lowStockCount: 0,
-        topDevice: '—', topCity: '—', hourlyDistribution: {}
+        topDevice: '—', topCity: '—', hourlyDistribution: {},
+        featuredProducts: []
     });
     const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
     const [lastUpdate, setLastUpdate] = useState<string>('');
@@ -135,11 +137,17 @@ const DashboardScreen: React.FC = () => {
         const productsRef = collection(db, 'products');
         const unsubProducts = onSnapshot(productsRef, (snapshot) => {
             let lowStock = 0;
+            const featured: any[] = [];
             snapshot.forEach(d => {
                 const data = d.data();
                 if (data.stock !== undefined && data.stock <= 5) lowStock++;
+                if (data.isProductOfTheWeek) featured.push({ id: d.id, ...data });
             });
-            setStats(prev => ({ ...prev, lowStockCount: lowStock }));
+            setStats(prev => ({ 
+                ...prev, 
+                lowStockCount: lowStock,
+                featuredProducts: featured
+            }));
             setLoading(false);
         });
 
@@ -265,6 +273,34 @@ const DashboardScreen: React.FC = () => {
                             </div>
                         );
                     })}
+                </div>
+            </div>
+
+            {/* Featured Products (Weekly Picks) */}
+            <div className="activity-feed mt-6">
+                <div className="section-header flex justify-between items-center mb-3">
+                    <h3 className="section-title text-sm font-bold flex items-center gap-2">
+                        <Target size={14} className="text-purple-500" />
+                        Picks of the Week
+                    </h3>
+                    <span className="text-[10px] font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full uppercase">Live on Site</span>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                    {stats.featuredProducts.length > 0 ? stats.featuredProducts.map(p => (
+                        <div key={p.id} className="glass-card p-2 border border-purple-500/20 rounded-xl flex flex-col gap-2 relative group overflow-hidden">
+                            <div className="aspect-square rounded-lg overflow-hidden">
+                                <img src={p.image} className="w-full h-full object-cover transition-transform group-hover:scale-110" alt="" />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-bold truncate">{p.name}</span>
+                                <span className="text-[10px] font-black text-purple-400">${p.price}</span>
+                            </div>
+                        </div>
+                    )) : (
+                        <div className="col-span-3 py-8 text-center glass-card border-dashed border-white/10 opacity-50">
+                            <p className="text-[10px] uppercase font-bold tracking-widest">No featured products set</p>
+                        </div>
+                    )}
                 </div>
             </div>
 
