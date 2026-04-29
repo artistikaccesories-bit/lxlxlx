@@ -9,7 +9,8 @@ export const PRODUCTS: Product[] = [
         category: 'keychain',
         description: 'Stainless steel rectangle shape with laser engraved custom Lebanese car plate design. Essential, durable, and personalized.',
         image: '/images/product1.jpg',
-        stock: 4
+        stock: 4,
+        isBestSeller: true
     },
     {
         id: '2',
@@ -32,7 +33,8 @@ export const PRODUCTS: Product[] = [
         category: 'keychain',
         description: 'A symbol of connection. Rectangle stainless steel keychain designed for meaningful quotes, dates, or matching couple designs. Carry your story with you.',
         image: '/images/product3.jpg',
-        stock: 6
+        stock: 6,
+        isBestSeller: true
     },
     {
         id: '4',
@@ -52,7 +54,8 @@ export const PRODUCTS: Product[] = [
         category: 'keychain',
         description: 'Minimalist perfection. A 4cm diameter round keychain awaiting your custom image, logo, or text. Perfectly balanced and precision engraved.',
         image: '/images/p5.jpg.jpg',
-        stock: 5
+        stock: 5,
+        isBestSeller: true
     },
     {
         id: '6',
