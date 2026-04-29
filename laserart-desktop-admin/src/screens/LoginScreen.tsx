@@ -1,11 +1,13 @@
 import React, { useState, useRef } from 'react';
 import { Eye, EyeOff, Lock, Zap } from 'lucide-react';
+import { auth, signInWithEmailAndPassword } from '../utils/firebase';
 
 interface LoginScreenProps {
-    onLogin: () => void;
+    onLogin: (email: string) => void;
 }
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
+    const [email, setEmail] = useState(import.meta.env.VITE_ADMIN_EMAIL || '');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
@@ -15,14 +17,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
     const [shake, setShake] = useState(false);
     const [loading, setLoading] = useState(false);
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-    const hashPassword = async (pwd: string): Promise<string> => {
-        const encoder = new TextEncoder();
-        const data = encoder.encode(pwd);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    };
 
     const triggerShake = () => {
         setShake(true);
@@ -48,15 +42,16 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         if (locked || loading) return;
+        if (!auth) {
+            setError('Firebase Auth is not configured.');
+            return;
+        }
         setLoading(true);
-        const hash = await hashPassword(password);
-        const h1 = import.meta.env.VITE_ADMIN_HASH_1;
-        const h2 = import.meta.env.VITE_ADMIN_HASH_2;
-
-        if ((h1 && hash === h1) || (h2 && hash === h2)) {
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
             setError('');
-            onLogin();
-        } else {
+            onLogin(userCredential.user.email || email.trim());
+        } catch (_err) {
             const newAttempts = attempts + 1;
             setAttempts(newAttempts);
             triggerShake();
@@ -67,7 +62,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             } else {
                 setError(`Invalid password. ${3 - newAttempts} attempt(s) remaining.`);
             }
-        }
+        } 
         setLoading(false);
     };
 
@@ -82,7 +77,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                     </div>
                 </div>
 
-                <h1 className="login-title">LASERART</h1>
+                <h1 className="login-title">LASERART LB</h1>
                 <p className="login-subtitle">Admin Dashboard</p>
 
                 <div className="login-lock-icon">
@@ -91,6 +86,18 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                 </div>
 
                 <form onSubmit={handleLogin} className="login-form">
+                    <div className="login-input-wrap">
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={e => { setEmail(e.target.value); setError(''); }}
+                            className="login-input"
+                            placeholder="Admin email"
+                            disabled={locked}
+                            autoComplete="username"
+                        />
+                    </div>
+
                     <div className="login-input-wrap">
                         <input
                             id="admin-password"
@@ -125,7 +132,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                     <button
                         type="submit"
                         className="login-btn"
-                        disabled={locked || loading || !password}
+                        disabled={locked || loading || !password || !email}
                     >
                         {loading ? (
                             <span className="login-spinner" />

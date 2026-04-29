@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { db, collection, query, orderBy, limit, onSnapshot } from '../utils/firebase';
 import { Wifi, Smartphone, Monitor, Tablet, MapPin } from 'lucide-react';
+import { COLLECTIONS, toSafeDate } from '../utils/firestoreData';
 
 interface LiveVisitor {
     id: string;
@@ -35,7 +36,7 @@ const LiveVisitorsScreen: React.FC = () => {
             return;
         }
 
-        const q = query(collection(db, 'visitors'), orderBy('lastActive', 'desc'), limit(100));
+        const q = query(collection(db, COLLECTIONS.visitors), orderBy('lastActive', 'desc'), limit(100));
         const unsub = onSnapshot(q, snapshot => {
             const now = new Date();
             const live: LiveVisitor[] = [];
@@ -43,15 +44,7 @@ const LiveVisitorsScreen: React.FC = () => {
             snapshot.forEach(d => {
                 const data = d.data();
                 
-                // Safe date conversion
-                const getSafeDate = (val: any) => {
-                    if (val && typeof val.toDate === 'function') return val.toDate();
-                    if (val && val.seconds) return new Date(val.seconds * 1000);
-                    if (val instanceof Date) return val;
-                    return new Date();
-                };
-
-                const lastActiveDate = getSafeDate(data.lastActive);
+                const lastActiveDate = toSafeDate(data.lastActive);
                 const diffMs = now.getTime() - lastActiveDate.getTime();
                 const isLive = data.isActive === true && diffMs < 3 * 60 * 1000;
 

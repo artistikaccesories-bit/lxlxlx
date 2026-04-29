@@ -1,8 +1,46 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isAuthenticatedAdmin() {
+      return request.auth != null;
+    }
+
+    // Public storefront telemetry and checkout intake.
+    match /visitors/{docId} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if isAuthenticatedAdmin();
+    }
+
+    match /orders/{docId} {
+      allow read: if isAuthenticatedAdmin();
+      allow create: if true;
+      allow update, delete: if isAuthenticatedAdmin();
+    }
+
+    match /exits/{docId} {
+      allow read: if isAuthenticatedAdmin();
+      allow create: if true;
+      allow update, delete: if isAuthenticatedAdmin();
+    }
+
+    // Admin-only catalog and configuration writes.
+    match /products/{docId} {
+      allow read: if true;
+      allow write: if isAuthenticatedAdmin();
+    }
+
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAuthenticatedAdmin();
+    }
+
+    match /inventoryEvents/{docId} {
+      allow read, write: if isAuthenticatedAdmin();
+    }
+
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if false;
     }
   }
 }

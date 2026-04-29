@@ -4,10 +4,11 @@ import { LogOut, Shield, Info, ExternalLink, Truck, Save, Loader2, Cloud, Dollar
 import { db, doc, getDoc, setDoc, collection, getDocs, updateDoc } from '../utils/firebase';
 
 interface SettingsScreenProps {
-    onLogout: () => void;
+    onLogout: () => void | Promise<void>;
+    adminEmail: string;
 }
 
-const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout }) => {
+const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout, adminEmail }) => {
     const [standardDelivery, setStandardDelivery] = useState('4');
     const [expressDelivery, setExpressDelivery] = useState('6');
     const [saving, setSaving] = useState(false);
@@ -239,7 +240,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout }) => {
                             <Shield size={18} className="settings-item__icon settings-item__icon--blue" />
                             <div>
                                 <p className="settings-item__title">Password Protection</p>
-                                <p className="settings-item__sub">SHA-256 hashed · Lockout after 3 attempts</p>
+                                <p className="settings-item__sub">Firebase Auth session · Signed in as {adminEmail || 'admin'}</p>
                             </div>
                         </div>
                         <span className="settings-item__badge settings-item__badge--green">Active</span>

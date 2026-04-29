@@ -1,31 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { db, storage, collection, addDoc, query, orderBy, onSnapshot, doc, deleteDoc, updateDoc, ref, uploadBytes, getDownloadURL } from '../utils/firebase';
+import { auth } from '../utils/firebase';
+import { COLLECTIONS, normalizeProductDoc, slugifyHandle } from '../utils/firestoreData';
+import type { ProductDoc } from '../types/firestore';
 import { 
     Package, Plus, Trash2, Loader2, X, Edit2, Search, 
     Cloud, Image as ImageIcon, Database, Save, RefreshCw,
     ExternalLink, Eye, LayoutGrid, List, Check, AlertCircle
 } from 'lucide-react';
 
-interface Product {
-    id: string;
-    name: string;
-    price: number;
-    description: string;
-    image: string;
-    images?: string[];
-    category: string;
-    stock?: number;
-    handle?: string;
-    isBestSeller?: boolean;
-    isProductOfTheWeek?: boolean;
-}
-
 const InventoryScreen: React.FC = () => {
-    const [products, setProducts] = useState<Product[]>([]);
+    const [products, setProducts] = useState<ProductDoc[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
-    const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+    const [editingProduct, setEditingProduct] = useState<ProductDoc | null>(null);
     const [uploading, setUploading] = useState(false);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
@@ -42,11 +31,11 @@ const InventoryScreen: React.FC = () => {
 
     useEffect(() => {
         if (!db) return;
-        const q = query(collection(db, 'products'), orderBy('updatedAt', 'desc'));
+        const q = query(collection(db, COLLECTIONS.products), orderBy('updatedAt', 'desc'));
         const unsub = onSnapshot(q, (snapshot) => {
-            const items: Product[] = [];
-            snapshot.forEach(doc => {
-                items.push({ id: doc.id, ...doc.data() } as Product);
+            const items: ProductDoc[] = [];
+            snapshot.forEach((productDoc) => {
+                items.push(normalizeProductDoc(productDoc.id, productDoc.data()));
             });
             setProducts(items);
             setLoading(false);
@@ -62,7 +51,7 @@ const InventoryScreen: React.FC = () => {
         }
     };
 
-    const openEditModal = (product: Product) => {
+    const openEditModal = (product: ProductDoc) => {
         setEditingProduct(product);
         setName(product.name);
         setPrice(product.price.toString());
@@ -121,6 +110,7 @@ const InventoryScreen: React.FC = () => {
                 mainImage = imageUrls[0];
             }
 
+            const normalizedHandle = slugifyHandle(name.trim());
             const productData = {
                 name: name.trim(),
                 price: parseFloat(price),
@@ -132,15 +122,33 @@ const InventoryScreen: React.FC = () => {
                 isBestSeller,
                 isProductOfTheWeek,
                 updatedAt: new Date(),
-                handle: name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+                handle: normalizedHandle
             };
 
+            if (!productData.name || !productData.description || !productData.handle) {
+                throw new Error('Please fill all required product fields.');
+            }
+
             if (editingProduct) {
-                await updateDoc(doc(db, 'products', editingProduct.id), productData);
+                await updateDoc(doc(db, COLLECTIONS.products, editingProduct.id), productData);
+                await addDoc(collection(db, COLLECTIONS.inventoryEvents), {
+                    type: 'updated',
+                    productId: editingProduct.id,
+                    productName: productData.name,
+                    adminEmail: auth?.currentUser?.email || 'unknown@admin',
+                    at: new Date()
+                });
             } else {
-                await addDoc(collection(db, 'products'), {
+                const created = await addDoc(collection(db, COLLECTIONS.products), {
                     ...productData,
                     createdAt: new Date()
+                });
+                await addDoc(collection(db, COLLECTIONS.inventoryEvents), {
+                    type: 'created',
+                    productId: created.id,
+                    productName: productData.name,
+                    adminEmail: auth?.currentUser?.email || 'unknown@admin',
+                    at: new Date()
                 });
             }
             
@@ -150,13 +158,23 @@ const InventoryScreen: React.FC = () => {
             alert(`Error: ${error.message}`);
         } finally {
             setUploading(false);
+            setFiles(null);
+            setPreviewImages([]);
         }
     };
 
     const handleDeleteProduct = async (id: string) => {
         if (!db || !window.confirm("Delete this product permanently?")) return;
         try {
-            await deleteDoc(doc(db, 'products', id));
+            const removed = products.find((p) => p.id === id);
+            await deleteDoc(doc(db, COLLECTIONS.products, id));
+            await addDoc(collection(db, COLLECTIONS.inventoryEvents), {
+                type: 'deleted',
+                productId: id,
+                productName: removed?.name || 'Unknown',
+                adminEmail: auth?.currentUser?.email || 'unknown@admin',
+                at: new Date()
+            });
         } catch (error) {
             console.error(error);
         }

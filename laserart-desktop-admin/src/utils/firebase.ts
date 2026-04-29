@@ -5,6 +5,7 @@ import {
   doc, updateDoc, deleteDoc, setDoc, getDoc
 } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -18,6 +19,7 @@ const firebaseConfig = {
 let app: any;
 let db: any = null;
 let storage: any = null;
+let auth: any = null;
 
 try {
   if (firebaseConfig.apiKey) {
@@ -25,6 +27,7 @@ try {
     app = initializeApp(firebaseConfig);
     db = getFirestore(app);
     storage = getStorage(app);
+    auth = getAuth(app);
   } else {
     console.error("Firebase: Config missing API Key! Check your environment variables.");
   }
@@ -36,5 +39,6 @@ export {
   db, storage, collection, addDoc, getDocs, query, orderBy,
   limit, Timestamp, onSnapshot, doc, updateDoc, deleteDoc, setDoc, getDoc,
   where,
-  ref, uploadBytes, getDownloadURL
+  ref, uploadBytes, getDownloadURL,
+  auth, onAuthStateChanged, signInWithEmailAndPassword, signOut
 };

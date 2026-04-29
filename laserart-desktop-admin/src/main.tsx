@@ -23,6 +23,9 @@ if (!rootElement) {
         </ErrorBoundary>
       </StrictMode>
     );
+    if (window.electron?.notifyRendererReady) {
+      window.electron.notifyRendererReady();
+    }
     console.log("Render call completed.");
   } catch (err: any) {
     console.error("FATAL: Failed to render app", err);

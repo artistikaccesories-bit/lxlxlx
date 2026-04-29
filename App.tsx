@@ -32,18 +32,9 @@ function App() {
 
   // Fetch dynamic products and settings
   React.useEffect(() => {
-    // 0. Fetch Automated Sync Products (from Admin App Git Pushes)
-    let syncItems: Product[] = [];
-    fetch('/data/products_live.json')
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) syncItems = data;
-      })
-      .catch(() => { /* Silent fail if file doesn't exist yet */ });
-
     if (!db) return;
 
-    // 1. Fetch Products from Firebase
+    // 1. Fetch Products from Firebase (primary catalog source)
     const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
     const unsubProducts = onSnapshot(q, (snapshot) => {
       const firebaseItems: Product[] = [];
@@ -51,24 +42,12 @@ function App() {
         firebaseItems.push({ id: doc.id, ...doc.data() } as Product);
       });
 
-      // Merge: Firebase (Newest) > Sync (Repo) > Static (Hardcoded)
-      const combined = [...firebaseItems];
-      
-      // Add sync items if not already in firebase
-      syncItems.forEach(si => {
-        if (!combined.some(p => p.id === si.id || p.handle === si.handle)) {
-          combined.push(si);
-        }
-      });
-
-      // Add static items if not already in combined
-      STATIC_PRODUCTS.forEach(sp => {
-        if (!combined.some(p => p.id === sp.id || p.handle === sp.handle)) {
-          combined.push(sp);
-        }
-      });
-
-      setProducts(combined);
+      // Fallback only when DB collection is empty
+      if (firebaseItems.length === 0) {
+        setProducts(STATIC_PRODUCTS);
+        return;
+      }
+      setProducts(firebaseItems);
     });
 
     // 2. Fetch Delivery Settings (Real-time)

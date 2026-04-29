@@ -10,14 +10,18 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "cap:sync": "vite build && npx cap sync",
+    "android:add": "npx cap add android",
     "android:build": "vite build && npx cap sync android",
+    "android:open": "npx cap open android",
+    "android:apk:debug": "cd android && gradlew assembleDebug",
+    "android:apk:release": "cd android && gradlew assembleRelease",
     "electron:start": "concurrently -k \"vite\" \"wait-on tcp:5173 && electron .\"",
     "electron:build": "vite build && electron-builder",
     "electron:rebuild": "npm run build && electron-builder"
   },
   "build": {
-    "appId": "com.laserart.admin",
-    "productName": "laserartt",
+    "appId": "com.laserartlb.admin",
+    "productName": "Laser Art LB",
     "directories": {
       "output": "dist-electron"
     },
@@ -31,7 +35,7 @@
         "nsis",
         "portable"
       ],
-      "executableName": "laserartt"
+      "executableName": "laser-art-lb"
     }
   },
   "dependencies": {

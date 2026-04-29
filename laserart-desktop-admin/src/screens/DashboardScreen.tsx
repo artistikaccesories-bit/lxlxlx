@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { db, collection, query, orderBy, limit, onSnapshot, where, getDocs } from '../utils/firebase';
+import { db, collection, query, orderBy, limit, onSnapshot } from '../utils/firebase';
+import { COLLECTIONS, normalizeProductDoc, toSafeDate } from '../utils/firestoreData';
 import { 
     Users, ShoppingCart, TrendingUp, Smartphone, MapPin, 
     Activity, DollarSign, Target, MousePointer2, Package, 
@@ -13,6 +14,7 @@ interface Stats {
     liveVisitors: number;
     totalOrders: number;
     totalRevenue: number;
+    todayRevenue: number;
     pendingOrders: number;
     lowStockCount: number;
     topDevice: string;
@@ -32,7 +34,7 @@ interface RecentOrder {
 const DashboardScreen: React.FC = () => {
     const [stats, setStats] = useState<Stats>({
         totalVisitors: 0, todayVisitors: 0, activeCarts: 0,
-        liveVisitors: 0, totalOrders: 0, totalRevenue: 0, 
+        liveVisitors: 0, totalOrders: 0, totalRevenue: 0, todayRevenue: 0,
         pendingOrders: 0, lowStockCount: 0,
         topDevice: '—', topCity: '—', hourlyDistribution: {},
         featuredProducts: []
@@ -45,7 +47,7 @@ const DashboardScreen: React.FC = () => {
         if (!db) return;
 
         // 1. Visitors & Real-time Stats
-        const visitorsRef = collection(db, 'visitors');
+        const visitorsRef = collection(db, COLLECTIONS.visitors);
         const qVisitors = query(visitorsRef, orderBy('timestamp', 'desc'), limit(200));
 
         const unsubVisitors = onSnapshot(qVisitors, (snapshot) => {
@@ -58,21 +60,14 @@ const DashboardScreen: React.FC = () => {
             snapshot.forEach(d => {
                 const data = d.data();
                 
-                const getSafeDate = (val: any) => {
-                    if (val && typeof val.toDate === 'function') return val.toDate();
-                    if (val && val.seconds) return new Date(val.seconds * 1000);
-                    if (val instanceof Date) return val;
-                    return new Date();
-                };
-
-                const date = getSafeDate(data.timestamp);
+                const date = toSafeDate(data.timestamp);
                 const isToday = date.toDateString() === now.toDateString();
                 if (isToday) {
                     todayCount++;
                     const hour = date.getHours();
                     hourlyData[hour] = (hourlyData[hour] || 0) + 1;
                 }
-                const lastActive = getSafeDate(data.lastActive || data.timestamp);
+                const lastActive = toSafeDate(data.lastActive || data.timestamp);
                 const isLive = data.isActive === true && (now.getTime() - lastActive.getTime()) < 3 * 60 * 1000;
                 if (isLive) {
                     liveVisitors++;
@@ -101,15 +96,22 @@ const DashboardScreen: React.FC = () => {
         });
 
         // 2. Orders & Revenue Stats
-        const ordersRef = collection(db, 'orders');
+        const ordersRef = collection(db, COLLECTIONS.orders);
         const unsubOrders = onSnapshot(ordersRef, (snapshot) => {
             let totalRev = 0;
+            let todayRev = 0;
             let pendingCount = 0;
             const recent: RecentOrder[] = [];
+            const now = new Date();
 
             snapshot.forEach(d => {
                 const data = d.data();
-                totalRev += Number(data.total) || 0;
+                const orderTotal = Number(data.total) || 0;
+                totalRev += orderTotal;
+                const orderDate = toSafeDate(data.timestamp);
+                if (orderDate.toDateString() === now.toDateString()) {
+                    todayRev += orderTotal;
+                }
                 if (data.status === 'pending') pendingCount++;
                 
                 recent.push({
@@ -129,17 +131,18 @@ const DashboardScreen: React.FC = () => {
                 ...prev,
                 totalOrders: snapshot.size,
                 totalRevenue: totalRev,
+                todayRevenue: todayRev,
                 pendingOrders: pendingCount
             }));
         });
 
         // 3. Inventory Health
-        const productsRef = collection(db, 'products');
+        const productsRef = collection(db, COLLECTIONS.products);
         const unsubProducts = onSnapshot(productsRef, (snapshot) => {
             let lowStock = 0;
             const featured: any[] = [];
             snapshot.forEach(d => {
-                const data = d.data();
+                const data = normalizeProductDoc(d.id, d.data());
                 if (data.stock !== undefined && data.stock <= 5) lowStock++;
                 if (data.isProductOfTheWeek) featured.push({ id: d.id, ...data });
             });
@@ -201,7 +204,7 @@ const DashboardScreen: React.FC = () => {
                     </div>
                     <div className="stat-card__value stat-card__value--sm">${stats.totalRevenue.toLocaleString()}</div>
                     <div className="flex items-center gap-1 text-[9px] font-bold text-green mt-1">
-                        <ArrowUpRight size={10} /> 12% vs last week
+                        <ArrowUpRight size={10} /> ${stats.todayRevenue.toLocaleString()} today
                     </div>
                 </div>
 

@@ -6,6 +6,7 @@ declare global {
       platform: string;
       runGitCommand: (command: string) => Promise<string>;
       saveDataFile: (filePath: string, data: any) => Promise<boolean>;
+      notifyRendererReady: () => void;
     };
   }
 }
