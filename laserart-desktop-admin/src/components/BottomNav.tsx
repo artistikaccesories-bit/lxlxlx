@@ -1,7 +1,8 @@
 import React from 'react';
 import { LayoutDashboard, Wifi, ShoppingCart, ShoppingBag, Package, Settings, Table } from 'lucide-react';
 
-type Tab = 'dashboard' | 'live' | 'carts' | 'orders' | 'inventory' | 'marketplace' | 'settings';
+type Tab = 'dashboard' | 'live' | 'orders' | 'inventory' | 'marketplace' | 'settings';
+
 
 interface BottomNavProps {
     active: Tab;
@@ -11,7 +12,7 @@ interface BottomNavProps {
 const tabs: { id: Tab; label: string; Icon: any }[] = [
     { id: 'dashboard', label: 'Home', Icon: LayoutDashboard },
     { id: 'live', label: 'Live', Icon: Wifi },
-    { id: 'carts', label: 'Carts', Icon: ShoppingCart },
+
     { id: 'orders', label: 'Orders', Icon: ShoppingBag },
     { id: 'inventory', label: 'Inventory', Icon: Package },
     { id: 'marketplace', label: 'Market', Icon: Table },

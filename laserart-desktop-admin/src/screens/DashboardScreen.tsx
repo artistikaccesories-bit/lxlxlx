@@ -43,94 +43,110 @@ const DashboardScreen: React.FC = () => {
     const [recentTraffic, setRecentTraffic] = useState<any[]>([]);
     const [lastUpdate, setLastUpdate] = useState<string>('');
     const [loading, setLoading] = useState(true);
+    const [now, setNow] = useState(new Date());
+    const [rawVisitors, setRawVisitors] = useState<any[]>([]);
+
 
     useEffect(() => {
         if (!db) return;
 
         // 1. Visitors & Real-time Stats
         const visitorsRef = collection(db, COLLECTIONS.visitors);
-        const qVisitors = query(visitorsRef, orderBy('timestamp', 'desc'), limit(200));
-
+        const qVisitors = query(visitorsRef, limit(200));
         const unsubVisitors = onSnapshot(qVisitors, (snapshot) => {
-            const now = new Date();
-            let todayCount = 0, activeCarts = 0, liveVisitors = 0;
-            const hourlyData: Record<number, number> = {};
-            const topCities: Record<string, number> = {};
-            const topDevices: Record<string, number> = {};
-
+            const items: any[] = [];
             snapshot.forEach(d => {
-                const data = d.data();
-                
-                const date = toSafeDate(data.timestamp);
-                const isToday = date.toDateString() === now.toDateString();
-                if (isToday) {
-                    todayCount++;
-                    const hour = date.getHours();
-                    hourlyData[hour] = (hourlyData[hour] || 0) + 1;
-                }
-                const lastActive = toSafeDate(data.lastActive || data.timestamp);
-                const diffMs = Math.abs(now.getTime() - lastActive.getTime());
-                const isLive = data.isActive === true && diffMs < 60 * 1000;
-                
-                if (isLive) {
-                    liveVisitors++;
-                    if (data.activeCartCount > 0) activeCarts++;
-                }
-                const city = data.location?.city || 'Unknown';
-                topCities[city] = (topCities[city] || 0) + 1;
-                const device = data.device || 'Unknown';
-                topDevices[device] = (topDevices[device] || 0) + 1;
+                items.push({ id: d.id, ...d.data() });
             });
-
-            const topCity = Object.keys(topCities).sort((a, b) => topCities[b] - topCities[a])[0] || '—';
-            const topDevice = Object.keys(topDevices).sort((a, b) => topDevices[b] - topDevices[a])[0] || '—';
-
-            const traffic: any[] = [];
-            snapshot.docs.slice(0, 10).forEach(d => {
-                const data = d.data();
-                const lastActive = toSafeDate(data.lastActive || data.timestamp);
-                const diffMs = Math.abs(now.getTime() - lastActive.getTime());
-                const diffSec = Math.floor(diffMs / 1000);
-                const isLive = data.isActive === true && diffMs < 15 * 60 * 1000;
-
-                traffic.push({
-                    id: d.id,
-                    city: data.location?.city || 'Unknown',
-                    device: data.device || 'Web',
-                    page: data.pagesViewed ? data.pagesViewed[data.pagesViewed.length - 1] : 'Home',
-                    time: diffSec < 60 ? 'Just now' : `${Math.floor(diffSec / 60)}m ago`,
-                    isLive: isLive
-                });
-            });
-
-            setRecentTraffic(traffic);
-            setStats(prev => ({ 
-                ...prev,
-                totalVisitors: snapshot.size, 
-                todayVisitors: todayCount, 
-                activeCarts, 
-                liveVisitors, 
-                topDevice, 
-                topCity, 
-                hourlyDistribution: hourlyData 
-            }));
-            setLastUpdate(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+            setRawVisitors(items);
+            setLoading(false);
+            setLastUpdate(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
         }, (err) => {
             console.error("Visitors Snapshot Error:", err);
             setLoading(false);
-            // Only alert once per session to avoid spam
             if (!window.hasShownConnError) {
                 alert("📡 Dashboard Connection Error: Real-time visitor counts may not update. Please check your internet.");
                 window.hasShownConnError = true;
             }
         });
 
+        const interval = setInterval(() => {
+            setNow(new Date());
+        }, 10000);
 
+        return () => {
+            unsubVisitors();
+            clearInterval(interval);
+        };
+    }, []);
 
-        // 2. Orders & Revenue Stats
+    // Derived stats
+    useEffect(() => {
+        let todayCount = 0, activeCarts = 0, liveVisitors = 0;
+        const hourlyData: Record<number, number> = {};
+        const topCities: Record<string, number> = {};
+        const topDevices: Record<string, number> = {};
+
+        rawVisitors.forEach(data => {
+            const date = toSafeDate(data.timestamp);
+            const isToday = date.toDateString() === now.toDateString();
+            if (isToday) {
+                todayCount++;
+                const hour = date.getHours();
+                hourlyData[hour] = (hourlyData[hour] || 0) + 1;
+            }
+            const lastActive = toSafeDate(data.lastActive || data.timestamp);
+            const diffMs = Math.abs(now.getTime() - lastActive.getTime());
+            const isLive = data.isActive === true && diffMs < 60 * 1000;
+            
+            if (isLive) {
+                liveVisitors++;
+                if (data.activeCartCount > 0) activeCarts++;
+            }
+            const city = data.location?.city || 'Unknown';
+            topCities[city] = (topCities[city] || 0) + 1;
+            const device = data.device || 'Unknown';
+            topDevices[device] = (topDevices[device] || 0) + 1;
+        });
+
+        const topCity = Object.keys(topCities).sort((a, b) => topCities[b] - topCities[a])[0] || '—';
+        const topDevice = Object.keys(topDevices).sort((a, b) => topDevices[b] - topDevices[a])[0] || '—';
+
+        setStats(prev => ({ 
+            ...prev,
+            totalVisitors: rawVisitors.length, 
+            todayVisitors: todayCount, 
+            activeCarts, 
+            liveVisitors, 
+            topDevice, 
+            topCity, 
+            hourlyDistribution: hourlyData 
+        }));
+
+        const traffic = rawVisitors.slice(0, 10).map(data => {
+            const lastActive = toSafeDate(data.lastActive || data.timestamp);
+            const diffMs = Math.abs(now.getTime() - lastActive.getTime());
+            const diffSec = Math.floor(diffMs / 1000);
+            const isLive = data.isActive === true && diffMs < 15 * 60 * 1000;
+
+            return {
+                id: data.id,
+                city: data.location?.city || 'Unknown',
+                device: data.device || 'Web',
+                page: data.pagesViewed ? data.pagesViewed[data.pagesViewed.length - 1] : 'Home',
+                time: diffSec < 60 ? 'Just now' : `${Math.floor(diffSec / 60)}m ago`,
+                isLive: isLive
+            };
+        });
+        setRecentTraffic(traffic);
+    }, [rawVisitors, now]);
+
+    useEffect(() => {
+        if (!db) return;
         const ordersRef = collection(db, COLLECTIONS.orders);
         const unsubOrders = onSnapshot(ordersRef, (snapshot) => {
             let totalRev = 0;
+
             let todayRev = 0;
             let pendingCount = 0;
             const recent: RecentOrder[] = [];
@@ -190,10 +206,10 @@ const DashboardScreen: React.FC = () => {
         });
 
         return () => {
-            unsubVisitors();
             unsubOrders();
             unsubProducts();
         };
+
     }, []);
 
     const distValues = Object.values(stats.hourlyDistribution) as number[];

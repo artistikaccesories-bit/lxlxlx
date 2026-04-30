@@ -54,7 +54,6 @@ function App() {
     switch (activeTab) {
       case 'dashboard': return <DashboardScreen />;
       case 'live': return <LiveVisitorsScreen />;
-      case 'carts': return <CartScreen />;
       case 'orders': return <OrdersScreen />;
       case 'inventory': return <InventoryScreen />;
       case 'marketplace': return <MarketplaceScreen />;
@@ -62,6 +61,7 @@ function App() {
       default: return <DashboardScreen />;
     }
   };
+
 
   return (
     <div className="app">

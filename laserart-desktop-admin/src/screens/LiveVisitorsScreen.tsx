@@ -22,75 +22,66 @@ const DeviceIcon = ({ device }: { device: string }) => {
 };
 
 const LiveVisitorsScreen: React.FC = () => {
-    const [visitors, setVisitors] = useState<LiveVisitor[]>([]);
+    const [rawVisitors, setRawVisitors] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-
+    const [now, setNow] = useState(new Date());
+ 
     useEffect(() => {
         if (!db) return;
-
-        // Fetch all visitors from the last 24 hours for history
-        const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+ 
         const q = query(
             collection(db, COLLECTIONS.visitors), 
-            where('lastActive', '>=', dayAgo),
-            orderBy('lastActive', 'desc'), 
             limit(100)
         );
-
+ 
         const unsub = onSnapshot(q, snapshot => {
-            updateVisitors(snapshot);
+            const items: any[] = [];
+            snapshot.forEach(doc => {
+                items.push({ id: doc.id, ...doc.data() });
+            });
+            setRawVisitors(items);
+            setLoading(false);
         }, (err) => {
             console.error("Visitors List Error:", err);
         });
-
-
-        // Force refresh every 10s to update "Online now" vs "X ago" status
+ 
         const interval = setInterval(() => {
-            // Re-processing the same snapshot data triggers a re-render with new "now" time
-            setVisitors(prev => [...prev]);
+            setNow(new Date());
         }, 10000);
-
+ 
         return () => {
             unsub();
             clearInterval(interval);
         };
     }, []);
+ 
+    const visitors: LiveVisitor[] = rawVisitors.map(data => {
+        const lastActiveDate = toSafeDate(data.lastActive);
+        const diffMs = now.getTime() - lastActiveDate.getTime();
+        
+        const isRecentlyActive = diffMs < 1 * 60 * 1000;
+        const isLive = isRecentlyActive;
+ 
+        const diffSec = Math.floor(diffMs / 1000);
+        let lastActiveStr = 'Just now';
+        if (diffSec > 5) {
+            lastActiveStr = diffSec < 60 ? `${diffSec}s ago` : 
+                           diffSec < 3600 ? `${Math.floor(diffSec / 60)}m ago` : 
+                           `${Math.floor(diffSec / 3600)}h ago`;
+        }
+        
+        return {
+            id: data.id,
+            device: data.device || 'Unknown',
+            location: `${data.location?.city || 'Unknown'}, ${data.location?.country || '??'}`,
+            pages: data.pagesViewed ? data.pagesViewed.join(' → ') : 'Home',
+            duration: data.durationSec ? `${Math.floor(data.durationSec / 60)}m ${data.durationSec % 60}s` : 'Active',
+            cartCount: data.activeCartCount || 0,
+            lastActive: isLive ? 'Online now' : lastActiveStr,
+            ip: data.ip || undefined,
+        };
+    });
 
-    const updateVisitors = (snapshot: any) => {
-        const now = new Date();
-        const items: LiveVisitor[] = [];
-
-        snapshot.forEach((d: any) => {
-            const data = d.data();
-            const lastActiveDate = toSafeDate(data.lastActive);
-            const diffMs = now.getTime() - lastActiveDate.getTime();
-            
-            const isRecentlyActive = diffMs < 1 * 60 * 1000;
-            const isLive = isRecentlyActive;
-
-            const diffSec = Math.floor(diffMs / 1000);
-            let lastActiveStr = 'Just now';
-            if (diffSec > 5) {
-                lastActiveStr = diffSec < 60 ? `${diffSec}s ago` : 
-                               diffSec < 3600 ? `${Math.floor(diffSec / 60)}m ago` : 
-                               `${Math.floor(diffSec / 3600)}h ago`;
-            }
-            
-            items.push({
-                id: d.id,
-                device: data.device || 'Unknown',
-                location: `${data.location?.city || 'Unknown'}, ${data.location?.country || '??'}`,
-                pages: data.pagesViewed ? data.pagesViewed.join(' → ') : 'Home',
-                duration: data.durationSec ? `${Math.floor(data.durationSec / 60)}m ${data.durationSec % 60}s` : 'Active',
-                cartCount: data.activeCartCount || 0,
-                lastActive: isLive ? 'Online now' : lastActiveStr,
-                ip: data.ip || undefined,
-            });
-        });
-
-        setVisitors(items);
-        setLoading(false);
-    };
 
 
     const liveCount = visitors.filter(v => v.lastActive === 'Online now').length;
