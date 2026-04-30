@@ -1,5 +1,22 @@
 [
   {
+    "id": "1777545775366",
+    "name": "Plaque",
+    "price": 20,
+    "category": "keychain",
+    "description": "Used For Menus Instagram Pages, etc",
+    "image": "/images/1777545775355_20260323_103205.png",
+    "images": [
+      "/images/1777545775355_20260323_103205.png"
+    ],
+    "stock": 10,
+    "isBestSeller": false,
+    "isProductOfTheWeek": false,
+    "updatedAt": "2026-04-30T10:42:55.366Z",
+    "handle": "plaque",
+    "createdAt": "2026-04-30T10:42:55.366Z"
+  },
+  {
     "id": "1",
     "name": "CUSTOM PLATE",
     "handle": "lebanon-plate-style",
