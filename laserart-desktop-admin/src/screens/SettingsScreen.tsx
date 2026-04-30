@@ -135,7 +135,8 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout, adminEmail })
             const commands = [
                 { msg: "Staging changes...", cmd: 'git add .' },
                 { msg: "Committing updates...", cmd: 'git commit -m "Admin: Global Sync & Settings Update" || echo "nothing to commit"' },
-                { msg: "Pushing to GitHub...", cmd: 'git push' },
+                { msg: "Merging remote changes...", cmd: 'git pull --rebase origin main || echo "pull failed, trying push anyway"' },
+                { msg: "Pushing to GitHub...", cmd: 'git push origin main' },
                 { msg: "Building & Deploying (this takes ~2 mins)...", cmd: 'npm run deploy' }
             ];
 

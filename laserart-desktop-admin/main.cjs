@@ -65,16 +65,48 @@ ipcMain.handle('run-git-command', async (event, command) => {
   });
 });
 
-// File Save IPC handler
+// File Read IPC handler
+ipcMain.handle('read-data-file', async (event, filePath) => {
+  return new Promise((resolve, reject) => {
+    const projectRoot = 'c:\\Users\\Alex\\Desktop\\lxlxlx-main';
+    const absolutePath = path.resolve(projectRoot, filePath);
+    if (!fs.existsSync(absolutePath)) {
+      resolve("");
+      return;
+    }
+    fs.readFile(absolutePath, 'utf8', (err, data) => {
+      if (err) reject(err.message);
+      else resolve(data);
+    });
+  });
+});
+
+// File Save IPC handler (JSON)
 ipcMain.handle('save-data-file', async (event, { filePath, data }) => {
   return new Promise((resolve, reject) => {
     const projectRoot = 'c:\\Users\\Alex\\Desktop\\lxlxlx-main';
     const absolutePath = path.resolve(projectRoot, filePath);
     const dir = path.dirname(absolutePath);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFile(absolutePath, JSON.stringify(data, null, 2), (err) => {
+    fs.writeFile(absolutePath, data, (err) => {
       if (err) reject(err.message);
       else resolve(true);
+    });
+  });
+});
+
+// Image Save IPC handler (Buffer)
+ipcMain.handle('save-image-file', async (event, { fileName, base64Data }) => {
+  return new Promise((resolve, reject) => {
+    const projectRoot = 'c:\\Users\\Alex\\Desktop\\lxlxlx-main';
+    const absolutePath = path.join(projectRoot, 'public', 'images', fileName);
+    const dir = path.dirname(absolutePath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    
+    const buffer = Buffer.from(base64Data, 'base64');
+    fs.writeFile(absolutePath, buffer, (err) => {
+      if (err) reject(err.message);
+      else resolve(`/images/${fileName}`);
     });
   });
 });

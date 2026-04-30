@@ -32,47 +32,37 @@ const InventoryScreen: React.FC = () => {
     const [previewImages, setPreviewImages] = useState<string[]>([]);
 
     useEffect(() => {
-        if (!db) return;
-        const q = query(collection(db, COLLECTIONS.products), orderBy('updatedAt', 'desc'));
-        const unsub = onSnapshot(q, async (snapshot) => {
-            const items: ProductDoc[] = [];
-            snapshot.forEach((productDoc) => {
-                items.push(normalizeProductDoc(productDoc.id, productDoc.data()));
-            });
-            
-            // Auto-populate if completely empty
-            if (items.length === 0 && !snapshot.metadata.hasPendingWrites) {
-                try {
-                    for (const p of DEFAULT_PRODUCTS) {
-                        await addDoc(collection(db, COLLECTIONS.products), {
-                            ...p,
-                            createdAt: new Date(),
-                            updatedAt: new Date()
-                        });
-                    }
-                } catch (e) {
-                    console.error("Failed to auto-populate", e);
-                }
-            } else {
-                setProducts(items);
+        const loadLocalProducts = async () => {
+            if (!window.electron) {
+                setLoading(false);
+                return;
             }
-            setLoading(false);
-        });
-        return () => unsub();
+
+            try {
+                const raw = await window.electron.readDataFile('src/data/products.json');
+                if (raw) {
+                    const items = JSON.parse(raw);
+                    setProducts(items);
+                }
+            } catch (err) {
+                console.error("Failed to load local products:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadLocalProducts();
     }, []);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             const selectedFiles = Array.from(e.target.files);
-            
-            // Limit to 5MB
             const oversized = selectedFiles.find(f => f.size > 5 * 1024 * 1024);
             if (oversized) {
                 alert(`File "${oversized.name}" is too large. Max size is 5MB.`);
                 e.target.value = '';
                 return;
             }
-
             setFiles(e.target.files);
             const urls = selectedFiles.map(file => URL.createObjectURL(file));
             setPreviewImages(urls);
@@ -110,166 +100,86 @@ const InventoryScreen: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        if (!db || !storage) {
-            alert("Database or Storage not initialized.");
-            return;
-        }
-
         if (!editingProduct && (!files || files.length === 0)) {
             alert("Please select at least one image.");
             return;
         }
 
-        setUploading(true);
-
         try {
             let imageUrls = editingProduct?.images || (editingProduct?.image ? [editingProduct.image] : []);
             let mainImage = editingProduct?.image || '';
 
-            if (files && files.length > 0) {
-                const totalFiles = files.length;
-                const uploadPromises = Array.from(files).map(async (file, index) => {
-                    // Client-side image compression
-                    const compressedBlob = await new Promise<Blob>((resolve, reject) => {
-                        const img = new Image();
-                        img.src = URL.createObjectURL(file);
-                        img.onload = () => {
-                            const canvas = document.createElement('canvas');
-                            let width = img.width;
-                            let height = img.height;
-                            
-                            const MAX = 1200;
-                            if (width > height && width > MAX) {
-                                height *= MAX / width;
-                                width = MAX;
-                            } else if (height > MAX) {
-                                width *= MAX / height;
-                                height = MAX;
-                            }
-                            
-                            canvas.width = width;
-                            canvas.height = height;
-                            const ctx = canvas.getContext('2d');
-                            ctx?.drawImage(img, 0, 0, width, height);
-                            
-                            canvas.toBlob((blob) => {
-                                if (blob) resolve(blob);
-                                else reject(new Error('Compression failed'));
-                            }, 'image/jpeg', 0.8);
-                        };
-                        img.onerror = reject;
-                    });
-
-                    const storageRef = ref(storage, `products/${Date.now()}_${file.name.split('.')[0]}.jpg`);
-                    const metadata = { contentType: 'image/jpeg' };
-                    
-                    // Using uploadBytesResumable for progress
-                    const uploadTask = uploadBytesResumable(storageRef, compressedBlob, metadata);
-                    
-                    return new Promise<string>((resolve, reject) => {
-                        uploadTask.on('state_changed', 
-                            (snapshot) => {
-                                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                                setUploadProgress(Math.round(((index / totalFiles) * 100) + (progress / totalFiles)));
-                            }, 
-                            (error) => {
-                                console.error("Upload failed for file:", file.name, error);
-                                reject(error);
-                            }, 
-                            async () => {
-                                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                                resolve(downloadURL);
-                            }
-                        );
-                    });
-                });
-
-                const newUrls = await Promise.all(uploadPromises);
-                imageUrls = [...newUrls]; 
-                mainImage = imageUrls[0];
-            }
-            setUploadProgress(100);
-
             const parsedPrice = parseFloat(price);
             const parsedStock = parseInt(stock);
 
-            if (isNaN(parsedPrice) || parsedPrice < 0) {
-                throw new Error('Please enter a valid price.');
-            }
-            if (isNaN(parsedStock)) {
-                throw new Error('Please enter a valid stock number.');
-            }
+            if (isNaN(parsedPrice) || parsedPrice < 0) throw new Error('Please enter a valid price.');
+            if (isNaN(parsedStock)) throw new Error('Please enter a valid stock number.');
 
             const normalizedHandle = slugifyHandle(name.trim());
-            const productData = {
-                name: name.trim(),
-                price: parsedPrice,
-                category,
-                description: description.trim(),
-                image: mainImage,
-                images: imageUrls,
-                stock: parsedStock,
-                isBestSeller,
-                isProductOfTheWeek,
-                updatedAt: new Date(),
-                handle: normalizedHandle
-            };
-
-            if (!productData.name || !productData.description || !productData.handle) {
-                throw new Error('Please fill all required product fields.');
-            }
-
-            if (!productData.image) {
-                throw new Error('Please upload at least one image.');
-            }
-
-            if (editingProduct) {
-                await updateDoc(doc(db, COLLECTIONS.products, editingProduct.id), productData);
-                await addDoc(collection(db, COLLECTIONS.inventoryEvents), {
-                    type: 'updated',
-                    productId: editingProduct.id,
-                    productName: productData.name,
-                    adminEmail: auth?.currentUser?.email || 'unknown@admin',
-                    at: new Date()
-                });
-            } else {
-                const created = await addDoc(collection(db, COLLECTIONS.products), {
-                    ...productData,
-                    createdAt: new Date()
-                });
-                await addDoc(collection(db, COLLECTIONS.inventoryEvents), {
-                    type: 'created',
-                    productId: created.id,
-                    productName: productData.name,
-                    adminEmail: auth?.currentUser?.email || 'unknown@admin',
-                    at: new Date()
-                });
-            }
             
+            if (window.electron) {
+                setUploading(true);
+                setUploadProgress(10);
+
+                // 1. Save images locally
+                let localImageUrls = [...imageUrls];
+                if (files && files.length > 0) {
+                    for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+                        const reader = new FileReader();
+                        const base64Promise = new Promise<string>((resolve) => {
+                            reader.onload = () => resolve(reader.result?.toString().split(',')[1] || '');
+                            reader.readAsDataURL(file);
+                        });
+                        const base64 = await base64Promise;
+                        const fileName = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+                        const localPath = await window.electron.saveImageFile(fileName, base64);
+                        if (i === 0) mainImage = localPath;
+                        localImageUrls.push(localPath);
+                        setUploadProgress(20 + ((i + 1) / files.length) * 40);
+                    }
+                }
+
+                const productData = {
+                    name: name.trim(),
+                    price: parsedPrice,
+                    category,
+                    description: description.trim(),
+                    image: mainImage,
+                    images: localImageUrls,
+                    stock: parsedStock,
+                    isBestSeller,
+                    isProductOfTheWeek,
+                    updatedAt: new Date().toISOString(),
+                    handle: normalizedHandle
+                };
+
+                const updatedProducts = editingProduct 
+                    ? products.map(p => p.id === editingProduct.id ? { ...p, ...productData } : p)
+                    : [{ id: Date.now().toString(), ...productData, createdAt: new Date().toISOString() }, ...products];
+
+                await window.electron.saveDataFile('src/data/products.json', JSON.stringify(updatedProducts, null, 2));
+                setProducts(updatedProducts as ProductDoc[]);
+                setUploadProgress(100);
+                alert("Product saved! Ready for GitHub Sync.");
+            }
             setShowModal(false);
         } catch (error: any) {
-            console.error("Error saving product:", error);
             alert(`Error: ${error.message}`);
         } finally {
             setUploading(false);
             setUploadProgress(0);
-            setFiles(null);
-            setPreviewImages([]);
         }
     };
 
     const handleDeleteProduct = async (id: string) => {
-        if (!db || !window.confirm("Delete this product permanently?")) return;
+        if (!window.confirm("Delete this product permanently?")) return;
         try {
-            const removed = products.find((p) => p.id === id);
-            await deleteDoc(doc(db, COLLECTIONS.products, id));
-            await addDoc(collection(db, COLLECTIONS.inventoryEvents), {
-                type: 'deleted',
-                productId: id,
-                productName: removed?.name || 'Unknown',
-                adminEmail: auth?.currentUser?.email || 'unknown@admin',
-                at: new Date()
-            });
+            const updatedProducts = products.filter(p => p.id !== id);
+            if (window.electron) {
+                await window.electron.saveDataFile('src/data/products.json', JSON.stringify(updatedProducts, null, 2));
+                setProducts(updatedProducts as ProductDoc[]);
+            }
         } catch (error) {
             console.error(error);
         }
@@ -282,55 +192,51 @@ const InventoryScreen: React.FC = () => {
 
     return (
         <div className="screen animate-in fade-in">
-            <div className="screen-header">
+            <div className="screen-header items-center">
                 <div>
-                    <h1 className="screen-title">Inventory</h1>
-                    <p className="screen-subtitle">{products.length} products total</p>
+                    <h1 className="screen-title tracking-tight">Inventory</h1>
+                    <p className="screen-subtitle font-medium opacity-60">{products.length} Items in Catalog</p>
                 </div>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button className="add-btn" onClick={openAddModal}>
-                        <Plus size={18} /> Add
+                <div className="flex gap-2">
+                    <button className="add-btn flex items-center gap-2 bg-white text-black px-4 py-2 rounded-xl font-bold text-sm hover:scale-105 transition-all" onClick={openAddModal}>
+                        <Plus size={16} /> Add New
                     </button>
-                    {(window as any).electron && (
+                    {window.electron && (
                         <button 
-                            className={`push-live-btn ${isSyncing ? 'opacity-50 pointer-events-none' : ''}`}
+                            className={`push-live-btn flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all ${isSyncing ? 'bg-surface-2 text-text-muted opacity-50' : 'bg-red text-white hover:bg-red/80 shadow-lg shadow-red/20'}`}
                             onClick={async () => {
                                 if (isSyncing) return;
-                                if (window.confirm("Sync inventory to the live website? This takes ~2 mins to build.")) {
+                                if (window.confirm("Sync all changes to GitHub? This will update the live website.")) {
                                     setIsSyncing(true);
                                     try {
-                                        if (window.electron.saveDataFile) {
-                                            await window.electron.saveDataFile('public/data/products_live.json', products);
-                                            await window.electron.saveDataFile('src/data/products_live.json', products);
-                                        }
                                         const commands = [
                                             'git add .',
                                             'git commit -m "Admin: Inventory Sync" || echo "nothing to commit"',
-                                            'git push',
-                                            'npm run deploy'
+                                            'git pull --rebase origin main || echo "pull failed, trying push anyway"',
+                                            'git push origin main'
                                         ];
                                         
                                         for (const cmd of commands) {
-                                            console.log(`Executing: ${cmd}`);
                                             await window.electron.runGitCommand(cmd);
                                         }
                                         
-                                        alert("🚀 Sync successful! Site is rebuilding and deploying.");
+                                        alert("🚀 GitHub Sync Successful! Changes are being deployed.");
                                     } catch (e) { 
                                         console.error("Sync error:", e);
-                                        alert("Sync error: " + e); 
+                                        alert("Sync error (Check internet/GitHub access): " + e); 
                                     } finally {
                                         setIsSyncing(false);
                                     }
                                 }
                             }}
                         >
-                            {isSyncing ? <Loader2 size={18} className="animate-spin" /> : <Cloud size={18} />} 
-                            {isSyncing ? 'Syncing...' : 'Sync'}
+                            {isSyncing ? <Loader2 size={16} className="animate-spin" /> : <Cloud size={16} />} 
+                            {isSyncing ? 'Syncing...' : 'Sync Live'}
                         </button>
                     )}
                 </div>
             </div>
+
 
             <div className="flex gap-2 mb-4">
                 <div className="search-bar flex-1 m-0">

@@ -2,25 +2,25 @@
 
 /* ─── Design Tokens ─────────────────────────────────── */
 :root {
-  --bg: #050505;
-  --surface: #0f0f0f;
-  --surface-2: #161616;
-  --accent: #ff3c3c;
-  --accent-glow: rgba(255, 60, 60, 0.15);
-  --border: rgba(255, 255, 255, 0.08);
-  --border-bright: rgba(255, 255, 255, 0.15);
+  --bg: #030303;
+  --surface: #0a0a0a;
+  --surface-2: #121212;
+  --accent: #ff4d4d;
+  --accent-glow: rgba(255, 77, 77, 0.2);
+  --border: rgba(255, 255, 255, 0.05);
+  --border-bright: rgba(255, 255, 255, 0.12);
   --text: #ffffff;
-  --text-secondary: #a1a1aa;
-  --text-muted: #52525b;
-  --red: #ff3c3c;
-  --red-dim: rgba(255, 60, 60, 0.1);
-  --green: #00ff7f;
-  --green-dim: rgba(0, 255, 127, 0.1);
-  --yellow: #ffcc00;
-  --yellow-dim: rgba(255, 204, 0, 0.1);
-  --blue: #38bdf8;
-  --orange: #fb923c;
-  --purple: #a855f7;
+  --text-secondary: #94a3b8;
+  --text-muted: #475569;
+  --red: #ff4d4d;
+  --red-dim: rgba(255, 77, 77, 0.1);
+  --green: #10b981;
+  --green-dim: rgba(16, 185, 129, 0.1);
+  --yellow: #f59e0b;
+  --yellow-dim: rgba(245, 158, 11, 0.1);
+  --blue: #3b82f6;
+  --orange: #f97316;
+  --purple: #8b5cf6;
   --nav-h: 72px;
   --radius-sm: 8px;
   --radius-md: 14px;
@@ -69,11 +69,12 @@ input { font-family: inherit; }
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
   background: 
-    radial-gradient(circle at 50% -10%, var(--accent-glow) 0%, transparent 50%),
-    radial-gradient(circle at 0% 100%, rgba(168, 85, 247, 0.05) 0%, transparent 40%),
-    radial-gradient(circle at 100% 100%, rgba(56, 189, 248, 0.05) 0%, transparent 40%);
+    radial-gradient(circle at 50% -20%, var(--accent-glow) 0%, transparent 60%),
+    radial-gradient(circle at 0% 100%, rgba(139, 92, 246, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 100% 100%, rgba(59, 130, 246, 0.08) 0%, transparent 40%);
   pointer-events: none;
   z-index: 0;
+  opacity: 0.8;
 }
 
 /* ─── Screen ────────────────────────────────────────── */

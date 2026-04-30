@@ -38,43 +38,57 @@ const LiveVisitorsScreen: React.FC = () => {
         );
 
         const unsub = onSnapshot(q, snapshot => {
-            const now = new Date();
-            const items: LiveVisitor[] = [];
-
-            snapshot.forEach(d => {
-                const data = d.data();
-                const lastActiveDate = toSafeDate(data.lastActive);
-                const diffMs = now.getTime() - lastActiveDate.getTime();
-                
-                const isRecentlyActive = diffMs < 1 * 60 * 1000;
-                const isLive = isRecentlyActive;
-
-                const diffSec = Math.floor(diffMs / 1000);
-                let lastActiveStr = 'Just now';
-                if (diffSec > 5) {
-                    lastActiveStr = diffSec < 60 ? `${diffSec}s ago` : 
-                                   diffSec < 3600 ? `${Math.floor(diffSec / 60)}m ago` : 
-                                   `${Math.floor(diffSec / 3600)}h ago`;
-                }
-                
-                items.push({
-                    id: d.id,
-                    device: data.device || 'Unknown',
-                    location: `${data.location?.city || 'Unknown'}, ${data.location?.country || '??'}`,
-                    pages: data.pagesViewed ? data.pagesViewed.join(' → ') : 'Home',
-                    duration: data.durationSec ? `${Math.floor(data.durationSec / 60)}m ${data.durationSec % 60}s` : 'Active',
-                    cartCount: data.activeCartCount || 0,
-                    lastActive: isLive ? 'Online now' : lastActiveStr,
-                    ip: data.ip || undefined,
-                });
-            });
-
-            setVisitors(items);
-            setLoading(false);
+            updateVisitors(snapshot);
         });
 
-        return () => unsub();
+        // Force refresh every 10s to update "Online now" vs "X ago" status
+        const interval = setInterval(() => {
+            // Re-processing the same snapshot data triggers a re-render with new "now" time
+            setVisitors(prev => [...prev]);
+        }, 10000);
+
+        return () => {
+            unsub();
+            clearInterval(interval);
+        };
     }, []);
+
+    const updateVisitors = (snapshot: any) => {
+        const now = new Date();
+        const items: LiveVisitor[] = [];
+
+        snapshot.forEach((d: any) => {
+            const data = d.data();
+            const lastActiveDate = toSafeDate(data.lastActive);
+            const diffMs = now.getTime() - lastActiveDate.getTime();
+            
+            const isRecentlyActive = diffMs < 1 * 60 * 1000;
+            const isLive = isRecentlyActive;
+
+            const diffSec = Math.floor(diffMs / 1000);
+            let lastActiveStr = 'Just now';
+            if (diffSec > 5) {
+                lastActiveStr = diffSec < 60 ? `${diffSec}s ago` : 
+                               diffSec < 3600 ? `${Math.floor(diffSec / 60)}m ago` : 
+                               `${Math.floor(diffSec / 3600)}h ago`;
+            }
+            
+            items.push({
+                id: d.id,
+                device: data.device || 'Unknown',
+                location: `${data.location?.city || 'Unknown'}, ${data.location?.country || '??'}`,
+                pages: data.pagesViewed ? data.pagesViewed.join(' → ') : 'Home',
+                duration: data.durationSec ? `${Math.floor(data.durationSec / 60)}m ${data.durationSec % 60}s` : 'Active',
+                cartCount: data.activeCartCount || 0,
+                lastActive: isLive ? 'Online now' : lastActiveStr,
+                ip: data.ip || undefined,
+            });
+        });
+
+        setVisitors(items);
+        setLoading(false);
+    };
+
 
     const liveCount = visitors.filter(v => v.lastActive === 'Online now').length;
 

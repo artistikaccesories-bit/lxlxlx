@@ -33,23 +33,10 @@ function App() {
   React.useEffect(() => {
     if (!db) return;
 
-    // 1. Fetch Products from Firebase (primary catalog source)
-    const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
-    const unsubProducts = onSnapshot(q, (snapshot) => {
-      const firebaseItems: Product[] = [];
-      snapshot.forEach(doc => {
-        firebaseItems.push({ id: doc.id, ...doc.data() } as Product);
-      });
+    // Dynamic settings only (Products now use STATIC_PRODUCTS from Git)
+    setProducts(STATIC_PRODUCTS);
 
-      // Fallback only when DB collection is empty
-      if (firebaseItems.length === 0) {
-        setProducts(STATIC_PRODUCTS);
-        return;
-      }
-      setProducts(firebaseItems);
-    });
-
-    // 2. Fetch Delivery Settings (Real-time)
+    // Fetch Delivery Settings (Real-time) - Keep this as it's small/free
     const unsubSettings = onSnapshot(doc(db, 'settings', 'delivery'), (snap) => {
       if (snap.exists()) {
         const data = snap.data();
@@ -61,7 +48,6 @@ function App() {
     });
 
     return () => {
-      unsubProducts();
       unsubSettings();
     };
   }, []);
