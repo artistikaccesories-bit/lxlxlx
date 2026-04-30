@@ -20,21 +20,27 @@ function App() {
   const [adminEmail, setAdminEmail] = useState('');
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
 
-  useEffect(() => {
-    const isAuth = localStorage.getItem('admin_auth') === 'true';
-    setAuthenticated(isAuth);
-    if (isAuth) {
-      setAdminEmail('admin@laserartlb.com');
-    }
-    setAuthLoading(false);
-  }, []);
+    useEffect(() => {
+        if (!auth) {
+            setAuthLoading(false);
+            return;
+        }
+        const unsub = onAuthStateChanged(auth, (user: any) => {
+            setAuthenticated(Boolean(user));
+            setAdminEmail(user?.email || '');
+            setAuthLoading(false);
+        });
+        return () => unsub();
+    }, []);
 
-  const handleLogout = async () => {
-    localStorage.removeItem('admin_auth');
-    setAuthenticated(false);
-    setAdminEmail('');
-    setActiveTab('dashboard');
-  };
+    const handleLogout = async () => {
+        if (auth) {
+            await signOut(auth);
+        }
+        setAuthenticated(false);
+        setAdminEmail('');
+        setActiveTab('dashboard');
+    };
 
   if (authLoading) {
     return <div className="loading-state"><div className="spinner" /><p>Restoring session...</p></div>;

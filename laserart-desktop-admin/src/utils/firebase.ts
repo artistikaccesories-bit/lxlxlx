@@ -5,7 +5,7 @@ import {
   doc, updateDoc, deleteDoc, setDoc, getDoc
 } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -40,5 +40,5 @@ export {
   limit, Timestamp, onSnapshot, doc, updateDoc, deleteDoc, setDoc, getDoc,
   where,
   ref, uploadBytes, getDownloadURL,
-  auth, onAuthStateChanged, signInWithEmailAndPassword, signOut
+  auth, onAuthStateChanged, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword
 };

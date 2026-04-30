@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Lock, Zap, Eye, EyeOff } from 'lucide-react';
+import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from '../utils/firebase';
 
 interface LoginScreenProps {
     onLogin: (email: string) => void;
@@ -41,28 +42,44 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         if (locked || loading) return;
-        setLoading(true);
+        if (!auth) {
+            setError('Firebase Auth is not configured.');
+            return;
+        }
         
-        // Hardcoded Simple Password Login
-        setTimeout(() => {
-            if (password === '123456') {
-                setError('');
-                localStorage.setItem('admin_auth', 'true');
-                onLogin(email);
+        if (password !== '123456') {
+            const newAttempts = attempts + 1;
+            setAttempts(newAttempts);
+            triggerShake();
+            setPassword('');
+            if (newAttempts >= 3) {
+                setError('Too many attempts. Locked for 30 seconds.');
+                startLockout();
             } else {
-                const newAttempts = attempts + 1;
-                setAttempts(newAttempts);
-                triggerShake();
-                setPassword('');
-                if (newAttempts >= 3) {
-                    setError('Too many attempts. Locked for 30 seconds.');
-                    startLockout();
-                } else {
-                    setError(`Invalid password. ${3 - newAttempts} attempt(s) remaining.`);
-                }
+                setError(`Invalid password. ${3 - newAttempts} attempt(s) remaining.`);
             }
-            setLoading(false);
-        }, 600); // add a slight artificial delay for effect
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
+            setError('');
+            onLogin(userCredential.user.email || email.trim());
+        } catch (err: any) {
+            if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.message.includes('invalid')) {
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
+                    setError('');
+                    onLogin(userCredential.user.email || email.trim());
+                } catch (createErr: any) {
+                    setError('Database Error: ' + createErr.message);
+                }
+            } else {
+                setError('Database Error: ' + err.message);
+            }
+        } 
+        setLoading(false);
     };
 
     return (

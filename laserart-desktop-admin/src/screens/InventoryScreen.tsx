@@ -8,6 +8,7 @@ import {
     Cloud, Image as ImageIcon, Database, Save, RefreshCw,
     ExternalLink, Eye, LayoutGrid, List, Check, AlertCircle
 } from 'lucide-react';
+import { DEFAULT_PRODUCTS } from '../data/defaultProducts';
 
 const InventoryScreen: React.FC = () => {
     const [products, setProducts] = useState<ProductDoc[]>([]);
@@ -32,12 +33,28 @@ const InventoryScreen: React.FC = () => {
     useEffect(() => {
         if (!db) return;
         const q = query(collection(db, COLLECTIONS.products), orderBy('updatedAt', 'desc'));
-        const unsub = onSnapshot(q, (snapshot) => {
+        const unsub = onSnapshot(q, async (snapshot) => {
             const items: ProductDoc[] = [];
             snapshot.forEach((productDoc) => {
                 items.push(normalizeProductDoc(productDoc.id, productDoc.data()));
             });
-            setProducts(items);
+            
+            // Auto-populate if completely empty
+            if (items.length === 0 && !snapshot.metadata.hasPendingWrites) {
+                try {
+                    for (const p of DEFAULT_PRODUCTS) {
+                        await addDoc(collection(db, COLLECTIONS.products), {
+                            ...p,
+                            createdAt: new Date(),
+                            updatedAt: new Date()
+                        });
+                    }
+                } catch (e) {
+                    console.error("Failed to auto-populate", e);
+                }
+            } else {
+                setProducts(items);
+            }
             setLoading(false);
         });
         return () => unsub();
@@ -209,7 +226,8 @@ const InventoryScreen: React.FC = () => {
                                         await window.electron.runGitCommand('git add .');
                                         await window.electron.runGitCommand('git commit -m "Admin: Inventory Sync"');
                                         await window.electron.runGitCommand('git push');
-                                        alert("🚀 Sync initiated! Site is rebuilding.");
+                                        await window.electron.runGitCommand('npm run deploy');
+                                        alert("🚀 Sync initiated! Site is rebuilding and deploying.");
                                     } catch (e) { alert("Sync error: " + e); }
                                 }
                             }}
