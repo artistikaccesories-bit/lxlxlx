@@ -107,11 +107,14 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout, adminEmail })
         try {
             await window.electron.runGitCommand('git add .');
             setSyncStatus("Running: git commit...");
-            await window.electron.runGitCommand('git commit -m "Update products and settings via Admin App"');
+            // Use || true to prevent failure if there are no changes to commit
+            await window.electron.runGitCommand('git commit -m "Update products and settings via Admin App" || echo "nothing to commit"');
             setSyncStatus("Running: git push...");
             await window.electron.runGitCommand('git push');
+            setSyncStatus("Running: npm run deploy...");
+            await window.electron.runGitCommand('npm run deploy');
             setSyncStatus("Success! Website is updating.");
-            alert("Successfully pushed updates to GitHub! The live website will reflect changes shortly.");
+            alert("Successfully pushed updates and triggered deployment! The live website will reflect changes shortly.");
         } catch (error: any) {
             console.error(error);
             setSyncStatus(`Error: ${error}`);

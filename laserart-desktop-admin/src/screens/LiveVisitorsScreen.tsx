@@ -46,11 +46,18 @@ const LiveVisitorsScreen: React.FC = () => {
                 
                 const lastActiveDate = toSafeDate(data.lastActive);
                 const diffMs = now.getTime() - lastActiveDate.getTime();
-                const isLive = data.isActive === true && diffMs < 3 * 60 * 1000;
+                
+                // Show as live if isActive is true OR if they were active in the last 10 minutes
+                const isRecentlyActive = diffMs < 10 * 60 * 1000;
+                const isExplicitlyActive = data.isActive === true;
 
-                if (isLive) {
+                if (isExplicitlyActive || isRecentlyActive) {
                     const diffSec = Math.floor(diffMs / 1000);
-                    const lastActiveStr = diffSec < 60 ? `${diffSec}s ago` : `${Math.floor(diffSec / 60)}m ago`;
+                    let lastActiveStr = 'Just now';
+                    if (diffSec > 5) {
+                        lastActiveStr = diffSec < 60 ? `${diffSec}s ago` : `${Math.floor(diffSec / 60)}m ago`;
+                    }
+                    
                     live.push({
                         id: d.id,
                         device: data.device || 'Unknown',
@@ -58,7 +65,7 @@ const LiveVisitorsScreen: React.FC = () => {
                         pages: data.pagesViewed ? data.pagesViewed.join(' → ') : 'Home',
                         duration: data.durationSec ? `${Math.floor(data.durationSec / 60)}m ${data.durationSec % 60}s` : 'Active',
                         cartCount: data.activeCartCount || 0,
-                        lastActive: lastActiveStr,
+                        lastActive: isExplicitlyActive ? 'Online now' : lastActiveStr,
                         ip: data.ip || undefined,
                     });
                 }

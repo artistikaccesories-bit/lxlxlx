@@ -224,7 +224,7 @@ const InventoryScreen: React.FC = () => {
                                             await window.electron.saveDataFile('src/data/products_live.json', products);
                                         }
                                         await window.electron.runGitCommand('git add .');
-                                        await window.electron.runGitCommand('git commit -m "Admin: Inventory Sync"');
+                                        await window.electron.runGitCommand('git commit -m "Admin: Inventory Sync" || echo "nothing to commit"');
                                         await window.electron.runGitCommand('git push');
                                         await window.electron.runGitCommand('npm run deploy');
                                         alert("🚀 Sync initiated! Site is rebuilding and deploying.");
