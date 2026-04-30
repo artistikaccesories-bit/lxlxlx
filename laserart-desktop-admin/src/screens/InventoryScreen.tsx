@@ -17,6 +17,7 @@ const InventoryScreen: React.FC = () => {
     const [showModal, setShowModal] = useState(false);
     const [editingProduct, setEditingProduct] = useState<ProductDoc | null>(null);
     const [uploading, setUploading] = useState(false);
+    const [isSyncing, setIsSyncing] = useState(false);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
     // Form state
@@ -123,19 +124,29 @@ const InventoryScreen: React.FC = () => {
                 });
 
                 const newUrls = await Promise.all(uploadPromises);
-                imageUrls = [...newUrls]; // For now, replace images if new ones are uploaded
+                imageUrls = [...newUrls]; 
                 mainImage = imageUrls[0];
+            }
+
+            const parsedPrice = parseFloat(price);
+            const parsedStock = parseInt(stock);
+
+            if (isNaN(parsedPrice) || parsedPrice < 0) {
+                throw new Error('Please enter a valid price.');
+            }
+            if (isNaN(parsedStock)) {
+                throw new Error('Please enter a valid stock number.');
             }
 
             const normalizedHandle = slugifyHandle(name.trim());
             const productData = {
                 name: name.trim(),
-                price: parseFloat(price),
+                price: parsedPrice,
                 category,
                 description: description.trim(),
                 image: mainImage,
                 images: imageUrls,
-                stock: parseInt(stock),
+                stock: parsedStock,
                 isBestSeller,
                 isProductOfTheWeek,
                 updatedAt: new Date(),
@@ -144,6 +155,10 @@ const InventoryScreen: React.FC = () => {
 
             if (!productData.name || !productData.description || !productData.handle) {
                 throw new Error('Please fill all required product fields.');
+            }
+
+            if (!productData.image) {
+                throw new Error('Please upload at least one image.');
             }
 
             if (editingProduct) {
@@ -215,24 +230,40 @@ const InventoryScreen: React.FC = () => {
                     </button>
                     {(window as any).electron && (
                         <button 
-                            className="push-live-btn" 
+                            className={`push-live-btn ${isSyncing ? 'opacity-50 pointer-events-none' : ''}`}
                             onClick={async () => {
+                                if (isSyncing) return;
                                 if (window.confirm("Sync inventory to the live website? This takes ~2 mins to build.")) {
+                                    setIsSyncing(true);
                                     try {
                                         if (window.electron.saveDataFile) {
                                             await window.electron.saveDataFile('public/data/products_live.json', products);
                                             await window.electron.saveDataFile('src/data/products_live.json', products);
                                         }
-                                        await window.electron.runGitCommand('git add .');
-                                        await window.electron.runGitCommand('git commit -m "Admin: Inventory Sync" || echo "nothing to commit"');
-                                        await window.electron.runGitCommand('git push');
-                                        await window.electron.runGitCommand('npm run deploy');
-                                        alert("🚀 Sync initiated! Site is rebuilding and deploying.");
-                                    } catch (e) { alert("Sync error: " + e); }
+                                        const commands = [
+                                            'git add .',
+                                            'git commit -m "Admin: Inventory Sync" || echo "nothing to commit"',
+                                            'git push',
+                                            'npm run deploy'
+                                        ];
+                                        
+                                        for (const cmd of commands) {
+                                            console.log(`Executing: ${cmd}`);
+                                            await window.electron.runGitCommand(cmd);
+                                        }
+                                        
+                                        alert("🚀 Sync successful! Site is rebuilding and deploying.");
+                                    } catch (e) { 
+                                        console.error("Sync error:", e);
+                                        alert("Sync error: " + e); 
+                                    } finally {
+                                        setIsSyncing(false);
+                                    }
                                 }
                             }}
                         >
-                            <Cloud size={18} /> Sync
+                            {isSyncing ? <Loader2 size={18} className="animate-spin" /> : <Cloud size={18} />} 
+                            {isSyncing ? 'Syncing...' : 'Sync'}
                         </button>
                     )}
                 </div>
@@ -351,24 +382,24 @@ const InventoryScreen: React.FC = () => {
                                 
                                 <div className="form-group">
                                     <label>Visuals</label>
-                                    <div className="file-input-wrap h-full min-h-[140px] relative">
+                                    <div className="file-input-wrap aspect-square relative">
                                         {previewImages.length > 0 ? (
-                                            <div className="w-full h-full rounded-xl overflow-hidden group">
+                                            <div className="w-full h-full rounded-xl overflow-hidden group border border-border">
                                                 <img src={previewImages[0]} className="w-full h-full object-cover" />
-                                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                                                    <label htmlFor="file-input" className="cursor-pointer bg-white text-black px-4 py-2 rounded-full font-bold text-xs">Change Images</label>
+                                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-300">
+                                                    <label htmlFor="file-input" className="cursor-pointer bg-white text-black px-4 py-2 rounded-full font-bold text-xs transform translate-y-2 group-hover:translate-y-0 transition-transform">Change Image</label>
                                                 </div>
                                             </div>
                                         ) : (
                                             <>
                                                 <input type="file" multiple accept="image/*" onChange={handleFileChange} id="file-input" className="hidden-input" />
                                                 <label htmlFor="file-input" className="file-input-label h-full border-dashed">
-                                                    <ImageIcon size={32} className="mb-2 opacity-50" />
-                                                    <span className="text-xs font-bold opacity-70">Drop images here</span>
+                                                    <ImageIcon size={32} className="mb-2 opacity-30" />
+                                                    <span className="text-xs font-bold opacity-50">Upload Photo</span>
                                                 </label>
                                             </>
                                         )}
-                                        <input type="file" multiple accept="image/*" onChange={handleFileChange} id="file-input" className="hidden-input" />
+                                        <input type="file" multiple accept="image/*" onChange={handleFileChange} id="file-input-hidden" className="hidden-input" />
                                     </div>
                                 </div>
                             </div>

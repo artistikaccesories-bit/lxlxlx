@@ -102,26 +102,40 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout, adminEmail })
             return;
         }
 
+        if (syncing) return;
+        
+        if (!window.confirm("Sync all changes to the live website? This includes inventory, delivery settings, and build files.")) {
+            return;
+        }
+
         setSyncing(true);
-        setSyncStatus("Running: git add .");
+        setSyncStatus("Preparing sync...");
         try {
-            await window.electron.runGitCommand('git add .');
-            setSyncStatus("Running: git commit...");
-            // Use || true to prevent failure if there are no changes to commit
-            await window.electron.runGitCommand('git commit -m "Update products and settings via Admin App" || echo "nothing to commit"');
-            setSyncStatus("Running: git push...");
-            await window.electron.runGitCommand('git push');
-            setSyncStatus("Running: npm run deploy...");
-            await window.electron.runGitCommand('npm run deploy');
-            setSyncStatus("Success! Website is updating.");
-            alert("Successfully pushed updates and triggered deployment! The live website will reflect changes shortly.");
+            // Ensure we save current products to live files too if possible
+            // Note: This assumes 'products' is available or fetched. 
+            // For now we'll just run the git commands which cover any manual changes.
+
+            const commands = [
+                { msg: "Staging changes...", cmd: 'git add .' },
+                { msg: "Committing updates...", cmd: 'git commit -m "Admin: Global Sync & Settings Update" || echo "nothing to commit"' },
+                { msg: "Pushing to GitHub...", cmd: 'git push' },
+                { msg: "Building & Deploying (this takes ~2 mins)...", cmd: 'npm run deploy' }
+            ];
+
+            for (const item of commands) {
+                setSyncStatus(item.msg);
+                await window.electron.runGitCommand(item.cmd);
+            }
+
+            setSyncStatus("Success! Website is rebuilding.");
+            alert("🚀 Successfully pushed updates! The live website is now rebuilding and will update in a few minutes.");
         } catch (error: any) {
-            console.error(error);
-            setSyncStatus(`Error: ${error}`);
-            alert(`Sync Failed: ${error}`);
+            console.error("Sync error:", error);
+            setSyncStatus(`Failed: ${error}`);
+            alert(`Sync Failed: ${error}\n\nPlease check your internet connection or GitHub credentials.`);
         } finally {
             setSyncing(false);
-            setTimeout(() => setSyncStatus(null), 5000);
+            setTimeout(() => setSyncStatus(null), 10000);
         }
     };
 

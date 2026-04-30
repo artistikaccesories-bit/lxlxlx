@@ -980,25 +980,12 @@ input { font-family: inherit; }
   backdrop-filter: blur(4px);
   display: flex;
   align-items: flex-end;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
   justify-content: center;
   z-index: 1000;
-}
-.modal-content {
-  background: var(--bg);
-  border-top: 1px solid var(--border);
-  width: 100%;
-  max-width: 480px;
-  padding: 24px 20px 40px;
-  border-radius: 24px 24px 0 0;
-  animation: slideUp 0.3s ease-out;
-}
-@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
 }
 .modal-title { font-size: 20px; font-weight: 800; }
 
