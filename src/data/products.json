@@ -1,22 +1,5 @@
 [
   {
-    "id": "1777549514875",
-    "name": "lol",
-    "price": 14,
-    "category": "keychain",
-    "description": "kkkk",
-    "image": "/images/1777549514865_20260323_103205.png",
-    "images": [
-      "/images/1777549514865_20260323_103205.png"
-    ],
-    "stock": 10,
-    "isBestSeller": false,
-    "isProductOfTheWeek": false,
-    "updatedAt": "2026-04-30T11:45:14.875Z",
-    "handle": "lol",
-    "createdAt": "2026-04-30T11:45:14.875Z"
-  },
-  {
     "id": "1777545775366",
     "name": "Plaque",
     "price": 20,
