@@ -1,6 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Eye, EyeOff, Lock, Zap } from 'lucide-react';
-import { auth, signInWithEmailAndPassword } from '../utils/firebase';
+import { Lock, Zap, Eye, EyeOff } from 'lucide-react';
 
 interface LoginScreenProps {
     onLogin: (email: string) => void;
@@ -42,28 +41,28 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         if (locked || loading) return;
-        if (!auth) {
-            setError('Firebase Auth is not configured.');
-            return;
-        }
         setLoading(true);
-        try {
-            const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
-            setError('');
-            onLogin(userCredential.user.email || email.trim());
-        } catch (_err) {
-            const newAttempts = attempts + 1;
-            setAttempts(newAttempts);
-            triggerShake();
-            setPassword('');
-            if (newAttempts >= 3) {
-                setError('Too many attempts. Locked for 30 seconds.');
-                startLockout();
+        
+        // Hardcoded Simple Password Login
+        setTimeout(() => {
+            if (password === '123456') {
+                setError('');
+                localStorage.setItem('admin_auth', 'true');
+                onLogin(email);
             } else {
-                setError(`Invalid password. ${3 - newAttempts} attempt(s) remaining.`);
+                const newAttempts = attempts + 1;
+                setAttempts(newAttempts);
+                triggerShake();
+                setPassword('');
+                if (newAttempts >= 3) {
+                    setError('Too many attempts. Locked for 30 seconds.');
+                    startLockout();
+                } else {
+                    setError(`Invalid password. ${3 - newAttempts} attempt(s) remaining.`);
+                }
             }
-        } 
-        setLoading(false);
+            setLoading(false);
+        }, 600); // add a slight artificial delay for effect
     };
 
     return (

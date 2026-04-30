@@ -21,22 +21,16 @@ function App() {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
 
   useEffect(() => {
-    if (!auth) {
-      setAuthLoading(false);
-      return;
+    const isAuth = localStorage.getItem('admin_auth') === 'true';
+    setAuthenticated(isAuth);
+    if (isAuth) {
+      setAdminEmail('admin@laserartlb.com');
     }
-    const unsub = onAuthStateChanged(auth, (user: any) => {
-      setAuthenticated(Boolean(user));
-      setAdminEmail(user?.email || '');
-      setAuthLoading(false);
-    });
-    return () => unsub();
+    setAuthLoading(false);
   }, []);
 
   const handleLogout = async () => {
-    if (auth) {
-      await signOut(auth);
-    }
+    localStorage.removeItem('admin_auth');
     setAuthenticated(false);
     setAdminEmail('');
     setActiveTab('dashboard');
