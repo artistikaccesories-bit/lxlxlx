@@ -33,6 +33,8 @@ const LiveVisitorsScreen: React.FC = () => {
             collection(db, COLLECTIONS.visitors), 
             limit(100)
         );
+
+
  
         const unsub = onSnapshot(q, snapshot => {
             const items: any[] = [];
@@ -55,34 +57,38 @@ const LiveVisitorsScreen: React.FC = () => {
         };
     }, []);
  
-    const visitors: LiveVisitor[] = rawVisitors.map(data => {
-        const lastActiveDate = toSafeDate(data.lastActive);
-        const diffMs = now.getTime() - lastActiveDate.getTime();
-        
-        const isRecentlyActive = diffMs < 1 * 60 * 1000;
-        const isLive = isRecentlyActive;
- 
-        const diffSec = Math.floor(diffMs / 1000);
-        let lastActiveStr = 'Just now';
-        if (diffSec > 5) {
-            lastActiveStr = diffSec < 60 ? `${diffSec}s ago` : 
-                           diffSec < 3600 ? `${Math.floor(diffSec / 60)}m ago` : 
-                           `${Math.floor(diffSec / 3600)}h ago`;
-        }
-        
-        return {
-            id: data.id,
-            device: data.device || 'Unknown',
-            location: `${data.location?.city || 'Unknown'}, ${data.location?.country || '??'}`,
-            pages: data.pagesViewed ? data.pagesViewed.join(' → ') : 'Home',
-            duration: data.durationSec ? `${Math.floor(data.durationSec / 60)}m ${data.durationSec % 60}s` : 'Active',
-            cartCount: data.activeCartCount || 0,
-            lastActive: isLive ? 'Online now' : lastActiveStr,
-            ip: data.ip || undefined,
-        };
-    });
-
-
+    const visitors: LiveVisitor[] = [...rawVisitors]
+        .sort((a, b) => {
+            const timeA = toSafeDate(a.lastActive || a.timestamp).getTime();
+            const timeB = toSafeDate(b.lastActive || b.timestamp).getTime();
+            return timeB - timeA;
+        })
+        .map(data => {
+            const lastActiveDate = toSafeDate(data.lastActive);
+            const diffMs = now.getTime() - lastActiveDate.getTime();
+            
+            const isRecentlyActive = diffMs < 2 * 60 * 1000;
+            const isLive = isRecentlyActive;
+     
+            const diffSec = Math.floor(diffMs / 1000);
+            let lastActiveStr = 'Just now';
+            if (diffSec > 5) {
+                lastActiveStr = diffSec < 60 ? `${diffSec}s ago` : 
+                               diffSec < 3600 ? `${Math.floor(diffSec / 60)}m ago` : 
+                               `${Math.floor(diffSec / 3600)}h ago`;
+            }
+            
+            return {
+                id: data.id,
+                device: data.device || 'Unknown',
+                location: `${data.location?.city || 'Unknown'}, ${data.location?.country || '??'}`,
+                pages: data.pagesViewed ? data.pagesViewed.join(' → ') : 'Home',
+                duration: data.durationSec ? `${Math.floor(data.durationSec / 60)}m ${data.durationSec % 60}s` : 'Active',
+                cartCount: data.activeCartCount || 0,
+                lastActive: isLive ? 'Online now' : lastActiveStr,
+                ip: data.ip || undefined,
+            };
+        });
 
     const liveCount = visitors.filter(v => v.lastActive === 'Online now').length;
 

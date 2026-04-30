@@ -2,8 +2,10 @@ import { initializeApp } from "firebase/app";
 import {
   getFirestore, collection, addDoc, getDocs,
   query, orderBy, limit, Timestamp, onSnapshot, where,
-  doc, updateDoc, deleteDoc, setDoc, getDoc
+  doc, updateDoc, deleteDoc, setDoc, getDoc,
+  initializeFirestore
 } from "firebase/firestore";
+
 import { getStorage, ref, uploadBytes, getDownloadURL, uploadBytesResumable } from "firebase/storage";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword } from "firebase/auth";
 
@@ -25,7 +27,11 @@ try {
   if (firebaseConfig.apiKey) {
     console.log("Firebase: Initializing for " + firebaseConfig.projectId);
     app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
+    db = initializeFirestore(app, {
+      experimentalForceLongPolling: true,
+    });
+
+
 
     storage = getStorage(app);
     auth = getAuth(app);

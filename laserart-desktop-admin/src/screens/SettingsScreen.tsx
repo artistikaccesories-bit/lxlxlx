@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 
 import { LogOut, Shield, Info, ExternalLink, Truck, Save, Loader2, Cloud, DollarSign, Percent, AlertTriangle, Trash2, Database } from 'lucide-react';
-import { db, doc, getDoc, setDoc, collection, getDocs, updateDoc, deleteDoc, Timestamp } from '../utils/firebase';
+import { db, doc, getDoc, setDoc, collection, getDocs, updateDoc, deleteDoc, Timestamp, onSnapshot } from '../utils/firebase';
+
 
 interface SettingsScreenProps {
     onLogout: () => void | Promise<void>;
@@ -21,14 +22,16 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout, adminEmail })
 
     useEffect(() => {
         if (!db) return;
-        getDoc(doc(db, 'settings', 'delivery')).then(snap => {
+        const unsub = onSnapshot(doc(db, 'settings', 'delivery'), (snap) => {
             if (snap.exists()) {
                 const data = snap.data();
-                setStandardDelivery(data.standard.toString());
-                setExpressDelivery(data.express.toString());
+                setStandardDelivery(data.standard?.toString() || '4');
+                setExpressDelivery(data.express?.toString() || '6');
             }
         });
+        return () => unsub();
     }, []);
+
 
     const handleSaveDelivery = async () => {
         if (!db) {
@@ -320,9 +323,21 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout, adminEmail })
                                     </div>
                                     <ExternalLink size={12} className="text-zinc-500" />
                                 </a>
+                                <a 
+                                    href="https://analytics.google.com/analytics/web/" 
+                                    target="_blank" 
+                                    className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10 hover:border-blue-500/50 transition-all group"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <Info size={16} className="text-zinc-500 group-hover:text-blue-500" />
+                                        <span className="font-bold text-[10px] uppercase tracking-wider">Google Analytics Dashboard</span>
+                                    </div>
+                                    <ExternalLink size={12} className="text-zinc-500" />
+                                </a>
                             </div>
                         </div>
                     </div>
+
                 </div>
 
 

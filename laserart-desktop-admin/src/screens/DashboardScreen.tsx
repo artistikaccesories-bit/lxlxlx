@@ -4,7 +4,7 @@ import { COLLECTIONS, normalizeProductDoc, toSafeDate } from '../utils/firestore
 import { 
     Users, ShoppingCart, TrendingUp, Smartphone, MapPin, 
     Activity, DollarSign, Target, MousePointer2, Package, 
-    ShoppingBag, AlertCircle, ArrowUpRight, ArrowDownRight, Clock, RefreshCw, Wifi
+    ShoppingBag, AlertCircle, ArrowUpRight, ArrowDownRight, Clock, RefreshCw, Wifi, Info, ExternalLink
 } from 'lucide-react';
 
 interface Stats {
@@ -45,6 +45,8 @@ const DashboardScreen: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [now, setNow] = useState(new Date());
     const [rawVisitors, setRawVisitors] = useState<any[]>([]);
+    const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'online' | 'offline'>('connecting');
+
 
 
     useEffect(() => {
@@ -52,7 +54,7 @@ const DashboardScreen: React.FC = () => {
 
         // 1. Visitors & Real-time Stats
         const visitorsRef = collection(db, COLLECTIONS.visitors);
-        const qVisitors = query(visitorsRef, limit(200));
+        const qVisitors = query(visitorsRef, limit(100));
         const unsubVisitors = onSnapshot(qVisitors, (snapshot) => {
             const items: any[] = [];
             snapshot.forEach(d => {
@@ -60,14 +62,22 @@ const DashboardScreen: React.FC = () => {
             });
             setRawVisitors(items);
             setLoading(false);
+            setConnectionStatus('online');
             setLastUpdate(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
         }, (err) => {
             console.error("Visitors Snapshot Error:", err);
             setLoading(false);
+            setConnectionStatus('offline');
             if (!window.hasShownConnError) {
-                alert("📡 Dashboard Connection Error: Real-time visitor counts may not update. Please check your internet.");
+
+                if (err.message.includes("index")) {
+                    alert("⚠️ Firestore Index Required: Please check the console log for a link to enable live visitor sorting.");
+                } else {
+                    alert("📡 Dashboard Connection Error: Real-time visitor counts may not update. Please check your internet.");
+                }
                 window.hasShownConnError = true;
             }
+
         });
 
         const interval = setInterval(() => {
@@ -97,7 +107,10 @@ const DashboardScreen: React.FC = () => {
             }
             const lastActive = toSafeDate(data.lastActive || data.timestamp);
             const diffMs = Math.abs(now.getTime() - lastActive.getTime());
-            const isLive = data.isActive === true && diffMs < 60 * 1000;
+            // More lenient: if active in last 2 mins, count as live even if flag is missing
+            const isRecentlyActive = diffMs < 2 * 60 * 1000;
+            const isLive = isRecentlyActive;
+
             
             if (isLive) {
                 liveVisitors++;
@@ -123,11 +136,17 @@ const DashboardScreen: React.FC = () => {
             hourlyDistribution: hourlyData 
         }));
 
-        const traffic = rawVisitors.slice(0, 10).map(data => {
+        const sortedVisitors = [...rawVisitors].sort((a, b) => {
+            const timeA = toSafeDate(a.lastActive || a.timestamp).getTime();
+            const timeB = toSafeDate(b.lastActive || b.timestamp).getTime();
+            return timeB - timeA;
+        });
+
+        const traffic = sortedVisitors.slice(0, 10).map(data => {
             const lastActive = toSafeDate(data.lastActive || data.timestamp);
             const diffMs = Math.abs(now.getTime() - lastActive.getTime());
             const diffSec = Math.floor(diffMs / 1000);
-            const isLive = data.isActive === true && diffMs < 15 * 60 * 1000;
+            const isLive = diffMs < 120 * 1000;
 
             return {
                 id: data.id,
@@ -140,6 +159,7 @@ const DashboardScreen: React.FC = () => {
         });
         setRecentTraffic(traffic);
     }, [rawVisitors, now]);
+
 
     useEffect(() => {
         if (!db) return;
@@ -229,8 +249,23 @@ const DashboardScreen: React.FC = () => {
             <div className="screen-header">
                 <div>
                     <h1 className="screen-title">Insights</h1>
-                    {lastUpdate && <p className="screen-subtitle">Live Intelligence · Last updated {lastUpdate}</p>}
+                    <div className="flex items-center gap-2">
+                        {lastUpdate && <p className="screen-subtitle">Live Intelligence · Last updated {lastUpdate}</p>}
+                        <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest border ${
+                            connectionStatus === 'online' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 
+                            connectionStatus === 'offline' ? 'bg-red-500/10 text-red-500 border-red-500/20' : 
+                            'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
+                        }`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${
+                                connectionStatus === 'online' ? 'bg-green-500 shadow-[0_0_8px_#22c55e]' : 
+                                connectionStatus === 'offline' ? 'bg-red-500' : 
+                                'bg-yellow-500 animate-pulse'
+                            }`} />
+                            {connectionStatus === 'online' ? 'Cloud Sync Live' : connectionStatus === 'offline' ? 'Sync Error' : 'Connecting...'}
+                        </div>
+                    </div>
                 </div>
+
                 <div className="flex items-center gap-2">
                     <button 
                         className="px-3 py-1.5 bg-red-dim hover:bg-red-dim text-red-500 rounded-lg text-ten font-black uppercase tracking-widest transition-all border border-red-500/20 flex items-center gap-2"
@@ -443,6 +478,18 @@ const DashboardScreen: React.FC = () => {
                         </div>
                     )}
                 </div>
+                
+                <a 
+                    href="https://analytics.google.com/analytics/web/" 
+                    target="_blank" 
+                    className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10 hover:border-blue-500/50 transition-all group mt-4"
+                >
+                    <div className="flex items-center gap-3">
+                        <Info size={16} className="text-zinc-500 group-hover:text-blue-500" />
+                        <span className="font-bold text-[10px] uppercase tracking-wider">Google Analytics</span>
+                    </div>
+                    <ExternalLink size={12} className="text-zinc-500" />
+                </a>
             </div>
             
             {/* Live Activity Pulse */}

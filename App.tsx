@@ -169,15 +169,17 @@ function App() {
         sendDiscordEntryMessage({ city: 'Mocked', country: 'Local' }, deviceName, referrer).catch(() => { });
       }
 
-      // Ping firebase every 10 seconds for real-time tracking
+      // Ping firebase every 5 seconds for real-time tracking
       const pingInterval = setInterval(() => {
         const docId = sessionStorage.getItem('firebase_doc_id');
         if (docId && db) {
           updateDoc(doc(db, "visitors", docId), {
-            lastActive: Timestamp.now()
+            lastActive: Timestamp.now(),
+            isActive: true
           }).catch(() => { });
         }
-      }, 10000);
+      }, 5000);
+
 
       window.addEventListener('beforeunload', () => clearInterval(pingInterval));
     }
