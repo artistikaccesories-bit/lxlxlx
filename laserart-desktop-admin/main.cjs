@@ -57,7 +57,7 @@ app.setAppUserModelId('com.laserart.admin');
 // Git IPC handler
 ipcMain.handle('run-git-command', async (event, command) => {
   return new Promise((resolve, reject) => {
-    const projectRoot = path.join(__dirname, '..');
+    const projectRoot = 'c:\\Users\\Alex\\Desktop\\lxlxlx-main';
     exec(command, { cwd: projectRoot }, (error, stdout, stderr) => {
       if (error) reject(stderr || error.message);
       else resolve(stdout);
@@ -68,7 +68,8 @@ ipcMain.handle('run-git-command', async (event, command) => {
 // File Save IPC handler
 ipcMain.handle('save-data-file', async (event, { filePath, data }) => {
   return new Promise((resolve, reject) => {
-    const absolutePath = path.resolve(__dirname, '..', filePath);
+    const projectRoot = 'c:\\Users\\Alex\\Desktop\\lxlxlx-main';
+    const absolutePath = path.resolve(projectRoot, filePath);
     const dir = path.dirname(absolutePath);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     fs.writeFile(absolutePath, JSON.stringify(data, null, 2), (err) => {
