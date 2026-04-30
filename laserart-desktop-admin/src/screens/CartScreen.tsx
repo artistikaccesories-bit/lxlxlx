@@ -122,12 +122,12 @@ const CartScreen: React.FC = () => {
                         <ShoppingCart size={18} />
                     </div>
                     <div>
-                        <p className="text-[10px] uppercase font-bold text-text-secondary tracking-wider">Potential Orders</p>
+                        <p className="text-ten uppercase font-bold text-text-secondary tracking-wider">Potential Orders</p>
                         <p className="text-xl font-black text-white">{totalValue} Items</p>
                     </div>
                 </div>
                 <div className="text-right">
-                    <p className="text-[10px] uppercase font-bold text-text-secondary tracking-wider">Carts Found</p>
+                    <p className="text-ten uppercase font-bold text-text-secondary tracking-wider">Carts Found</p>
                     <p className="text-xl font-black text-white">{carts.length}</p>
                 </div>
             </div>
@@ -165,7 +165,7 @@ const CartScreen: React.FC = () => {
                             <div className="visitor-card__pages p-3 bg-black/20 rounded-xl border border-white/5 mt-2">
                                 <div className="flex items-center gap-2 mb-1">
                                     <div className="w-1 h-3 bg-yellow rounded-full" />
-                                    <span className="text-[10px] uppercase font-bold text-yellow/80">Cart Contents</span>
+                                    <span className="text-ten uppercase font-bold text-yellow/80">Cart Contents</span>
                                 </div>
                                 <span className="visitor-card__pages-text font-medium">{c.cartItems}</span>
                             </div>

@@ -183,7 +183,7 @@ function App() {
         sendDiscordEntryMessage({ city: 'Mocked', country: 'Local' }, deviceName, referrer).catch(() => { });
       }
 
-      // Ping firebase every 1 minute
+      // Ping firebase every 10 seconds for real-time tracking
       const pingInterval = setInterval(() => {
         const docId = sessionStorage.getItem('firebase_doc_id');
         if (docId && db) {
@@ -191,7 +191,7 @@ function App() {
             lastActive: Timestamp.now()
           }).catch(() => { });
         }
-      }, 60000);
+      }, 10000);
 
       window.addEventListener('beforeunload', () => clearInterval(pingInterval));
     }

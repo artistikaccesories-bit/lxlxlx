@@ -4,7 +4,7 @@ import {
   query, orderBy, limit, Timestamp, onSnapshot, where,
   doc, updateDoc, deleteDoc, setDoc, getDoc
 } from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getStorage, ref, uploadBytes, getDownloadURL, uploadBytesResumable } from "firebase/storage";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword } from "firebase/auth";
 
 const firebaseConfig = {
@@ -39,6 +39,6 @@ export {
   db, storage, collection, addDoc, getDocs, query, orderBy,
   limit, Timestamp, onSnapshot, doc, updateDoc, deleteDoc, setDoc, getDoc,
   where,
-  ref, uploadBytes, getDownloadURL,
+  ref, uploadBytes, getDownloadURL, uploadBytesResumable,
   auth, onAuthStateChanged, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword
 };

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { db, collection, query, orderBy, limit, onSnapshot } from '../utils/firebase';
+import { db, collection, query, orderBy, limit, onSnapshot, getDocs, deleteDoc, doc } from '../utils/firebase';
 import { COLLECTIONS, normalizeProductDoc, toSafeDate } from '../utils/firestoreData';
 import { 
     Users, ShoppingCart, TrendingUp, Smartphone, MapPin, 
     Activity, DollarSign, Target, MousePointer2, Package, 
-    ShoppingBag, AlertCircle, ArrowUpRight, ArrowDownRight, Clock
+    ShoppingBag, AlertCircle, ArrowUpRight, ArrowDownRight, Clock, RefreshCw, Wifi
 } from 'lucide-react';
 
 interface Stats {
@@ -40,6 +40,7 @@ const DashboardScreen: React.FC = () => {
         featuredProducts: []
     });
     const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
+    const [recentTraffic, setRecentTraffic] = useState<any[]>([]);
     const [lastUpdate, setLastUpdate] = useState<string>('');
     const [loading, setLoading] = useState(true);
 
@@ -68,7 +69,10 @@ const DashboardScreen: React.FC = () => {
                     hourlyData[hour] = (hourlyData[hour] || 0) + 1;
                 }
                 const lastActive = toSafeDate(data.lastActive || data.timestamp);
-                const isLive = data.isActive === true && (now.getTime() - lastActive.getTime()) < 3 * 60 * 1000;
+                const diffMs = Math.abs(now.getTime() - lastActive.getTime());
+                // Show as live if isActive is true AND they were active in the last 1 minute
+                const isLive = data.isActive === true && diffMs < 60 * 1000;
+                
                 if (isLive) {
                     liveVisitors++;
                     if (data.activeCartCount > 0) activeCarts++;
@@ -82,6 +86,26 @@ const DashboardScreen: React.FC = () => {
             const topCity = Object.keys(topCities).sort((a, b) => topCities[b] - topCities[a])[0] || '—';
             const topDevice = Object.keys(topDevices).sort((a, b) => topDevices[b] - topDevices[a])[0] || '—';
 
+            // Extract last 10 traffic items
+            const traffic: any[] = [];
+            snapshot.docs.slice(0, 10).forEach(d => {
+                const data = d.data();
+                const lastActive = toSafeDate(data.lastActive || data.timestamp);
+                const diffMs = Math.abs(now.getTime() - lastActive.getTime());
+                const diffSec = Math.floor(diffMs / 1000);
+                const isLive = data.isActive === true && diffMs < 15 * 60 * 1000;
+
+                traffic.push({
+                    id: d.id,
+                    city: data.location?.city || 'Unknown',
+                    device: data.device || 'Web',
+                    page: data.pagesViewed ? data.pagesViewed[data.pagesViewed.length - 1] : 'Home',
+                    time: diffSec < 60 ? 'Just now' : `${Math.floor(diffSec / 60)}m ago`,
+                    isLive: isLive
+                });
+            });
+
+            setRecentTraffic(traffic);
             setStats(prev => ({ 
                 ...prev,
                 totalVisitors: snapshot.size, 
@@ -92,7 +116,7 @@ const DashboardScreen: React.FC = () => {
                 topCity, 
                 hourlyDistribution: hourlyData 
             }));
-            setLastUpdate(now.toLocaleTimeString());
+            setLastUpdate(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
         });
 
         // 2. Orders & Revenue Stats
@@ -180,9 +204,28 @@ const DashboardScreen: React.FC = () => {
                     <h1 className="screen-title">Insights</h1>
                     {lastUpdate && <p className="screen-subtitle">Live Intelligence · Last updated {lastUpdate}</p>}
                 </div>
-                <div className="live-badge">
-                    <span className="live-dot" />
-                    LIVE
+                <div className="flex items-center gap-2">
+                    <button 
+                        className="px-3 py-1.5 bg-red-dim hover:bg-red-dim text-red-500 rounded-lg text-ten font-black uppercase tracking-widest transition-all border border-red-500/20 flex items-center gap-2"
+                        onClick={async () => {
+                            if (!window.confirm("RESET DASHBOARD?\n\nThis will permanently delete all visitor history, active carts, and order logs. The product catalog will NOT be touched.")) return;
+                            try {
+                                const collectionsToClear = [COLLECTIONS.visitors, COLLECTIONS.orders];
+                                for (const col of collectionsToClear) {
+                                    const snap = await getDocs(collection(db!, col));
+                                    await Promise.all(snap.docs.map(d => deleteDoc(doc(db!, col, d.id))));
+                                }
+                                alert("Dashboard metrics have been reset to zero.");
+                                window.location.reload();
+                            } catch (e) { alert("Error resetting: " + e); }
+                        }}
+                    >
+                        <RefreshCw size={12} /> Reset Dashboard
+                    </button>
+                    <div className="live-badge">
+                        <span className="live-dot" />
+                        LIVE
+                    </div>
                 </div>
             </div>
 
@@ -203,7 +246,7 @@ const DashboardScreen: React.FC = () => {
                         Revenue
                     </div>
                     <div className="stat-card__value stat-card__value--sm">${stats.totalRevenue.toLocaleString()}</div>
-                    <div className="flex items-center gap-1 text-[9px] font-bold text-green mt-1">
+                    <div className="flex items-center gap-1 text-nine font-bold text-green mt-1">
                         <ArrowUpRight size={10} /> ${stats.todayRevenue.toLocaleString()} today
                     </div>
                 </div>
@@ -215,7 +258,7 @@ const DashboardScreen: React.FC = () => {
                     </div>
                     <div className="stat-card__value">{stats.totalOrders}</div>
                     {stats.pendingOrders > 0 && (
-                        <div className="flex items-center gap-1 text-[9px] font-bold text-yellow mt-1">
+                        <div className="flex items-center gap-1 text-nine font-bold text-yellow mt-1">
                             <Clock size={10} /> {stats.pendingOrders} pending
                         </div>
                     )}
@@ -286,7 +329,7 @@ const DashboardScreen: React.FC = () => {
                         <Target size={14} className="text-purple-500" />
                         Picks of the Week
                     </h3>
-                    <span className="text-[10px] font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full uppercase">Live on Site</span>
+                    <span className="text-ten font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full uppercase">Live on Site</span>
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                     {stats.featuredProducts.length > 0 ? stats.featuredProducts.map(p => (
@@ -295,13 +338,45 @@ const DashboardScreen: React.FC = () => {
                                 <img src={p.image} className="w-full h-full object-cover transition-transform group-hover:scale-110" alt="" />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-bold truncate">{p.name}</span>
-                                <span className="text-[10px] font-black text-purple-400">${p.price}</span>
+                                <span className="text-ten font-bold truncate">{p.name}</span>
+                                <span className="text-ten font-black text-purple-400">${p.price}</span>
                             </div>
                         </div>
                     )) : (
                         <div className="col-span-3 py-8 text-center glass-card border-dashed border-white/10 opacity-50">
-                            <p className="text-[10px] uppercase font-bold tracking-widest">No featured products set</p>
+                            <p className="text-ten uppercase font-bold tracking-widest">No featured products set</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Live Traffic Feed */}
+            <div className="activity-feed">
+                <div className="section-header flex justify-between items-center mb-3">
+                    <h3 className="section-title text-sm font-bold flex items-center gap-2">
+                        <Wifi size={14} className="text-green" />
+                        Live Traffic
+                    </h3>
+                    <button className="text-ten font-bold text-text-secondary hover:text-white transition-colors">History</button>
+                </div>
+                <div className="feed-items gap-2">
+                    {recentTraffic.length > 0 ? recentTraffic.map(v => (
+                        <div key={v.id} className={`feed-item glass-card p-3 flex justify-between items-center border border-white-5 rounded-xl ${v.isLive ? 'border-l-2 border-green' : 'opacity-60'}`}>
+                            <div className="flex items-center gap-3">
+                                <div className="relative">
+                                    <span className="text-lg">{v.device.includes('Mobile') ? '📱' : '💻'}</span>
+                                    {v.isLive && <span className="absolute -top-1 -right-1 w-2 h-2 bg-green rounded-full border border-bg" />}
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-xs font-bold">{v.city}</span>
+                                    <span className="text-ten text-text-muted truncate max-w-[120px]">Exploring: {v.page}</span>
+                                </div>
+                            </div>
+                            <span className="text-ten font-bold text-text-secondary">{v.time}</span>
+                        </div>
+                    )) : (
+                        <div className="feed-item opacity-50 p-4 text-center">
+                            <p className="text-ten uppercase font-bold tracking-widest">Waiting for visitors...</p>
                         </div>
                     )}
                 </div>
@@ -314,20 +389,20 @@ const DashboardScreen: React.FC = () => {
                         <ShoppingBag size={14} className="text-blue" />
                         Recent Orders
                     </h3>
-                    <button className="text-[10px] font-bold text-text-secondary hover:text-white transition-colors">View All</button>
+                    <button className="text-ten font-bold text-text-secondary hover:text-white transition-colors">View All</button>
                 </div>
                 <div className="feed-items gap-2">
                     {recentOrders.length > 0 ? recentOrders.map(order => (
                         <div key={order.id} className="feed-item glass-card p-3 flex justify-between items-center border border-white/5 rounded-xl">
                             <div className="flex flex-col gap-1">
                                 <span className="text-xs font-bold">{order.orderId}</span>
-                                <span className="text-[10px] text-text-muted">
+                                <span className="text-ten text-text-muted">
                                     {order.timestamp?.toDate ? order.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}
                                 </span>
                             </div>
                             <div className="flex flex-col items-end gap-1">
                                 <span className="text-xs font-black text-green">${order.total}</span>
-                                <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tighter ${
+                                <span className={`text-nine px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tighter ${
                                     order.status === 'pending' ? 'bg-yellow-dim text-yellow' : 'bg-green-dim text-green'
                                 }`}>
                                     {order.status}

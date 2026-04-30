@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { db, storage, collection, addDoc, query, orderBy, onSnapshot, doc, deleteDoc, updateDoc, ref, uploadBytes, getDownloadURL } from '../utils/firebase';
-import { auth } from '../utils/firebase';
+import { db, storage, collection, addDoc, query, orderBy, onSnapshot, doc, deleteDoc, updateDoc, ref, uploadBytes, getDownloadURL, uploadBytesResumable } from '../utils/firebase';
 import { COLLECTIONS, normalizeProductDoc, slugifyHandle } from '../utils/firestoreData';
 import type { ProductDoc } from '../types/firestore';
 import { 
@@ -17,6 +16,7 @@ const InventoryScreen: React.FC = () => {
     const [showModal, setShowModal] = useState(false);
     const [editingProduct, setEditingProduct] = useState<ProductDoc | null>(null);
     const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
     const [isSyncing, setIsSyncing] = useState(false);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
@@ -63,8 +63,18 @@ const InventoryScreen: React.FC = () => {
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
+            const selectedFiles = Array.from(e.target.files);
+            
+            // Limit to 5MB
+            const oversized = selectedFiles.find(f => f.size > 5 * 1024 * 1024);
+            if (oversized) {
+                alert(`File "${oversized.name}" is too large. Max size is 5MB.`);
+                e.target.value = '';
+                return;
+            }
+
             setFiles(e.target.files);
-            const urls = Array.from(e.target.files).map(file => URL.createObjectURL(file));
+            const urls = selectedFiles.map(file => URL.createObjectURL(file));
             setPreviewImages(urls);
         }
     };
@@ -117,16 +127,68 @@ const InventoryScreen: React.FC = () => {
             let mainImage = editingProduct?.image || '';
 
             if (files && files.length > 0) {
-                const uploadPromises = Array.from(files).map(async (file) => {
-                    const storageRef = ref(storage, `products/${Date.now()}_${file.name}`);
-                    const uploadResult = await uploadBytes(storageRef, file);
-                    return await getDownloadURL(uploadResult.ref);
+                const totalFiles = files.length;
+                const uploadPromises = Array.from(files).map(async (file, index) => {
+                    // Client-side image compression
+                    const compressedBlob = await new Promise<Blob>((resolve, reject) => {
+                        const img = new Image();
+                        img.src = URL.createObjectURL(file);
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            let width = img.width;
+                            let height = img.height;
+                            
+                            const MAX = 1200;
+                            if (width > height && width > MAX) {
+                                height *= MAX / width;
+                                width = MAX;
+                            } else if (height > MAX) {
+                                width *= MAX / height;
+                                height = MAX;
+                            }
+                            
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx?.drawImage(img, 0, 0, width, height);
+                            
+                            canvas.toBlob((blob) => {
+                                if (blob) resolve(blob);
+                                else reject(new Error('Compression failed'));
+                            }, 'image/jpeg', 0.8);
+                        };
+                        img.onerror = reject;
+                    });
+
+                    const storageRef = ref(storage, `products/${Date.now()}_${file.name.split('.')[0]}.jpg`);
+                    const metadata = { contentType: 'image/jpeg' };
+                    
+                    // Using uploadBytesResumable for progress
+                    const uploadTask = uploadBytesResumable(storageRef, compressedBlob, metadata);
+                    
+                    return new Promise<string>((resolve, reject) => {
+                        uploadTask.on('state_changed', 
+                            (snapshot) => {
+                                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                                setUploadProgress(Math.round(((index / totalFiles) * 100) + (progress / totalFiles)));
+                            }, 
+                            (error) => {
+                                console.error("Upload failed for file:", file.name, error);
+                                reject(error);
+                            }, 
+                            async () => {
+                                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                                resolve(downloadURL);
+                            }
+                        );
+                    });
                 });
 
                 const newUrls = await Promise.all(uploadPromises);
                 imageUrls = [...newUrls]; 
                 mainImage = imageUrls[0];
             }
+            setUploadProgress(100);
 
             const parsedPrice = parseFloat(price);
             const parsedStock = parseInt(stock);
@@ -190,6 +252,7 @@ const InventoryScreen: React.FC = () => {
             alert(`Error: ${error.message}`);
         } finally {
             setUploading(false);
+            setUploadProgress(0);
             setFiles(null);
             setPreviewImages([]);
         }
@@ -353,7 +416,7 @@ const InventoryScreen: React.FC = () => {
                             <button className="p-2 hover:bg-white/10 rounded-full" onClick={() => setShowModal(false)}><X size={20} /></button>
                         </div>
                         <form onSubmit={handleSubmit} className="modal-form">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md-grid-cols-2 gap-4">
                                 <div className="flex flex-col gap-4">
                                     <div className="form-group">
                                         <label>Display Name</label>
@@ -382,18 +445,27 @@ const InventoryScreen: React.FC = () => {
                                 
                                 <div className="form-group">
                                     <label>Visuals</label>
-                                    <div className="file-input-wrap aspect-square relative">
+                                    <div className="file-input-wrap">
                                         {previewImages.length > 0 ? (
-                                            <div className="w-full h-full rounded-xl overflow-hidden group border border-border">
-                                                <img src={previewImages[0]} className="w-full h-full object-cover" />
+                                            <div className="w-full h-full group relative">
+                                                <img src={previewImages[0]} className="w-full h-full object-cover" style={{ display: 'block' }} />
                                                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-300">
-                                                    <label htmlFor="file-input" className="cursor-pointer bg-white text-black px-4 py-2 rounded-full font-bold text-xs transform translate-y-2 group-hover:translate-y-0 transition-transform">Change Image</label>
+                                                    <label htmlFor="file-input" className="cursor-pointer bg-white text-black px-4 py-2 rounded-full font-bold text-xs">Change Image</label>
                                                 </div>
+                                                {uploading && (
+                                                    <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center gap-2">
+                                                        <Loader2 className="animate-spin text-white" size={32} />
+                                                        <span className="text-white text-[10px] font-black">{uploadProgress}%</span>
+                                                        <div className="w-2/3 h-1 bg-white/20 rounded-full overflow-hidden">
+                                                            <div className="h-full bg-green transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         ) : (
                                             <>
                                                 <input type="file" multiple accept="image/*" onChange={handleFileChange} id="file-input" className="hidden-input" />
-                                                <label htmlFor="file-input" className="file-input-label h-full border-dashed">
+                                                <label htmlFor="file-input" className="file-input-label">
                                                     <ImageIcon size={32} className="mb-2 opacity-30" />
                                                     <span className="text-xs font-bold opacity-50">Upload Photo</span>
                                                 </label>
@@ -412,7 +484,7 @@ const InventoryScreen: React.FC = () => {
                             <div className="flex items-center gap-3 py-2">
                                 <button 
                                     type="button" 
-                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all border ${
+                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-ten font-black uppercase tracking-wider transition-all border ${
                                         isBestSeller ? 'bg-yellow text-black border-yellow' : 'bg-transparent text-text-muted border-border'
                                     }`}
                                     onClick={() => setIsBestSeller(!isBestSeller)}
@@ -422,7 +494,7 @@ const InventoryScreen: React.FC = () => {
                                 </button>
                                 <button 
                                     type="button" 
-                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all border ${
+                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-ten font-black uppercase tracking-wider transition-all border ${
                                         isProductOfTheWeek ? 'bg-purple-600 text-white border-purple-600' : 'bg-transparent text-text-muted border-border'
                                     }`}
                                     onClick={() => setIsProductOfTheWeek(!isProductOfTheWeek)}

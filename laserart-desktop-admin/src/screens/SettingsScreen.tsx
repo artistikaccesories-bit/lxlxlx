@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
-import { LogOut, Shield, Info, ExternalLink, Truck, Save, Loader2, Cloud, DollarSign, Percent, AlertTriangle } from 'lucide-react';
-import { db, doc, getDoc, setDoc, collection, getDocs, updateDoc } from '../utils/firebase';
+import { LogOut, Shield, Info, ExternalLink, Truck, Save, Loader2, Cloud, DollarSign, Percent, AlertTriangle, Trash2 } from 'lucide-react';
+import { db, doc, getDoc, setDoc, collection, getDocs, updateDoc, deleteDoc } from '../utils/firebase';
 
 interface SettingsScreenProps {
     onLogout: () => void | Promise<void>;
@@ -17,6 +17,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout, adminEmail })
     const [priceAdjustValue, setPriceAdjustValue] = useState('');
     const [adjustMode, setAdjustMode] = useState<'fixed' | 'percent'>('fixed');
     const [isAdjusting, setIsAdjusting] = useState(false);
+    const [clearing, setClearing] = useState(false);
 
     useEffect(() => {
         if (!db) return;
@@ -30,18 +31,34 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout, adminEmail })
     }, []);
 
     const handleSaveDelivery = async () => {
-        if (!db) return;
+        if (!db) {
+            console.error("Firestore DB not initialized");
+            alert("Connection error: Database not ready.");
+            return;
+        }
+        
+        const standard = parseFloat(standardDelivery);
+        const express = parseFloat(expressDelivery);
+
+        if (isNaN(standard) || isNaN(express)) {
+            alert("Please enter valid numbers for delivery prices.");
+            return;
+        }
+
         setSaving(true);
         try {
-            await setDoc(doc(db, 'settings', 'delivery'), {
-                standard: parseFloat(standardDelivery),
-                express: parseFloat(expressDelivery),
+            console.log("Saving delivery settings:", { standard, express });
+            const settingsRef = doc(db, 'settings', 'delivery');
+            await setDoc(settingsRef, {
+                standard,
+                express,
                 updatedAt: new Date()
             });
+            console.log("Successfully saved delivery settings");
             alert("Delivery prices updated across the website!");
-        } catch (error) {
-            console.error(error);
-            alert("Failed to update delivery prices.");
+        } catch (error: any) {
+            console.error("Failed to update delivery prices:", error);
+            alert(`Failed to update delivery prices: ${error.message || 'Unknown error'}`);
         } finally {
             setSaving(false);
         }
@@ -139,6 +156,26 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout, adminEmail })
         }
     };
 
+    const handleClearStats = async (type: 'visitors' | 'orders') => {
+        if (!db) return;
+        if (!window.confirm(`Are you absolutely sure you want to delete ALL ${type}? This cannot be undone.`)) {
+            return;
+        }
+
+        setClearing(true);
+        try {
+            const querySnapshot = await getDocs(collection(db, type));
+            const promises = querySnapshot.docs.map(d => deleteDoc(doc(db, type, d.id)));
+            await Promise.all(promises);
+            alert(`Successfully cleared all ${type}.`);
+        } catch (error) {
+            console.error(error);
+            alert(`Error clearing ${type}.`);
+        } finally {
+            setClearing(false);
+        }
+    };
+
     return (
         <div className="screen">
             <div className="screen-header">
@@ -180,20 +217,20 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout, adminEmail })
                             <p className="settings-card__title">Global Price Adjustment</p>
                         </div>
                         <div className="settings-card__body">
-                            <p className="text-[10px] text-zinc-400 mb-3 flex items-center gap-2">
+                            <p className="text-ten text-zinc-400 mb-3 flex items-center gap-2">
                                 <AlertTriangle size={12} className="text-orange-500" />
                                 WARNING: This modifies ALL products in your catalog instantly.
                             </p>
                             <div className="flex gap-2 mb-3">
                                 <div className="flex-1 flex bg-black/40 rounded-lg p-1 border border-white/5">
                                     <button 
-                                        className={`flex-1 py-1.5 rounded-md text-[10px] font-bold transition-all ${adjustMode === 'fixed' ? 'bg-white/10 text-white' : 'text-zinc-500'}`}
+                                        className={`flex-1 py-1.5 rounded-md text-ten font-bold transition-all ${adjustMode === 'fixed' ? 'bg-white/10 text-white' : 'text-zinc-500'}`}
                                         onClick={() => setAdjustMode('fixed')}
                                     >
                                         <DollarSign size={10} className="inline mr-1" /> Fixed ($)
                                     </button>
                                     <button 
-                                        className={`flex-1 py-1.5 rounded-md text-[10px] font-bold transition-all ${adjustMode === 'percent' ? 'bg-white/10 text-white' : 'text-zinc-500'}`}
+                                        className={`flex-1 py-1.5 rounded-md text-ten font-bold transition-all ${adjustMode === 'percent' ? 'bg-white/10 text-white' : 'text-zinc-500'}`}
                                         onClick={() => setAdjustMode('percent')}
                                     >
                                         <Percent size={10} className="inline mr-1" /> Percent (%)
@@ -209,14 +246,14 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout, adminEmail })
                             </div>
                             <div className="grid grid-cols-2 gap-2">
                                 <button 
-                                    className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all disabled:opacity-50"
+                                    className="p-3 rounded-xl bg-red-dim border border-red-500/20 text-red-500 text-ten font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all disabled:opacity-50"
                                     onClick={() => handleGlobalPriceAdjust(false)}
                                     disabled={isAdjusting}
                                 >
                                     Decrease All
                                 </button>
                                 <button 
-                                    className="p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-500 text-[10px] font-black uppercase tracking-widest hover:bg-green-500 hover:text-white transition-all disabled:opacity-50"
+                                    className="p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-500 text-ten font-black uppercase tracking-widest hover:bg-green-500 hover:text-white transition-all disabled:opacity-50"
                                     onClick={() => handleGlobalPriceAdjust(true)}
                                     disabled={isAdjusting}
                                 >
@@ -246,6 +283,35 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout, adminEmail })
                                 {syncing ? 'Syncing...' : 'Push Updates to Live Site'}
                             </button>
                             {syncStatus && <p className="sync-status">{syncStatus}</p>}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="settings-section">
+                    <p className="settings-section__label">Danger Zone</p>
+                    <div className="settings-card" style={{ border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                        <div className="settings-card__header">
+                            <AlertTriangle size={18} className="text-red-500" />
+                            <p className="settings-card__title">Maintenance & Cleanup</p>
+                        </div>
+                        <div className="settings-card__body">
+                            <p className="text-ten text-zinc-400 mb-4">Reset metrics and historical data. Be careful, this is permanent.</p>
+                            <div className="grid grid-cols-2 gap-3">
+                                <button 
+                                    className="p-3 rounded-xl bg-red-dim border border-red-500/20 text-red-500 text-ten font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                    onClick={() => handleClearStats('visitors')}
+                                    disabled={clearing}
+                                >
+                                    <Trash2 size={12} /> Clear Visitors
+                                </button>
+                                <button 
+                                    className="p-3 rounded-xl bg-red-dim border border-red-500/20 text-red-500 text-ten font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                    onClick={() => handleClearStats('orders')}
+                                    disabled={clearing}
+                                >
+                                    <Trash2 size={12} /> Clear Orders
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

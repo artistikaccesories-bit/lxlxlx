@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { db, collection, query, orderBy, limit, onSnapshot } from '../utils/firebase';
+import { db, collection, query, orderBy, limit, onSnapshot, where } from '../utils/firebase';
 import { Wifi, Smartphone, Monitor, Tablet, MapPin } from 'lucide-react';
 import { COLLECTIONS, toSafeDate } from '../utils/firestoreData';
 
@@ -26,106 +26,105 @@ const LiveVisitorsScreen: React.FC = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!db) {
-            // Mock data
-            setVisitors([
-                { id: '1', device: 'Mobile 📱', location: 'Beirut, LB', pages: 'Home, Keychains', duration: '2m', cartCount: 2, lastActive: 'Just now' },
-                { id: '2', device: 'Desktop 💻', location: 'Tripoli, LB', pages: 'Custom Preview', duration: '5m', cartCount: 0, lastActive: '1m ago' },
-            ]);
-            setLoading(false);
-            return;
-        }
+        if (!db) return;
 
-        const q = query(collection(db, COLLECTIONS.visitors), orderBy('lastActive', 'desc'), limit(100));
+        // Fetch all visitors from the last 24 hours for history
+        const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const q = query(
+            collection(db, COLLECTIONS.visitors), 
+            where('lastActive', '>=', dayAgo),
+            orderBy('lastActive', 'desc'), 
+            limit(100)
+        );
+
         const unsub = onSnapshot(q, snapshot => {
             const now = new Date();
-            const live: LiveVisitor[] = [];
+            const items: LiveVisitor[] = [];
 
             snapshot.forEach(d => {
                 const data = d.data();
-                
                 const lastActiveDate = toSafeDate(data.lastActive);
                 const diffMs = now.getTime() - lastActiveDate.getTime();
                 
-                // Show as live if isActive is true OR if they were active in the last 10 minutes
-                const isRecentlyActive = diffMs < 10 * 60 * 1000;
-                const isExplicitlyActive = data.isActive === true;
+                const isRecentlyActive = diffMs < 1 * 60 * 1000;
+                const isLive = isRecentlyActive;
 
-                if (isExplicitlyActive || isRecentlyActive) {
-                    const diffSec = Math.floor(diffMs / 1000);
-                    let lastActiveStr = 'Just now';
-                    if (diffSec > 5) {
-                        lastActiveStr = diffSec < 60 ? `${diffSec}s ago` : `${Math.floor(diffSec / 60)}m ago`;
-                    }
-                    
-                    live.push({
-                        id: d.id,
-                        device: data.device || 'Unknown',
-                        location: `${data.location?.city || 'Unknown'}, ${data.location?.country || '??'}`,
-                        pages: data.pagesViewed ? data.pagesViewed.join(' → ') : 'Home',
-                        duration: data.durationSec ? `${Math.floor(data.durationSec / 60)}m ${data.durationSec % 60}s` : 'Active',
-                        cartCount: data.activeCartCount || 0,
-                        lastActive: isExplicitlyActive ? 'Online now' : lastActiveStr,
-                        ip: data.ip || undefined,
-                    });
+                const diffSec = Math.floor(diffMs / 1000);
+                let lastActiveStr = 'Just now';
+                if (diffSec > 5) {
+                    lastActiveStr = diffSec < 60 ? `${diffSec}s ago` : 
+                                   diffSec < 3600 ? `${Math.floor(diffSec / 60)}m ago` : 
+                                   `${Math.floor(diffSec / 3600)}h ago`;
                 }
+                
+                items.push({
+                    id: d.id,
+                    device: data.device || 'Unknown',
+                    location: `${data.location?.city || 'Unknown'}, ${data.location?.country || '??'}`,
+                    pages: data.pagesViewed ? data.pagesViewed.join(' → ') : 'Home',
+                    duration: data.durationSec ? `${Math.floor(data.durationSec / 60)}m ${data.durationSec % 60}s` : 'Active',
+                    cartCount: data.activeCartCount || 0,
+                    lastActive: isLive ? 'Online now' : lastActiveStr,
+                    ip: data.ip || undefined,
+                });
             });
 
-            setVisitors(live);
+            setVisitors(items);
             setLoading(false);
         });
 
         return () => unsub();
     }, []);
 
+    const liveCount = visitors.filter(v => v.lastActive === 'Online now').length;
+
     return (
         <div className="screen">
             <div className="screen-header">
                 <div>
-                    <h1 className="screen-title">Live Visitors</h1>
-                    <p className="screen-subtitle">{visitors.length} online right now</p>
+                    <h1 className="screen-title">Visitors</h1>
+                    <p className="screen-subtitle">{liveCount} live · {visitors.length} total today</p>
                 </div>
                 <div className="live-badge">
                     <span className="live-dot" />
-                    LIVE
+                    HISTORY
                 </div>
             </div>
 
             {loading ? (
                 <div className="loading-state">
                     <div className="spinner" />
-                    <p>Connecting to Firebase...</p>
+                    <p>Fetching traffic logs...</p>
                 </div>
             ) : visitors.length === 0 ? (
                 <div className="empty-state">
                     <Wifi size={40} className="empty-state__icon" />
-                    <p className="empty-state__title">No one online</p>
-                    <p className="empty-state__sub">Visitors will appear here when active</p>
+                    <p className="empty-state__title">No activity recorded</p>
+                    <p className="empty-state__sub">Traffic will appear here when customers visit</p>
                 </div>
             ) : (
                 <div className="visitor-list">
                     {visitors.map(v => (
-                        <div key={v.id} className="visitor-card">
+                        <div key={v.id} className={`visitor-card ${v.lastActive === 'Online now' ? 'border-l-2 border-green' : 'opacity-80'}`}>
                             <div className="visitor-card__header">
                                 <div className="visitor-card__device">
                                     <DeviceIcon device={v.device} />
                                     <span>{v.device}</span>
                                 </div>
                                 <div className="visitor-status">
-                                    <span className="live-dot live-dot--sm" />
-                                    <span className="visitor-status__time">{v.lastActive}</span>
+                                    {v.lastActive === 'Online now' && <span className="live-dot live-dot--sm" />}
+                                    <span className={`visitor-status__time ${v.lastActive === 'Online now' ? 'text-green font-bold' : ''}`}>{v.lastActive}</span>
                                 </div>
                             </div>
 
                             <div className="visitor-card__location">
                                 <MapPin size={12} />
                                 <span>{v.location}</span>
-                                {v.ip && <span className="visitor-card__ip">· {v.ip}</span>}
                             </div>
 
                             <div className="visitor-card__pages">
-                                <span className="visitor-card__label">Pages:</span>
-                                <span className="visitor-card__pages-text">{v.pages}</span>
+                                <span className="visitor-card__label">Path:</span>
+                                <span className="visitor-card__pages-text truncate block">{v.pages}</span>
                             </div>
 
                             <div className="visitor-card__footer">

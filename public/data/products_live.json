@@ -1,5 +1,29 @@
 [
   {
+    "id": "YUOVdAgXiWrCrgFgADHZ",
+    "name": "SPOTIFY CODE",
+    "handle": "spotify-code",
+    "price": 12,
+    "description": "Scan and play. A custom keychain with your favorite song's Spotify code and the album art laser engraved. A playable memory in steel.",
+    "image": "/images/product2.jpg",
+    "images": [
+      "/images/product2.jpg",
+      "/images/product2-2.jpeg"
+    ],
+    "category": "keychain",
+    "stock": 2,
+    "isBestSeller": true,
+    "isProductOfTheWeek": false,
+    "createdAt": {
+      "seconds": 1777535098,
+      "nanoseconds": 89000000
+    },
+    "updatedAt": {
+      "seconds": 1777536189,
+      "nanoseconds": 595000000
+    }
+  },
+  {
     "id": "qsu9X52ASoRwxBDcylee",
     "name": "ISLAMIC CALLI",
     "handle": "islamic-calli",
@@ -252,30 +276,6 @@
     "updatedAt": {
       "seconds": 1777535098,
       "nanoseconds": 362000000
-    }
-  },
-  {
-    "id": "YUOVdAgXiWrCrgFgADHZ",
-    "name": "SPOTIFY CODE",
-    "handle": "spotify-code-keychain",
-    "price": 11,
-    "description": "Scan and play. A custom keychain with your favorite song's Spotify code and the album art laser engraved. A playable memory in steel.",
-    "image": "/images/product2.jpg",
-    "images": [
-      "/images/product2.jpg",
-      "/images/product2-2.jpeg"
-    ],
-    "category": "keychain",
-    "stock": 2,
-    "isBestSeller": true,
-    "isProductOfTheWeek": false,
-    "createdAt": {
-      "seconds": 1777535098,
-      "nanoseconds": 89000000
-    },
-    "updatedAt": {
-      "seconds": 1777535098,
-      "nanoseconds": 89000000
     }
   },
   {

@@ -85,7 +85,7 @@ const OrdersScreen: React.FC = () => {
                             <div className="visitor-card__header">
                                 <div className="flex flex-col">
                                     <span className="text-xs font-bold text-blue uppercase tracking-wider">{o.orderId}</span>
-                                    <span className="text-[10px] text-text-secondary">{formatDate(o.timestamp)}</span>
+                                    <span className="text-ten text-text-secondary">{formatDate(o.timestamp)}</span>
                                 </div>
                                 <div className={`status-badge ${o.status}`}>
                                     {o.status === 'pending' && <Clock size={10} />}
@@ -97,20 +97,51 @@ const OrdersScreen: React.FC = () => {
 
                             <div className="order-items p-3 bg-black/20 rounded-xl my-3 border border-white/5">
                                 {o.items.map((item: any, idx: number) => (
-                                    <div key={idx} className="flex justify-between text-xs mb-1 last:mb-0">
-                                        <span className="text-text-secondary">
-                                            <strong className="text-white">{item.quantity}x</strong> {item.name}
-                                        </span>
-                                        <span className="font-bold text-white">${item.price * item.quantity}</span>
+                                    <div key={idx} className="flex flex-col gap-1 p-2 bg-white-5 rounded-lg mb-2 last:mb-0 border border-white/5">
+                                        <div className="flex justify-between text-xs">
+                                            <span className="text-text-secondary font-medium">
+                                                <strong className="text-white bg-blue-dim px-1.5 py-0.5 rounded text-ten mr-1">{item.quantity}x</strong> 
+                                                {item.name}
+                                            </span>
+                                            <span className="font-bold text-white">${(Number(item.price) + (item.isDoubleSided ? 5 : 0) + (item.isGiftBox ? 2 : 0)) * item.quantity}</span>
+                                        </div>
+                                        {(item.frontText || item.backText || item.isDoubleSided || item.isGiftBox) && (
+                                            <div className="grid grid-cols-2 gap-2 mt-1 pt-1 border-t border-white/5">
+                                                {item.frontText && (
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[8px] uppercase text-text-muted font-bold">Front Text</span>
+                                                        <span className="text-ten text-blue font-medium break-all">{item.frontText}</span>
+                                                    </div>
+                                                )}
+                                                {item.backText && (
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[8px] uppercase text-text-muted font-bold">Back Text</span>
+                                                        <span className="text-ten text-purple font-medium break-all">{item.backText}</span>
+                                                    </div>
+                                                )}
+                                                {item.isDoubleSided && (
+                                                    <div className="flex items-center gap-1">
+                                                        <div className="w-1 h-1 rounded-full bg-green" />
+                                                        <span className="text-nine text-green font-bold">Double Sided</span>
+                                                    </div>
+                                                )}
+                                                {item.isGiftBox && (
+                                                    <div className="flex items-center gap-1">
+                                                        <div className="w-1 h-1 rounded-full bg-yellow" />
+                                                        <span className="text-nine text-yellow font-bold">Gift Box Included</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                                 <div className="border-t border-white/5 mt-2 pt-2 flex justify-between font-black">
-                                    <span className="text-text-secondary text-[10px] uppercase">Total</span>
+                                    <span className="text-text-secondary text-ten uppercase">Total</span>
                                     <span className="text-green">${o.total}</span>
                                 </div>
                             </div>
 
-                            <div className="flex flex-wrap gap-4 text-[11px] mb-4 opacity-70">
+                            <div className="flex flex-wrap gap-4 text-xs mb-4 opacity-70">
                                 <div className="flex items-center gap-1">
                                     <Smartphone size={12} />
                                     {o.device}
