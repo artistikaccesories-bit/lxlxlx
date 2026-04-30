@@ -25,7 +25,9 @@ try {
   if (firebaseConfig.apiKey) {
     console.log("Firebase: Initializing for " + firebaseConfig.projectId);
     app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
+    db = getFirestore(app, {
+      experimentalForceLongPolling: true
+    });
     storage = getStorage(app);
     auth = getAuth(app);
   } else {

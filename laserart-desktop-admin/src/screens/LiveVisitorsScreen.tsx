@@ -39,7 +39,10 @@ const LiveVisitorsScreen: React.FC = () => {
 
         const unsub = onSnapshot(q, snapshot => {
             updateVisitors(snapshot);
+        }, (err) => {
+            console.error("Visitors List Error:", err);
         });
+
 
         // Force refresh every 10s to update "Online now" vs "X ago" status
         const interval = setInterval(() => {

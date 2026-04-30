@@ -47,19 +47,21 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout, adminEmail })
 
         setSaving(true);
         try {
-            console.log("Saving delivery settings:", { standard, express });
+            console.log("Attempting to save delivery settings to 'settings/delivery'...");
             const settingsRef = doc(db, 'settings', 'delivery');
             await setDoc(settingsRef, {
                 standard,
                 express,
-                updatedAt: new Date()
-            });
+                updatedAt: Timestamp.now()
+            }, { merge: true });
+            
             console.log("Successfully saved delivery settings");
-            alert("Delivery prices updated across the website!");
+            alert(`✅ Prices Updated!\n\nStandard: $${standard}\nExpress: $${express}\n\nThe website will reflect this instantly.`);
         } catch (error: any) {
             console.error("Failed to update delivery prices:", error);
-            alert(`Failed to update delivery prices: ${error.message || 'Unknown error'}`);
+            alert(`❌ Sync Error: ${error.message || 'Unknown error'}\n\nPlease check your internet connection and try again.`);
         } finally {
+
             setSaving(false);
         }
     };

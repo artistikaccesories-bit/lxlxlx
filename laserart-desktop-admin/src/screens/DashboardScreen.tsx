@@ -70,7 +70,6 @@ const DashboardScreen: React.FC = () => {
                 }
                 const lastActive = toSafeDate(data.lastActive || data.timestamp);
                 const diffMs = Math.abs(now.getTime() - lastActive.getTime());
-                // Show as live if isActive is true AND they were active in the last 1 minute
                 const isLive = data.isActive === true && diffMs < 60 * 1000;
                 
                 if (isLive) {
@@ -86,7 +85,6 @@ const DashboardScreen: React.FC = () => {
             const topCity = Object.keys(topCities).sort((a, b) => topCities[b] - topCities[a])[0] || '—';
             const topDevice = Object.keys(topDevices).sort((a, b) => topDevices[b] - topDevices[a])[0] || '—';
 
-            // Extract last 10 traffic items
             const traffic: any[] = [];
             snapshot.docs.slice(0, 10).forEach(d => {
                 const data = d.data();
@@ -117,7 +115,10 @@ const DashboardScreen: React.FC = () => {
                 hourlyDistribution: hourlyData 
             }));
             setLastUpdate(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+        }, (err) => {
+            console.error("Visitors Snapshot Error:", err);
         });
+
 
         // 2. Orders & Revenue Stats
         const ordersRef = collection(db, COLLECTIONS.orders);
@@ -147,7 +148,6 @@ const DashboardScreen: React.FC = () => {
                 });
             });
 
-            // Sort and limit recent orders
             recent.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
             setRecentOrders(recent.slice(0, 5));
 
@@ -158,7 +158,10 @@ const DashboardScreen: React.FC = () => {
                 todayRevenue: todayRev,
                 pendingOrders: pendingCount
             }));
+        }, (err) => {
+            console.error("Orders Snapshot Error:", err);
         });
+
 
         // 3. Inventory Health
         const productsRef = collection(db, COLLECTIONS.products);
