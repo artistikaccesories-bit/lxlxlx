@@ -201,6 +201,24 @@ const InventoryScreen: React.FC = () => {
                     <button className="add-btn flex items-center gap-2 bg-white text-black px-4 py-2 rounded-xl font-bold text-sm hover:scale-105 transition-all" onClick={openAddModal}>
                         <Plus size={16} /> Add New
                     </button>
+                    <button 
+                        className="flex items-center gap-2 bg-surface-2 text-text px-4 py-2 rounded-xl font-bold text-sm hover:bg-surface-3 transition-all"
+                        onClick={async () => {
+                            setIsSyncing(true);
+                            try {
+                                await window.electron.runGitCommand('git pull --rebase origin main');
+                                alert("✅ Pulled latest changes from GitHub!");
+                                window.location.reload();
+                            } catch (e) {
+                                alert("Error pulling updates: " + e);
+                            } finally {
+                                setIsSyncing(false);
+                            }
+                        }}
+                    >
+                        <RefreshCw size={16} className={isSyncing ? 'animate-spin' : ''} />
+                        Pull Updates
+                    </button>
                     {window.electron && (
                         <button 
                             className={`push-live-btn flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all ${isSyncing ? 'bg-surface-2 text-text-muted opacity-50' : 'bg-red text-white hover:bg-red/80 shadow-lg shadow-red/20'}`}
@@ -234,6 +252,7 @@ const InventoryScreen: React.FC = () => {
                             {isSyncing ? 'Syncing...' : 'Sync Live'}
                         </button>
                     )}
+
                 </div>
             </div>
 

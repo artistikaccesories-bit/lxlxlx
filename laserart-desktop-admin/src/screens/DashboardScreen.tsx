@@ -117,7 +117,14 @@ const DashboardScreen: React.FC = () => {
             setLastUpdate(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
         }, (err) => {
             console.error("Visitors Snapshot Error:", err);
+            setLoading(false);
+            // Only alert once per session to avoid spam
+            if (!window.hasShownConnError) {
+                alert("📡 Dashboard Connection Error: Real-time visitor counts may not update. Please check your internet.");
+                window.hasShownConnError = true;
+            }
         });
+
 
 
         // 2. Orders & Revenue Stats
@@ -161,6 +168,7 @@ const DashboardScreen: React.FC = () => {
         }, (err) => {
             console.error("Orders Snapshot Error:", err);
         });
+
 
 
         // 3. Inventory Health

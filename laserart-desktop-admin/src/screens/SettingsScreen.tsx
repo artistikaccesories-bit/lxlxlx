@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
-import { LogOut, Shield, Info, ExternalLink, Truck, Save, Loader2, Cloud, DollarSign, Percent, AlertTriangle, Trash2 } from 'lucide-react';
-import { db, doc, getDoc, setDoc, collection, getDocs, updateDoc, deleteDoc } from '../utils/firebase';
+import { LogOut, Shield, Info, ExternalLink, Truck, Save, Loader2, Cloud, DollarSign, Percent, AlertTriangle, Trash2, Database } from 'lucide-react';
+import { db, doc, getDoc, setDoc, collection, getDocs, updateDoc, deleteDoc, Timestamp } from '../utils/firebase';
 
 interface SettingsScreenProps {
     onLogout: () => void | Promise<void>;
@@ -288,7 +288,44 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout, adminEmail })
                             {syncStatus && <p className="sync-status">{syncStatus}</p>}
                         </div>
                     </div>
+
+                    <div className="settings-card mt-3" style={{ border: '1px solid rgba(139, 92, 246, 0.3)' }}>
+                        <div className="settings-card__header">
+                            <Database size={18} className="settings-card__icon" style={{ color: '#8b5cf6' }} />
+                            <p className="settings-card__title">Hybrid Management</p>
+                        </div>
+                        <div className="settings-card__body">
+                            <p className="settings-card__desc mb-3">Direct links to edit products or view real-time data manually.</p>
+                            <div className="grid grid-cols-1 gap-2">
+                                <a 
+                                    href="https://github.com/artistikaccesories-bit/lxlxlx/blob/main/src/data/products.json" 
+                                    target="_blank" 
+                                    className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10 hover:border-purple-600/50 transition-all group"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <Shield size={16} className="text-zinc-500 group-hover:text-purple-600" />
+                                        <span className="font-bold text-[10px] uppercase tracking-wider">GitHub Manual Editor</span>
+                                    </div>
+                                    <ExternalLink size={12} className="text-zinc-500" />
+                                </a>
+
+                                <a 
+                                    href="https://console.firebase.google.com/project/laserart-2eca0/firestore/data/~2Fvisitors" 
+                                    target="_blank" 
+                                    className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10 hover:border-red/50 transition-all group"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <Database size={16} className="text-zinc-500 group-hover:text-red" />
+                                        <span className="font-bold text-[10px] uppercase tracking-wider">Direct Firestore Database</span>
+                                    </div>
+                                    <ExternalLink size={12} className="text-zinc-500" />
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+
 
                 <div className="settings-section">
                     <p className="settings-section__label">Danger Zone</p>
