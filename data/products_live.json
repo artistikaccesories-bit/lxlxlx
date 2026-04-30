@@ -1,0 +1,304 @@
+[
+  {
+    "id": "qsu9X52ASoRwxBDcylee",
+    "name": "ISLAMIC CALLI",
+    "handle": "islamic-calli",
+    "price": 11,
+    "description": "Elegant round keychain featuring exquisite Islamic calligraphy. A perfect blend of faith and craftsmanship.",
+    "image": "/images/calli.jpeg",
+    "images": [
+      "/images/calli.jpeg"
+    ],
+    "category": "keychain",
+    "stock": 8,
+    "isBestSeller": false,
+    "isProductOfTheWeek": false,
+    "createdAt": {
+      "seconds": 1777535101,
+      "nanoseconds": 161000000
+    },
+    "updatedAt": {
+      "seconds": 1777535117,
+      "nanoseconds": 82000000
+    }
+  },
+  {
+    "id": "TroR9NdXV70NrBDr2O5d",
+    "name": "CUSTOM QUOTE",
+    "handle": "quote-rectangle-keychain",
+    "price": 10,
+    "description": "Your words, immortalized. Available in vertical and horizontal orientations. Swipe to see options. Perfect for favorite quotes or names.",
+    "image": "/images/qrect.jpeg",
+    "images": [
+      "/images/qrect.jpeg",
+      "/images/qrecthorizontal.jpeg"
+    ],
+    "category": "keychain",
+    "stock": 10,
+    "isBestSeller": false,
+    "isProductOfTheWeek": false,
+    "createdAt": {
+      "seconds": 1777535100,
+      "nanoseconds": 932000000
+    },
+    "updatedAt": {
+      "seconds": 1777535100,
+      "nanoseconds": 932000000
+    }
+  },
+  {
+    "id": "G7dvxGoaLvfjkIfT44OS",
+    "name": "AL-HAMD",
+    "handle": "al-hamd-gratitude",
+    "price": 10,
+    "description": "“Al-Hamdulillah” beautifully engraved. A daily reminder of gratitude and faith, crafted in durable stainless steel.",
+    "image": "/images/hamd.jpeg",
+    "images": [
+      "/images/hamd.jpeg"
+    ],
+    "category": "keychain",
+    "stock": 8,
+    "isBestSeller": false,
+    "isProductOfTheWeek": false,
+    "createdAt": {
+      "seconds": 1777535100,
+      "nanoseconds": 667000000
+    },
+    "updatedAt": {
+      "seconds": 1777535100,
+      "nanoseconds": 667000000
+    }
+  },
+  {
+    "id": "bCFt8qJKW2oJUrYHqRuh",
+    "name": "GYM & COUPLE",
+    "handle": "gym-couple-duo",
+    "price": 10,
+    "description": "Two distinct styles in one series. Swipe to see the Gym motivation design and the matching Couple set. Small, subtle, and meaningful.",
+    "image": "/images/qsmallgym.jpeg",
+    "images": [
+      "/images/qsmallgym.jpeg",
+      "/images/qsmallcouple.jpeg"
+    ],
+    "category": "keychain",
+    "stock": 10,
+    "isBestSeller": false,
+    "isProductOfTheWeek": false,
+    "createdAt": {
+      "seconds": 1777535100,
+      "nanoseconds": 223000000
+    },
+    "updatedAt": {
+      "seconds": 1777535100,
+      "nanoseconds": 223000000
+    }
+  },
+  {
+    "id": "YxnOYrao3ero6DxgMQel",
+    "name": "CUSTOM CIRCLE",
+    "handle": "custom-circle-token",
+    "price": 10,
+    "description": "Round 4cm diameter circle with custom logo. Simple, elegant, and perfect for branding or personal designs.",
+    "image": "/images/product9.jpeg",
+    "images": [
+      "/images/product9.jpeg"
+    ],
+    "category": "keychain",
+    "stock": 5,
+    "isBestSeller": false,
+    "isProductOfTheWeek": false,
+    "createdAt": {
+      "seconds": 1777535099,
+      "nanoseconds": 947000000
+    },
+    "updatedAt": {
+      "seconds": 1777535099,
+      "nanoseconds": 947000000
+    }
+  },
+  {
+    "id": "S4jvo0S97xYVGUOA79jS",
+    "name": "PUZZLE HEARTS",
+    "handle": "puzzle-hearts-union",
+    "price": 11,
+    "description": "Two halves that complete each other. A puzzle-piece heart design for couples that fit perfectly together.",
+    "image": "/images/product8.jpeg",
+    "images": [
+      "/images/product8.jpeg"
+    ],
+    "category": "keychain",
+    "stock": 3,
+    "isBestSeller": false,
+    "isProductOfTheWeek": false,
+    "createdAt": {
+      "seconds": 1777535099,
+      "nanoseconds": 692000000
+    },
+    "updatedAt": {
+      "seconds": 1777535099,
+      "nanoseconds": 692000000
+    }
+  },
+  {
+    "id": "jVKh0PN7AMASjeVVT1aH",
+    "name": "COUPLE TAG",
+    "handle": "the-bond-tag",
+    "price": 10,
+    "description": "Stainless steel tag shape designed for couples. Deeply engraved with your custom text. A modern symbol of connection.",
+    "image": "/images/product7.jpeg",
+    "images": [
+      "/images/product7.jpeg"
+    ],
+    "category": "keychain",
+    "stock": 4,
+    "isBestSeller": false,
+    "isProductOfTheWeek": false,
+    "createdAt": {
+      "seconds": 1777535099,
+      "nanoseconds": 454000000
+    },
+    "updatedAt": {
+      "seconds": 1777535099,
+      "nanoseconds": 454000000
+    }
+  },
+  {
+    "id": "OrJA9JYychYBDPYookxr",
+    "name": "BOTTLE OPENER",
+    "handle": "bottle-opener-brew",
+    "price": 10,
+    "description": "Utility refined. A robust stainless steel bottle opener that doubles as a personal statement. Engrave any text or name for a gift that will actually be used.",
+    "image": "/images/p6.jpg.jpg",
+    "images": [
+      "/images/p6.jpg.jpg"
+    ],
+    "category": "keychain",
+    "stock": 2,
+    "isBestSeller": false,
+    "isProductOfTheWeek": false,
+    "createdAt": {
+      "seconds": 1777535099,
+      "nanoseconds": 183000000
+    },
+    "updatedAt": {
+      "seconds": 1777535099,
+      "nanoseconds": 183000000
+    }
+  },
+  {
+    "id": "Yrp1wjSzNCpndSevJAX0",
+    "name": "THE ORBIT",
+    "handle": "round-keychain-orbit",
+    "price": 10,
+    "description": "Minimalist perfection. A 4cm diameter round keychain awaiting your custom image, logo, or text. Perfectly balanced and precision engraved.",
+    "image": "/images/p5.jpg.jpg",
+    "images": [
+      "/images/p5.jpg.jpg"
+    ],
+    "category": "keychain",
+    "stock": 5,
+    "isBestSeller": true,
+    "isProductOfTheWeek": false,
+    "createdAt": {
+      "seconds": 1777535098,
+      "nanoseconds": 936000000
+    },
+    "updatedAt": {
+      "seconds": 1777535098,
+      "nanoseconds": 936000000
+    }
+  },
+  {
+    "id": "Gh5V7lRRk7BNxr75dILD",
+    "name": "PET TAG",
+    "handle": "pet-tag-guardian",
+    "price": 10,
+    "description": "Safety meets style. Durable custom dog tag engraved with your pet's name and your phone number. Built to last through every adventure.",
+    "image": "/images/p4.jpg",
+    "images": [
+      "/images/p4.jpg"
+    ],
+    "category": "keychain",
+    "stock": 3,
+    "isBestSeller": false,
+    "isProductOfTheWeek": false,
+    "createdAt": {
+      "seconds": 1777535098,
+      "nanoseconds": 620000000
+    },
+    "updatedAt": {
+      "seconds": 1777535098,
+      "nanoseconds": 620000000
+    }
+  },
+  {
+    "id": "EmUxLwOwmiKfybf6qSn8",
+    "name": "THE BOND",
+    "handle": "the-bond-keychain",
+    "price": 10,
+    "description": "A symbol of connection. Rectangle stainless steel keychain designed for meaningful quotes, dates, or matching couple designs. Carry your story with you.",
+    "image": "/images/product3.jpg",
+    "images": [
+      "/images/product3.jpg"
+    ],
+    "category": "keychain",
+    "stock": 6,
+    "isBestSeller": true,
+    "isProductOfTheWeek": false,
+    "createdAt": {
+      "seconds": 1777535098,
+      "nanoseconds": 362000000
+    },
+    "updatedAt": {
+      "seconds": 1777535098,
+      "nanoseconds": 362000000
+    }
+  },
+  {
+    "id": "YUOVdAgXiWrCrgFgADHZ",
+    "name": "SPOTIFY CODE",
+    "handle": "spotify-code-keychain",
+    "price": 11,
+    "description": "Scan and play. A custom keychain with your favorite song's Spotify code and the album art laser engraved. A playable memory in steel.",
+    "image": "/images/product2.jpg",
+    "images": [
+      "/images/product2.jpg",
+      "/images/product2-2.jpeg"
+    ],
+    "category": "keychain",
+    "stock": 2,
+    "isBestSeller": true,
+    "isProductOfTheWeek": false,
+    "createdAt": {
+      "seconds": 1777535098,
+      "nanoseconds": 89000000
+    },
+    "updatedAt": {
+      "seconds": 1777535098,
+      "nanoseconds": 89000000
+    }
+  },
+  {
+    "id": "9zlyN5QYL6NeNcZGGvxz",
+    "name": "CUSTOM PLATE",
+    "handle": "lebanon-plate-style",
+    "price": 10,
+    "description": "Stainless steel rectangle shape with laser engraved custom Lebanese car plate design. Essential, durable, and personalized.",
+    "image": "/images/product1.jpg",
+    "images": [
+      "/images/product1.jpg"
+    ],
+    "category": "keychain",
+    "stock": 4,
+    "isBestSeller": true,
+    "isProductOfTheWeek": false,
+    "createdAt": {
+      "seconds": 1777535097,
+      "nanoseconds": 410000000
+    },
+    "updatedAt": {
+      "seconds": 1777535097,
+      "nanoseconds": 410000000
+    }
+  }
+]
