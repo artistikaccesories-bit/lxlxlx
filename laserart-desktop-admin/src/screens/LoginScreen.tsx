@@ -7,7 +7,7 @@ interface LoginScreenProps {
 }
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
-    const [email, setEmail] = useState(import.meta.env.VITE_ADMIN_EMAIL || '');
+    const email = import.meta.env.VITE_ADMIN_EMAIL || 'admin@laserartlb.com';
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
@@ -88,18 +88,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                 <form onSubmit={handleLogin} className="login-form">
                     <div className="login-input-wrap">
                         <input
-                            type="email"
-                            value={email}
-                            onChange={e => { setEmail(e.target.value); setError(''); }}
-                            className="login-input"
-                            placeholder="Admin email"
-                            disabled={locked}
-                            autoComplete="username"
-                        />
-                    </div>
-
-                    <div className="login-input-wrap">
-                        <input
                             id="admin-password"
                             type={showPassword ? 'text' : 'password'}
                             value={password}
@@ -132,7 +120,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                     <button
                         type="submit"
                         className="login-btn"
-                        disabled={locked || loading || !password || !email}
+                        disabled={locked || loading || !password}
                     >
                         {loading ? (
                             <span className="login-spinner" />

@@ -40,3 +40,7 @@ ios/
 *.exe
 dist-electron/
 *-win32-x64/
+
+*.exe
+.env
+laserart-desktop-admin/dist-electron/

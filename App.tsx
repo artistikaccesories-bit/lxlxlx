@@ -14,7 +14,6 @@ import CustomPreview from './components/CustomPreview.tsx';
 import SocialProof from './components/SocialProof.tsx';
 import TrustBadges from './components/TrustBadges.tsx';
 import ExitIntentPopup from './components/ExitIntentPopup.tsx';
-import AdminDashboard from './components/AdminDashboard.tsx';
 
 import GallerySelector from './components/GallerySelector.tsx';
 import { Product, CartItem } from './types.ts';
@@ -555,9 +554,6 @@ function App() {
     window.open(`https://wa.me/96181388115?text=${encodeURIComponent(message)}`, '_blank');
   };
 
-  if (isAdminView) {
-    return <AdminDashboard />;
-  }
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black relative">
